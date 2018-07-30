@@ -10,37 +10,37 @@ import (
 )
 
 func main() {
-	mul()
-	//xor()
+	//mul()
+	xor()
 }
 
 func test() {
-	n := neural.NewNetwork(2, 3, 1)
+	p := neural.NewPerceptron(2, 3, 1)
 
-	n.RandomizeWeights(newRand())
+	p.RandomizeWeights(newRand())
 
 	inputs := []float64{0.7, 0.0}
 
-	err := n.SetInputs(inputs)
+	err := p.SetInputs(inputs)
 	checkError(err)
 
-	n.Calculate()
+	p.Calculate()
 
 	outputs := make([]float64, 1)
-	n.GetOutputs(outputs)
+	p.GetOutputs(outputs)
 	fmt.Println(outputs)
 
-	bp := neural.NewBackpropagation(n)
+	bp := neural.NewBackpropagation(p)
 
 	for i := 0; i < 1000; i++ {
 		bp.Learn(inputs, []float64{0.5})
 	}
 
-	err = n.SetInputs(inputs)
+	err = p.SetInputs(inputs)
 	checkError(err)
 
-	n.Calculate()
-	n.GetOutputs(outputs)
+	p.Calculate()
+	p.GetOutputs(outputs)
 	fmt.Println(outputs)
 }
 
@@ -48,10 +48,10 @@ func mul() {
 
 	const epsilon = 0.001
 
-	n := neural.NewNetwork(2, 3, 2, 1)
+	p := neural.NewPerceptron(2, 3, 2, 1)
 	r := newRand()
-	n.RandomizeWeights(r)
-	bp := neural.NewBackpropagation(n)
+	p.RandomizeWeights(r)
+	bp := neural.NewBackpropagation(p)
 
 	var (
 		inputs       = make([]float64, 2)
@@ -75,9 +75,9 @@ func mul() {
 
 			bp.Learn(inputs, outputsIdeal)
 
-			n.SetInputs(inputs)
-			n.Calculate()
-			n.GetOutputs(outputs)
+			p.SetInputs(inputs)
+			p.Calculate()
+			p.GetOutputs(outputs)
 
 			mse := neural.MSE(outputs, outputsIdeal)
 			if mse > worst {
@@ -98,6 +98,11 @@ func mul() {
 	}
 }
 
+type sample struct {
+	inputs  []float64
+	outputs []float64
+}
+
 func xor() {
 
 	const epsilon = 0.001
@@ -105,11 +110,10 @@ func xor() {
 	const (
 		v0 = 0.1
 		v1 = 0.9
+		//		v0 = 0.0
+		//		v1 = 1.0
 	)
-	samples := []struct {
-		inputs  []float64
-		outputs []float64
-	}{
+	samples := []sample{
 		{
 			inputs:  []float64{v0, v0},
 			outputs: []float64{v0},
@@ -127,8 +131,8 @@ func xor() {
 			outputs: []float64{v0},
 		},
 	}
-	n := neural.NewNetwork(2, 3, 1)
-	bp := neural.NewBackpropagation(n)
+	p := neural.NewPerceptron(2, 3, 1)
+	bp := neural.NewBackpropagation(p)
 	//inputs := make([]float64, 2)
 	outputs := make([]float64, 1)
 
@@ -136,13 +140,15 @@ func xor() {
 	for epoch < 1000 {
 		worst := 0.0
 		for _, sample := range samples {
+			//fmt.Println(">>>", sample)
+
 			bp.Learn(sample.inputs, sample.outputs)
 
-			n.SetInputs(sample.inputs)
-			n.Calculate()
-			n.GetOutputs(outputs)
+			p.SetInputs(sample.inputs)
+			p.Calculate()
+			p.GetOutputs(outputs)
 
-			mse := neural.MSE(outputs, sample.outputs)
+			mse := neural.MSE(sample.outputs, outputs)
 			if mse > worst {
 				worst = mse
 			}
@@ -156,6 +162,16 @@ func xor() {
 	}
 
 	fmt.Println(epoch)
+
+	for _, sample := range samples {
+		p.SetInputs(sample.inputs)
+		p.Calculate()
+		p.GetOutputs(outputs)
+
+		fmt.Printf("%.2f XOR %.2f = %f\n",
+			sample.inputs[0], sample.inputs[1],
+			outputs[0])
+	}
 }
 
 func checkError(err error) {
