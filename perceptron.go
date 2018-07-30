@@ -25,7 +25,7 @@ func NewPerceptron(ds ...int) *Perceptron {
 	}
 
 	return &Perceptron{
-		a:    1.0,
+		a:    0.5,
 		ssx:  ssx,
 		sssw: sssw,
 	}

@@ -16,7 +16,7 @@ func NewBackpropagation(p *Perceptron) *Backpropagation {
 	return &Backpropagation{
 		p:     p,
 		ssd:   ssd,
-		speed: 0.5,
+		speed: 0.7,
 	}
 }
 
@@ -24,7 +24,6 @@ func NewBackpropagation(p *Perceptron) *Backpropagation {
 func (bp *Backpropagation) Learn(inputs, outputs []float64) error {
 
 	p := bp.p
-	a := p.a
 
 	err := p.SetInputs(inputs)
 	if err != nil {
@@ -33,38 +32,38 @@ func (bp *Backpropagation) Learn(inputs, outputs []float64) error {
 	p.Calculate()
 
 	ssd := bp.ssd
-	m := len(ssd) - 1
+	last := len(ssd) - 1
 
 	var (
-		x     = p.ssx[m+1]
-		delta = ssd[m]
+		x     = p.ssx[last+1]
+		delta = ssd[last]
 	)
 	for j := range delta {
-		delta[j] = sigmoidPrime(x[j], a) * (x[j] - outputs[j])
+		delta[j] = sigmoidPrime(x[j], p.a) * (x[j] - outputs[j])
 	}
-	m--
 
-	for ; m >= 0; m-- {
+	for curr := last - 1; curr >= 0; curr-- {
 		var (
-			x     = p.ssx[m+1]
-			delta = ssd[m]
+			x     = p.ssx[curr+1]
+			delta = ssd[curr]
 
-			deltaChildren   = ssd[m+1]
-			weightsChildren = p.sssw[m+1]
+			deltaChildren   = ssd[curr+1]
+			weightsChildren = p.sssw[curr+1]
 		)
+
 		for j := range delta {
 			var sum float64
 			for k := range deltaChildren {
 				sum += deltaChildren[k] * weightsChildren[k][j]
 			}
-			delta[j] = sigmoidPrime(x[j], a) * sum
+			delta[j] = sigmoidPrime(x[j], p.a) * sum
 		}
 	}
 
-	for m, ssw := range p.sssw {
+	for curr, ssw := range p.sssw {
 		var (
-			x     = p.ssx[m]
-			delta = ssd[m]
+			x     = p.ssx[curr]
+			delta = ssd[curr]
 		)
 		for j, sw := range ssw {
 			for i := range sw {

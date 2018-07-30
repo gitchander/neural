@@ -29,6 +29,7 @@ func joinNeuronsBySynapse(input, output *neuron) {
 }
 
 type testPerceptron struct {
+	a      float64
 	layers [][]*neuron
 }
 
@@ -56,6 +57,7 @@ func newTestPerceptron(ds ...int) *testPerceptron {
 	}
 
 	return &testPerceptron{
+		a:      0.5,
 		layers: layers,
 	}
 }
@@ -93,7 +95,7 @@ func (p *testPerceptron) Calculate() {
 			for _, syn := range n.inputs {
 				sum += syn.input.val * syn.weight
 			}
-			n.val = sigmoid(sum, 1)
+			n.val = sigmoid(sum, p.a)
 		}
 	}
 }
@@ -116,8 +118,7 @@ func testBackpropagation(p *testPerceptron, inputs, outputs []float64) {
 	p.SetInputs(inputs)
 	p.Calculate()
 
-	a := 1.0
-	speed := 0.5
+	speed := 0.7
 
 	//	//	ssd := bp.ssd
 	//	//	m := len(ssd) - 1
@@ -137,7 +138,7 @@ func testBackpropagation(p *testPerceptron, inputs, outputs []float64) {
 	layer := p.layers[m+1] // last layer
 
 	for j, n := range layer {
-		delta[j] = sigmoidPrime(n.val, a) * (n.val - outputs[j])
+		delta[j] = sigmoidPrime(n.val, p.a) * (n.val - outputs[j])
 	}
 	m--
 
@@ -152,7 +153,7 @@ func testBackpropagation(p *testPerceptron, inputs, outputs []float64) {
 			for k, syn := range n.outputs {
 				sum += deltaChildren[k] * syn.weight
 			}
-			delta[j] = sigmoidPrime(n.val, a) * sum
+			delta[j] = sigmoidPrime(n.val, p.a) * sum
 		}
 	}
 

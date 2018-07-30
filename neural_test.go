@@ -8,7 +8,7 @@ import (
 
 func TestRandWeights(t *testing.T) {
 
-	const randSeed = -3
+	const randSeed = 100
 
 	type sample struct {
 		inputs  []float64
@@ -68,7 +68,6 @@ func TestRandWeights(t *testing.T) {
 	p.SetInputs(inputs)
 	p.Calculate()
 	p.GetOutputs(outputs)
-
 	fmt.Println(outputs)
 
 	bp := NewBackpropagation(p)
