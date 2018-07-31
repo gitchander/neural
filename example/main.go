@@ -16,8 +16,14 @@ import (
 
 func main() {
 	//mul()
-	xor()
+	//xor()
 	//xorDraw()
+	exampleSSD()
+}
+
+type sample struct {
+	inputs  []float64
+	outputs []float64
 }
 
 func test() {
@@ -51,9 +57,9 @@ func test() {
 
 func mul() {
 
-	const epsilon = 0.001
+	const epsilon = 0.01
 
-	p := neural.NewPerceptron(2, 3, 2, 1)
+	p := neural.NewPerceptron(2, 3, 1)
 	r := newRand()
 	p.RandomizeWeights(r)
 	bp := neural.NewBackpropagation(p)
@@ -67,7 +73,7 @@ func mul() {
 	samplesInEpoch := 1000
 
 	epoch := 0
-	epochMax := 10000
+	epochMax := 1000
 	for epoch < epochMax {
 
 		worst := 0.0
@@ -101,11 +107,6 @@ func mul() {
 	} else {
 		fmt.Println("failure")
 	}
-}
-
-type sample struct {
-	inputs  []float64
-	outputs []float64
 }
 
 func xor() {
@@ -181,6 +182,8 @@ func xor() {
 			sample.inputs[0], sample.inputs[1],
 			outputs[0])
 	}
+
+	p.PrintWeights()
 }
 
 func checkError(err error) {

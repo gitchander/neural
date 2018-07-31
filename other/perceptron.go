@@ -1,4 +1,4 @@
-package neural
+package other
 
 import (
 	"fmt"
@@ -28,12 +28,12 @@ func joinNeuronsBySynapse(input, output *neuron) {
 	output.inputs = append(output.inputs, syn)
 }
 
-type testPerceptron struct {
+type Perceptron struct {
 	a      float64
 	layers [][]*neuron
 }
 
-func newTestPerceptron(ds ...int) *testPerceptron {
+func NewPerceptron(ds ...int) *Perceptron {
 
 	n := len(ds)
 	layers := make([][]*neuron, n)
@@ -56,13 +56,13 @@ func newTestPerceptron(ds ...int) *testPerceptron {
 		}
 	}
 
-	return &testPerceptron{
+	return &Perceptron{
 		a:      0.5,
 		layers: layers,
 	}
 }
 
-func (p *testPerceptron) RandomizeWeights(r *rand.Rand) {
+func (p *Perceptron) RandomizeWeights(r *rand.Rand) {
 	for i := 1; i < len(p.layers); i++ {
 		layer := p.layers[i]
 		for _, n := range layer {
@@ -73,21 +73,21 @@ func (p *testPerceptron) RandomizeWeights(r *rand.Rand) {
 	}
 }
 
-func (p *testPerceptron) SetInputs(inputs []float64) {
+func (p *Perceptron) SetInputs(inputs []float64) {
 	layer := p.layers[0] // first layer
 	for i := range layer {
 		layer[i].val = inputs[i]
 	}
 }
 
-func (p *testPerceptron) GetOutputs(outputs []float64) {
+func (p *Perceptron) GetOutputs(outputs []float64) {
 	layer := p.layers[len(p.layers)-1] // last layer
 	for i := range layer {
 		outputs[i] = layer[i].val
 	}
 }
 
-func (p *testPerceptron) Calculate() {
+func (p *Perceptron) Calculate() {
 	for i := 1; i < len(p.layers); i++ {
 		layer := p.layers[i]
 		for _, n := range layer {
@@ -100,7 +100,7 @@ func (p *testPerceptron) Calculate() {
 	}
 }
 
-func (p *testPerceptron) PrintWeights() {
+func (p *Perceptron) PrintWeights() {
 	for i := 1; i < len(p.layers); i++ {
 
 		fmt.Printf("layer %d:\n", i-1)
@@ -114,19 +114,11 @@ func (p *testPerceptron) PrintWeights() {
 	}
 }
 
-func testBackpropagation(p *testPerceptron, inputs, outputs []float64) {
+func Backpropagation(p *Perceptron, inputs, outputs []float64) {
 	p.SetInputs(inputs)
 	p.Calculate()
 
 	speed := 0.7
-
-	//	//	ssd := bp.ssd
-	//	//	m := len(ssd) - 1
-
-	//	//	var (
-	//	//		x     = n.ssx[m+1]
-	//	//		delta = ssd[m]
-	//	//	)
 
 	ssd := make([][]float64, len(p.layers)-1)
 	for i := range ssd {
@@ -158,11 +150,7 @@ func testBackpropagation(p *testPerceptron, inputs, outputs []float64) {
 	}
 
 	for m, sd := range ssd {
-		var (
-			//x     = n.ssx[m]
-			//delta = ssd[m]
-			layer = p.layers[m+1]
-		)
+		var layer = p.layers[m+1]
 		for j, d := range sd {
 			n := layer[j]
 

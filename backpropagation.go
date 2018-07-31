@@ -20,6 +20,10 @@ func NewBackpropagation(p *Perceptron) *Backpropagation {
 	}
 }
 
+func (bp *Backpropagation) SetSpeed(speed float64) {
+	bp.speed = speed
+}
+
 // outputs - ideal outputs
 func (bp *Backpropagation) Learn(inputs, outputs []float64) error {
 

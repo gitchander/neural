@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/rand"
 	"testing"
+
+	"github.com/gitchander/neural/other"
 )
 
 func TestRandWeights(t *testing.T) {
@@ -27,7 +29,7 @@ func TestRandWeights(t *testing.T) {
 		{inputs: []float64{v1, v1}, outputs: []float64{v0}},
 	}
 
-	const epochMax = 100
+	const epochMax = 1000
 
 	var (
 		inputs  = make([]float64, 2)
@@ -37,7 +39,7 @@ func TestRandWeights(t *testing.T) {
 	ds := []int{2, 3, 1}
 	r := rand.New(rand.NewSource(randSeed))
 
-	tp := newTestPerceptron(ds...)
+	tp := other.NewPerceptron(ds...)
 	tp.RandomizeWeights(r)
 	//tp.PrintWeights()
 
@@ -48,7 +50,7 @@ func TestRandWeights(t *testing.T) {
 
 	for i := 0; i < epochMax; i++ {
 		for _, sample := range samples {
-			testBackpropagation(tp, sample.inputs, sample.outputs)
+			other.Backpropagation(tp, sample.inputs, sample.outputs)
 		}
 	}
 	tp.PrintWeights()

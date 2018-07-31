@@ -6,6 +6,7 @@ import (
 	"math/rand"
 )
 
+// Multilayer Perceptron
 type Perceptron struct {
 	a    float64
 	ssx  [][]float64   // neuron outputs
