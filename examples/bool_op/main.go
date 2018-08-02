@@ -15,46 +15,38 @@ import (
 )
 
 func main() {
-	//xor()
-	xorDraw()
+	testOperator(operatorOR)
+	//xorDraw()
 }
 
-func xor() {
+func testOperator(operator func(a, b bool) bool) {
 
-	const epsilon = 0.001
-
-	const (
-		v0 = 0.1
-		v1 = 0.9
-		//		v0 = 0.0
-		//		v1 = 1.0
-	)
-	samples := []neural.Sample{
-		{
-			Inputs:  []float64{v0, v0},
-			Outputs: []float64{v0},
-		},
-		{
-			Inputs:  []float64{v0, v1},
-			Outputs: []float64{v1},
-		},
-		{
-			Inputs:  []float64{v1, v0},
-			Outputs: []float64{v1},
-		},
-		{
-			Inputs:  []float64{v1, v1},
-			Outputs: []float64{v0},
-		},
+	var samples []neural.Sample
+	var bs = []bool{false, true}
+	for _, b1 := range bs {
+		for _, b2 := range bs {
+			sample := neural.Sample{
+				Inputs: []float64{
+					boolToFloat(b1),
+					boolToFloat(b2),
+				},
+				Outputs: []float64{
+					boolToFloat(operator(b1, b2)),
+				},
+			}
+			samples = append(samples, sample)
+		}
 	}
-	p := neural.NewPerceptron(2, 3, 1)
+
+	p := neural.NewPerceptron(2, 1)
 	p.RandomizeWeights(newRand())
 	bp := neural.NewBackpropagation(p)
 
 	outputs := make([]float64, 1)
 
 	epoch := 0
-	epochMax := 10000
+	epochMax := 1000
+	const epsilon = 0.01
 	for epoch < epochMax {
 		worst := 0.0
 		for _, sample := range samples {
@@ -98,32 +90,25 @@ func xor() {
 
 func xorDraw() {
 
-	const epsilon = 0.001
+	operator := operatorXOR
 
-	const (
-		v0 = 0.1
-		v1 = 0.9
-		//		v0 = 0.0
-		//		v1 = 1.0
-	)
-	samples := []neural.Sample{
-		{
-			Inputs:  []float64{v0, v0},
-			Outputs: []float64{v0},
-		},
-		{
-			Inputs:  []float64{v0, v1},
-			Outputs: []float64{v1},
-		},
-		{
-			Inputs:  []float64{v1, v0},
-			Outputs: []float64{v1},
-		},
-		{
-			Inputs:  []float64{v1, v1},
-			Outputs: []float64{v0},
-		},
+	var samples []neural.Sample
+	var bs = []bool{false, true}
+	for _, b1 := range bs {
+		for _, b2 := range bs {
+			sample := neural.Sample{
+				Inputs: []float64{
+					boolToFloat(b1),
+					boolToFloat(b2),
+				},
+				Outputs: []float64{
+					boolToFloat(operator(b1, b2)),
+				},
+			}
+			samples = append(samples, sample)
+		}
 	}
+
 	p := neural.NewPerceptron(2, 3, 1)
 	p.RandomizeWeights(newRand())
 	bp := neural.NewBackpropagation(p)
@@ -133,6 +118,7 @@ func xorDraw() {
 
 	epoch := 0
 	epochMax := 10000
+	const epsilon = 0.001
 	for epoch < epochMax {
 		worst := 0.0
 		for _, sample := range samples {
@@ -206,4 +192,23 @@ func checkError(err error) {
 	if err != nil {
 		log.Panic(err)
 	}
+}
+
+func boolToFloat(b bool) float64 {
+	if b {
+		return 0.9
+	}
+	return 0.1
+}
+
+func operatorOR(a, b bool) bool {
+	return a || b
+}
+
+func operatorAND(a, b bool) bool {
+	return a && b
+}
+
+func operatorXOR(a, b bool) bool {
+	return a != b
 }

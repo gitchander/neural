@@ -8,9 +8,10 @@ import (
 
 // Multilayer Perceptron
 type Perceptron struct {
-	a    float64
-	ssx  [][]float64   // neuron outputs
-	sssw [][][]float64 // synapse weights
+	a      float64
+	ssx    [][]float64   // neuron outputs
+	sssw   [][][]float64 // synapse weights
+	biases [][]float64
 }
 
 func NewPerceptron(ds ...int) *Perceptron {
@@ -25,10 +26,16 @@ func NewPerceptron(ds ...int) *Perceptron {
 		sssw[i] = newMatrix2(ds[i+1], ds[i])
 	}
 
+	biases := make([][]float64, len(ds)-1)
+	for i := range biases {
+		biases[i] = make([]float64, ds[i+1])
+	}
+
 	return &Perceptron{
-		a:    0.5,
-		ssx:  ssx,
-		sssw: sssw,
+		a:      0.5,
+		ssx:    ssx,
+		sssw:   sssw,
+		biases: biases,
 	}
 }
 
@@ -38,6 +45,11 @@ func (p *Perceptron) RandomizeWeights(r *rand.Rand) {
 			for i := range sw {
 				sw[i] = randWeight(r)
 			}
+		}
+	}
+	for _, bias := range p.biases {
+		for i := range bias {
+			bias[i] = randWeight(r)
 		}
 	}
 }
@@ -83,14 +95,16 @@ func (p *Perceptron) GetOutputs(outputs []float64) error {
 func (p *Perceptron) Calculate() {
 	for k, ssw := range p.sssw {
 		var (
-			sxi = p.ssx[k]
-			sxj = p.ssx[k+1]
+			sxi  = p.ssx[k]
+			sxj  = p.ssx[k+1]
+			bias = p.biases[k]
 		)
 		for j, sw := range ssw {
 			sum := 0.0
 			for i, w := range sw {
 				sum += w * sxi[i]
 			}
+			sum += bias[j]
 			sxj[j] = sigmoid(sum, p.a)
 		}
 	}

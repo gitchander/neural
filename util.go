@@ -27,9 +27,9 @@ func Mean(xs []float64) float64 {
 	return sum / float64(len(xs))
 }
 
-// (-1 < w < +1)
+// (-0.5 < w < +0.5)
 func randWeight(r *rand.Rand) float64 {
-	return 2*r.Float64() - 1
+	return r.Float64() - 0.5
 }
 
 func newMatrix2(n, m int) [][]float64 {

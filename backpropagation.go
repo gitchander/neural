@@ -6,9 +6,11 @@ type Sample struct {
 }
 
 type Backpropagation struct {
-	p     *Perceptron
-	ssd   [][]float64 // delta Weight
-	speed float64     // 0 < speed < 1
+	p   *Perceptron
+	ssd [][]float64 // delta Weight
+
+	// learningRate
+	speed float64 // 0 < speed < 1
 }
 
 func NewBackpropagation(p *Perceptron) *Backpropagation {
@@ -78,6 +80,11 @@ func (bp *Backpropagation) Learn(sample Sample) error {
 			for i := range sw {
 				sw[i] -= bp.speed * delta[j] * x[i]
 			}
+		}
+
+		var bias = p.biases[layer]
+		for j := range bias {
+			bias[j] -= bp.speed * delta[j]
 		}
 	}
 
