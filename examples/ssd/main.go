@@ -3,9 +3,15 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"math/rand"
+	"time"
 
 	"github.com/gitchander/neural"
 )
+
+func main() {
+	exampleSSD()
+}
 
 // seven-segment display (SSD)
 func exampleSSD() {
@@ -31,17 +37,17 @@ func exampleSSD() {
 		0xF: 0x71,
 	}
 
-	samples := make([]sample, len(digits))
+	samples := make([]neural.Sample, len(digits))
 
 	for i, d := range digits {
-		samples[i] = sample{
-			inputs:  valueToInputs(uint(i), 4),
-			outputs: valueToInputs(d, 7),
+		samples[i] = neural.Sample{
+			Inputs:  bitsToFloats(uint(i), 4),
+			Outputs: bitsToFloats(d, 7),
 		}
 	}
 
 	//	for _, sample := range samples {
-	//		fmt.Println(PrintableSSD(sample.outputs, "\t"))
+	//		fmt.Println(PrintableSSD(sample.Outputs, "\t"))
 	//	}
 	//	return
 
@@ -56,13 +62,13 @@ func exampleSSD() {
 	for epoch := 0; epoch < epochMax; epoch++ {
 		var worst float64
 		for _, sample := range samples {
-			bp.Learn(sample.inputs, sample.outputs)
+			bp.Learn(sample)
 
-			p.SetInputs(sample.inputs)
+			p.SetInputs(sample.Inputs)
 			p.Calculate()
 			p.GetOutputs(outputs)
 
-			mse := neural.MSE(sample.outputs, outputs)
+			mse := neural.MSE(sample.Outputs, outputs)
 			if mse > worst {
 				worst = mse
 			}
@@ -80,16 +86,15 @@ func exampleSSD() {
 	fmt.Println("success!")
 
 	//	for _, sample := range samples {
-	//		p.SetInputs(sample.inputs)
+	//		p.SetInputs(sample.Inputs)
 	//		p.Calculate()
 	//		p.GetOutputs(outputs)
-
-	//		fmt.Println(sample.inputs)
+	//		fmt.Println(sample.Inputs)
 	//		fmt.Println(PrintableSSD(outputs, ""))
 	//	}
 }
 
-func valueToInputs(x uint, n int) []float64 {
+func bitsToFloats(x uint, n int) []float64 {
 	const (
 		v0 = 0.1
 		v1 = 0.9
@@ -177,4 +182,8 @@ func PrintableSSD(vs []float64, prefix string) string {
 		buf.WriteByte('\n')
 	}
 	return buf.String()
+}
+
+func newRand() *rand.Rand {
+	return rand.New(rand.NewSource(time.Now().UnixNano()))
 }

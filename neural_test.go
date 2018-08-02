@@ -22,11 +22,11 @@ func TestRandWeights(t *testing.T) {
 		v1 = 0.9
 	)
 
-	samples := []sample{
-		{inputs: []float64{v0, v0}, outputs: []float64{v0}},
-		{inputs: []float64{v1, v0}, outputs: []float64{v1}},
-		{inputs: []float64{v0, v1}, outputs: []float64{v1}},
-		{inputs: []float64{v1, v1}, outputs: []float64{v0}},
+	samples := []Sample{
+		{Inputs: []float64{v0, v0}, Outputs: []float64{v0}},
+		{Inputs: []float64{v1, v0}, Outputs: []float64{v1}},
+		{Inputs: []float64{v0, v1}, Outputs: []float64{v1}},
+		{Inputs: []float64{v1, v1}, Outputs: []float64{v0}},
 	}
 
 	const epochMax = 1000
@@ -50,7 +50,7 @@ func TestRandWeights(t *testing.T) {
 
 	for i := 0; i < epochMax; i++ {
 		for _, sample := range samples {
-			other.Backpropagation(tp, sample.inputs, sample.outputs)
+			other.Backpropagation(tp, sample.Inputs, sample.Outputs)
 		}
 	}
 	tp.PrintWeights()
@@ -75,7 +75,7 @@ func TestRandWeights(t *testing.T) {
 	bp := NewBackpropagation(p)
 	for i := 0; i < epochMax; i++ {
 		for _, sample := range samples {
-			bp.Learn(sample.inputs, sample.outputs)
+			bp.Learn(sample)
 		}
 	}
 	p.PrintWeights()

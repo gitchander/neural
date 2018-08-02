@@ -1,5 +1,10 @@
 package neural
 
+type Sample struct {
+	Inputs  []float64
+	Outputs []float64
+}
+
 type Backpropagation struct {
 	p     *Perceptron
 	ssd   [][]float64 // delta Weight
@@ -25,11 +30,11 @@ func (bp *Backpropagation) SetSpeed(speed float64) {
 }
 
 // outputs - ideal outputs
-func (bp *Backpropagation) Learn(inputs, outputs []float64) error {
+func (bp *Backpropagation) Learn(sample Sample) error {
 
 	p := bp.p
 
-	err := p.SetInputs(inputs)
+	err := p.SetInputs(sample.Inputs)
 	if err != nil {
 		return err
 	}
@@ -43,31 +48,31 @@ func (bp *Backpropagation) Learn(inputs, outputs []float64) error {
 		delta = ssd[last]
 	)
 	for j := range delta {
-		delta[j] = sigmoidPrime(x[j], p.a) * (x[j] - outputs[j])
+		delta[j] = sigmoidPrime(x[j], p.a) * (x[j] - sample.Outputs[j])
 	}
 
-	for curr := last - 1; curr >= 0; curr-- {
+	for layer := last - 1; layer >= 0; layer-- {
 		var (
-			x     = p.ssx[curr+1]
-			delta = ssd[curr]
+			x     = p.ssx[layer+1]
+			delta = ssd[layer]
 
-			deltaChildren   = ssd[curr+1]
-			weightsChildren = p.sssw[curr+1]
+			deltaNext   = ssd[layer+1]
+			weightsNext = p.sssw[layer+1]
 		)
 
 		for j := range delta {
 			var sum float64
-			for k := range deltaChildren {
-				sum += deltaChildren[k] * weightsChildren[k][j]
+			for k := range deltaNext {
+				sum += deltaNext[k] * weightsNext[k][j]
 			}
 			delta[j] = sigmoidPrime(x[j], p.a) * sum
 		}
 	}
 
-	for curr, ssw := range p.sssw {
+	for layer, ssw := range p.sssw {
 		var (
-			x     = p.ssx[curr]
-			delta = ssd[curr]
+			x     = p.ssx[layer]
+			delta = ssd[layer]
 		)
 		for j, sw := range ssw {
 			for i := range sw {

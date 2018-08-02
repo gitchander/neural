@@ -1,0 +1,14 @@
+LaTex online editor:
+http://www.codecogs.com/latex/eqneditor.php
+
+\Delta w_{i,j} = -\eta \frac {\partial E}{\partial w_{i,j}}
+
+E=\frac{1}{2}\sum_{k}(t_{k}-o_{k})^{2}
+
+S_{j} = \sum_{i} w_{i,j} x_{i}
+
+f(s)={\frac{1}{1+e^{-2 \alpha s}}}
+
+\delta_{k}=\left ( 2 \alpha o_{k} \left(1 - o_{k} \right) \right ) \ast  \left ( o_{k} - t_{k} \right )
+
+\delta_{j}=\left ( 2 \alpha o_{j} \left(1 - o_{j} \right) \right ) \ast  \sum_{k \in children(j)} \delta_{k} w_{j,k}
