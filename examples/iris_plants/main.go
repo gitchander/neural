@@ -48,7 +48,7 @@ func main() {
 	for _, p := range ps {
 
 		outputs := make([]float64, len(m))
-		outputs[m[p.Species]] = 0.9
+		outputs[m[p.Species]] = 1
 
 		sample := neural.Sample{
 			Inputs: []float64{
@@ -59,41 +59,35 @@ func main() {
 			},
 			Outputs: outputs,
 		}
-		//fmt.Println(sample)
+		//fmt.Println(sample.Outputs)
 		samples = append(samples, sample)
 	}
 
-	p := neural.NewPerceptron(4, 6, 3)
+	p := neural.NewPerceptron(4, 4, 3)
 
 	p.RandomizeWeights(rand.New(rand.NewSource(time.Now().UnixNano())))
 	bp := neural.NewBackpropagation(p)
-	outputs := make([]float64, 3)
-	const epsilon = 0.001
-	epoch := 0
+	bp.SetLearningRate(0.1)
+	const epsilon = 0.01
+
 	epochMax := 1000
-	for ; epoch < epochMax; epoch++ {
+	for epoch := 0; epoch < epochMax; epoch++ {
 		var worst float64
 		for _, sample := range samples {
 			bp.Learn(sample)
-
-			p.SetInputs(sample.Inputs)
-			p.Calculate()
-			p.GetOutputs(outputs)
-
-			mse := neural.MSE(outputs, sample.Outputs)
+			mse := p.CalculateMSE(sample)
 			if mse > worst {
 				worst = mse
 			}
 		}
 		if worst < epsilon {
-			break
+			fmt.Println("Success!")
+			fmt.Printf("mse: %.7f\n", worst)
+			fmt.Println("epoch =", epoch)
+			return
 		}
 	}
-	if epoch < epochMax {
-		fmt.Println("success: epoch =", epoch)
-	} else {
-		fmt.Println("failure")
-	}
+	fmt.Println("Failure")
 }
 
 func checkError(err error) {

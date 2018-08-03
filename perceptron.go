@@ -110,6 +110,14 @@ func (p *Perceptron) Calculate() {
 	}
 }
 
+func (p *Perceptron) CalculateMSE(sample Sample) float64 {
+	p.SetInputs(sample.Inputs)
+	p.Calculate()
+	//p.GetOutputs(outputs)
+	outputs := p.ssx[len(p.ssx)-1]
+	return MSE(outputs, sample.Outputs)
+}
+
 func (p *Perceptron) PrintWeights() {
 	for l, ssw := range p.sssw {
 		fmt.Printf("layer %d:\n", l)
@@ -117,6 +125,14 @@ func (p *Perceptron) PrintWeights() {
 			for i, w := range sw {
 				fmt.Printf("%d->%d: %.7f\n", i, j, w)
 			}
+		}
+	}
+}
+
+func (p *Perceptron) PrintBiases() {
+	for _, bias := range p.biases {
+		for j, b := range bias {
+			fmt.Printf("->%d: %.7f\n", j, b)
 		}
 	}
 }

@@ -51,47 +51,29 @@ func exampleSSD() {
 	//	}
 	//	return
 
-	outputs := make([]float64, 7)
-
 	p := neural.NewPerceptron(4, 20, 7)
 	p.RandomizeWeights(newRand())
 	bp := neural.NewBackpropagation(p)
+	bp.SetLearningRate(0.7)
 
-	var success bool
 	const epochMax = 100000
 	for epoch := 0; epoch < epochMax; epoch++ {
 		var worst float64
 		for _, sample := range samples {
 			bp.Learn(sample)
-
-			p.SetInputs(sample.Inputs)
-			p.Calculate()
-			p.GetOutputs(outputs)
-
-			mse := neural.MSE(sample.Outputs, outputs)
+			mse := p.CalculateMSE(sample)
 			if mse > worst {
 				worst = mse
 			}
 		}
 		if worst < epsilon {
-			success = true
-			fmt.Println("epoch:", epoch)
-			break
+			fmt.Println("Success!")
+			fmt.Printf("mse: %.7f\n", worst)
+			fmt.Println("epoch =", epoch)
+			return
 		}
 	}
-	if !success {
-		fmt.Println("failure")
-		return
-	}
-	fmt.Println("success!")
-
-	//	for _, sample := range samples {
-	//		p.SetInputs(sample.Inputs)
-	//		p.Calculate()
-	//		p.GetOutputs(outputs)
-	//		fmt.Println(sample.Inputs)
-	//		fmt.Println(PrintableSSD(outputs, ""))
-	//	}
+	fmt.Println("Failure")
 }
 
 func bitsToFloats(x uint, n int) []float64 {

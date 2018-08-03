@@ -39,3 +39,13 @@ func newMatrix2(n, m int) [][]float64 {
 	}
 	return ssv
 }
+
+func crop_01(x float64) float64 {
+	if x < 0 {
+		x = 0
+	}
+	if x > 1 {
+		x = 1
+	}
+	return x
+}

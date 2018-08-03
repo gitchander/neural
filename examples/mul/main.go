@@ -21,15 +21,12 @@ func mul() {
 	r := newRand()
 	p.RandomizeWeights(r)
 	bp := neural.NewBackpropagation(p)
+	bp.SetLearningRate(0.5)
 
-	var (
-		sample = neural.Sample{
-			Inputs:  make([]float64, 2),
-			Outputs: make([]float64, 1),
-		}
-
-		outputs = make([]float64, 1)
-	)
+	var sample = neural.Sample{
+		Inputs:  make([]float64, 2),
+		Outputs: make([]float64, 1),
+	}
 
 	samplesInEpoch := 1000
 
@@ -46,21 +43,14 @@ func mul() {
 			sample.Outputs[0] = a * b
 
 			bp.Learn(sample)
-
-			p.SetInputs(sample.Inputs)
-			p.Calculate()
-			p.GetOutputs(outputs)
-
-			mse := neural.MSE(outputs, sample.Outputs)
+			mse := p.CalculateMSE(sample)
 			if mse > worst {
 				worst = mse
 			}
 		}
-
 		if worst < epsilon {
 			break
 		}
-
 		epoch++
 	}
 	if epoch < epochMax {

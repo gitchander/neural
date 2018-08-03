@@ -15,32 +15,18 @@ import (
 )
 
 func main() {
-	testOperator(operatorOR)
-	//xorDraw()
+	//testOperator(operatorAND)
+	xorDraw()
 }
 
-func testOperator(operator func(a, b bool) bool) {
+func testOperator(op operator) {
 
-	var samples []neural.Sample
-	var bs = []bool{false, true}
-	for _, b1 := range bs {
-		for _, b2 := range bs {
-			sample := neural.Sample{
-				Inputs: []float64{
-					boolToFloat(b1),
-					boolToFloat(b2),
-				},
-				Outputs: []float64{
-					boolToFloat(operator(b1, b2)),
-				},
-			}
-			samples = append(samples, sample)
-		}
-	}
+	samples := makeSamplesByOperator(op)
 
 	p := neural.NewPerceptron(2, 1)
 	p.RandomizeWeights(newRand())
 	bp := neural.NewBackpropagation(p)
+	bp.SetLearningRate(0.6)
 
 	outputs := make([]float64, 1)
 
@@ -51,12 +37,13 @@ func testOperator(operator func(a, b bool) bool) {
 		worst := 0.0
 		for _, sample := range samples {
 			bp.Learn(sample)
+			mse := p.CalculateMSE(sample)
 
-			p.SetInputs(sample.Inputs)
-			p.Calculate()
-			p.GetOutputs(outputs)
+			//			p.SetInputs(sample.Inputs)
+			//			p.Calculate()
+			//			p.GetOutputs(outputs)
 
-			mse := neural.MSE(sample.Outputs, outputs)
+			//			mse := neural.MSE(sample.Outputs, outputs)
 			if mse > worst {
 				worst = mse
 			}
@@ -91,30 +78,12 @@ func testOperator(operator func(a, b bool) bool) {
 func xorDraw() {
 
 	operator := operatorXOR
-
-	var samples []neural.Sample
-	var bs = []bool{false, true}
-	for _, b1 := range bs {
-		for _, b2 := range bs {
-			sample := neural.Sample{
-				Inputs: []float64{
-					boolToFloat(b1),
-					boolToFloat(b2),
-				},
-				Outputs: []float64{
-					boolToFloat(operator(b1, b2)),
-				},
-			}
-			samples = append(samples, sample)
-		}
-	}
+	samples := makeSamplesByOperator(operator)
 
 	p := neural.NewPerceptron(2, 3, 1)
 	p.RandomizeWeights(newRand())
 	bp := neural.NewBackpropagation(p)
-
-	inputs := make([]float64, 2)
-	outputs := make([]float64, 1)
+	bp.SetLearningRate(0.5)
 
 	epoch := 0
 	epochMax := 10000
@@ -123,12 +92,7 @@ func xorDraw() {
 		worst := 0.0
 		for _, sample := range samples {
 			bp.Learn(sample)
-
-			p.SetInputs(sample.Inputs)
-			p.Calculate()
-			p.GetOutputs(outputs)
-
-			mse := neural.MSE(sample.Outputs, outputs)
+			mse := p.CalculateMSE(sample)
 			if mse > worst {
 				worst = mse
 			}
@@ -146,6 +110,11 @@ func xorDraw() {
 	}
 
 	fmt.Println("epoch:", epoch)
+
+	var (
+		inputs  = make([]float64, 2)
+		outputs = make([]float64, 1)
+	)
 
 	for _, sample := range samples {
 		p.SetInputs(sample.Inputs)
@@ -201,6 +170,8 @@ func boolToFloat(b bool) float64 {
 	return 0.1
 }
 
+type operator func(a, b bool) bool
+
 func operatorOR(a, b bool) bool {
 	return a || b
 }
@@ -211,4 +182,23 @@ func operatorAND(a, b bool) bool {
 
 func operatorXOR(a, b bool) bool {
 	return a != b
+}
+
+func makeSamplesByOperator(op operator) (samples []neural.Sample) {
+	var bs = []bool{false, true}
+	for _, b1 := range bs {
+		for _, b2 := range bs {
+			sample := neural.Sample{
+				Inputs: []float64{
+					boolToFloat(b1),
+					boolToFloat(b2),
+				},
+				Outputs: []float64{
+					boolToFloat(op(b1, b2)),
+				},
+			}
+			samples = append(samples, sample)
+		}
+	}
+	return samples
 }
