@@ -72,10 +72,11 @@ func TestRandWeights(t *testing.T) {
 	p.GetOutputs(outputs)
 	fmt.Println(outputs)
 
-	bp := NewBackpropagation(p)
+	bp := NewBackpropagation()
+	bp.SetLearningRate(0.5)
 	for i := 0; i < epochMax; i++ {
 		for _, sample := range samples {
-			bp.Learn(sample)
+			bp.Learn(p, sample)
 		}
 	}
 	p.PrintWeights()

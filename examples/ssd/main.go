@@ -53,14 +53,14 @@ func exampleSSD() {
 
 	p := neural.NewPerceptron(4, 20, 7)
 	p.RandomizeWeights(newRand())
-	bp := neural.NewBackpropagation(p)
+	bp := neural.NewBackpropagation()
 	bp.SetLearningRate(0.7)
 
 	const epochMax = 100000
 	for epoch := 0; epoch < epochMax; epoch++ {
 		var worst float64
 		for _, sample := range samples {
-			bp.Learn(sample)
+			bp.Learn(p, sample)
 			mse := p.CalculateMSE(sample)
 			if mse > worst {
 				worst = mse

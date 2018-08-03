@@ -20,7 +20,7 @@ func mul() {
 	p := neural.NewPerceptron(2, 3, 1)
 	r := newRand()
 	p.RandomizeWeights(r)
-	bp := neural.NewBackpropagation(p)
+	bp := neural.NewBackpropagation()
 	bp.SetLearningRate(0.5)
 
 	var sample = neural.Sample{
@@ -42,7 +42,7 @@ func mul() {
 			sample.Inputs[1] = b
 			sample.Outputs[0] = a * b
 
-			bp.Learn(sample)
+			bp.Learn(p, sample)
 			mse := p.CalculateMSE(sample)
 			if mse > worst {
 				worst = mse

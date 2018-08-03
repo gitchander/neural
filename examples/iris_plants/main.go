@@ -66,7 +66,7 @@ func main() {
 	p := neural.NewPerceptron(4, 4, 3)
 
 	p.RandomizeWeights(rand.New(rand.NewSource(time.Now().UnixNano())))
-	bp := neural.NewBackpropagation(p)
+	bp := neural.NewBackpropagation()
 	bp.SetLearningRate(0.1)
 	const epsilon = 0.01
 
@@ -74,7 +74,7 @@ func main() {
 	for epoch := 0; epoch < epochMax; epoch++ {
 		var worst float64
 		for _, sample := range samples {
-			bp.Learn(sample)
+			bp.Learn(p, sample)
 			mse := p.CalculateMSE(sample)
 			if mse > worst {
 				worst = mse

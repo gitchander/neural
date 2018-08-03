@@ -32,14 +32,6 @@ func randWeight(r *rand.Rand) float64 {
 	return r.Float64() - 0.5
 }
 
-func newMatrix2(n, m int) [][]float64 {
-	ssv := make([][]float64, n)
-	for i := range ssv {
-		ssv[i] = make([]float64, m)
-	}
-	return ssv
-}
-
 func crop_01(x float64) float64 {
 	if x < 0 {
 		x = 0

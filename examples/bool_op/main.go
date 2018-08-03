@@ -25,7 +25,7 @@ func testOperator(op operator) {
 
 	p := neural.NewPerceptron(2, 1)
 	p.RandomizeWeights(newRand())
-	bp := neural.NewBackpropagation(p)
+	bp := neural.NewBackpropagation()
 	bp.SetLearningRate(0.6)
 
 	outputs := make([]float64, 1)
@@ -36,7 +36,7 @@ func testOperator(op operator) {
 	for epoch < epochMax {
 		worst := 0.0
 		for _, sample := range samples {
-			bp.Learn(sample)
+			bp.Learn(p, sample)
 			mse := p.CalculateMSE(sample)
 
 			//			p.SetInputs(sample.Inputs)
@@ -82,7 +82,7 @@ func xorDraw() {
 
 	p := neural.NewPerceptron(2, 3, 1)
 	p.RandomizeWeights(newRand())
-	bp := neural.NewBackpropagation(p)
+	bp := neural.NewBackpropagation()
 	bp.SetLearningRate(0.5)
 
 	epoch := 0
@@ -91,7 +91,7 @@ func xorDraw() {
 	for epoch < epochMax {
 		worst := 0.0
 		for _, sample := range samples {
-			bp.Learn(sample)
+			bp.Learn(p, sample)
 			mse := p.CalculateMSE(sample)
 			if mse > worst {
 				worst = mse

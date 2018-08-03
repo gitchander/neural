@@ -6,9 +6,14 @@ import (
 	"math/rand"
 )
 
+type neuron struct {
+	weights []float64
+	bias    float64
+	delta   float64 // for backpropagation
+}
+
 type layer struct {
-	ssw    [][]float64 // synapse weights
-	biases []float64
+	ns []*neuron
 }
 
 // Multilayer Perceptron
@@ -27,9 +32,16 @@ func NewPerceptron(ds ...int) *Perceptron {
 
 	layers := make([]layer, len(ds)-1)
 	for i := range layers {
+
+		var ns = make([]*neuron, ds[i+1])
+		for j := range ns {
+			ns[j] = &neuron{
+				weights: make([]float64, ds[i]),
+			}
+		}
+
 		layers[i] = layer{
-			ssw:    newMatrix2(ds[i+1], ds[i]),
-			biases: make([]float64, ds[i+1]),
+			ns: ns,
 		}
 	}
 
@@ -42,14 +54,12 @@ func NewPerceptron(ds ...int) *Perceptron {
 
 func (p *Perceptron) RandomizeWeights(r *rand.Rand) {
 	for _, layer := range p.layers {
-		for _, sw := range layer.ssw {
-			for i := range sw {
-				sw[i] = randWeight(r)
+		for _, n := range layer.ns {
+			ws := n.weights
+			for i := range ws {
+				ws[i] = randWeight(r)
 			}
-		}
-		biases := layer.biases
-		for i := range biases {
-			biases[i] = randWeight(r)
+			n.bias = randWeight(r)
 		}
 	}
 }
@@ -98,14 +108,14 @@ func (p *Perceptron) Calculate() {
 			sxi = p.ssx[k]
 			sxj = p.ssx[k+1]
 
-			biases = layer.biases
+			ns = layer.ns
 		)
-		for j, sw := range layer.ssw {
+		for j, n := range ns {
 			sum := 0.0
-			for i, w := range sw {
+			for i, w := range n.weights {
 				sum += w * sxi[i]
 			}
-			sum += biases[j]
+			sum += n.bias
 			sxj[j] = sigmoid(sum, p.a)
 		}
 	}
@@ -122,8 +132,8 @@ func (p *Perceptron) CalculateMSE(sample Sample) float64 {
 func (p *Perceptron) PrintWeights() {
 	for l, layer := range p.layers {
 		fmt.Printf("layer %d:\n", l)
-		for j, sw := range layer.ssw {
-			for i, w := range sw {
+		for j, n := range layer.ns {
+			for i, w := range n.weights {
 				fmt.Printf("%d->%d: %.7f\n", i, j, w)
 			}
 		}
@@ -132,8 +142,8 @@ func (p *Perceptron) PrintWeights() {
 
 func (p *Perceptron) PrintBiases() {
 	for _, layer := range p.layers {
-		for j, b := range layer.biases {
-			fmt.Printf("->%d: %.7f\n", j, b)
+		for j, n := range layer.ns {
+			fmt.Printf("->%d: %.7f\n", j, n.bias)
 		}
 	}
 }
