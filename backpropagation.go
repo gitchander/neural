@@ -12,9 +12,9 @@ type Backpropagation struct {
 }
 
 func NewBackpropagation(p *Perceptron) *Backpropagation {
-	ssd := make([][]float64, len(p.sssw))
-	for k, ssw := range p.sssw {
-		ssd[k] = make([]float64, len(ssw))
+	ssd := make([][]float64, len(p.layers))
+	for k, layer := range p.layers {
+		ssd[k] = make([]float64, len(layer.ssw))
 	}
 	return &Backpropagation{
 		p:            p,
@@ -49,13 +49,13 @@ func (bp *Backpropagation) Learn(sample Sample) error {
 		delta[j] = sigmoidPrime(x[j], p.a) * (x[j] - sample.Outputs[j])
 	}
 
-	for layer := last - 1; layer >= 0; layer-- {
+	for li := last - 1; li >= 0; li-- {
 		var (
-			x     = p.ssx[layer+1]
-			delta = ssd[layer]
+			x     = p.ssx[li+1]
+			delta = ssd[li]
 
-			deltaNext   = ssd[layer+1]
-			weightsNext = p.sssw[layer+1]
+			deltaNext   = ssd[li+1]
+			weightsNext = p.layers[li+1].ssw
 		)
 
 		for j := range delta {
@@ -67,20 +67,20 @@ func (bp *Backpropagation) Learn(sample Sample) error {
 		}
 	}
 
-	for layer, ssw := range p.sssw {
+	for li, layer := range p.layers {
 		var (
-			x     = p.ssx[layer]
-			delta = ssd[layer]
+			x     = p.ssx[li]
+			delta = ssd[li]
 		)
-		for j, sw := range ssw {
+		for j, sw := range layer.ssw {
 			for i := range sw {
 				sw[i] -= bp.learningRate * delta[j] * x[i]
 			}
 		}
 
-		var bias = p.biases[layer]
-		for j := range bias {
-			bias[j] -= bp.learningRate * delta[j]
+		var biases = layer.biases
+		for j := range biases {
+			biases[j] -= bp.learningRate * delta[j] * 1
 		}
 	}
 

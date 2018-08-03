@@ -15,8 +15,8 @@ import (
 )
 
 func main() {
-	//testOperator(operatorAND)
-	xorDraw()
+	testOperator(operatorAND)
+	//xorDraw()
 }
 
 func testOperator(op operator) {

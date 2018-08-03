@@ -6,12 +6,16 @@ import (
 	"math/rand"
 )
 
+type layer struct {
+	ssw    [][]float64 // synapse weights
+	biases []float64
+}
+
 // Multilayer Perceptron
 type Perceptron struct {
 	a      float64
-	ssx    [][]float64   // neuron outputs
-	sssw   [][][]float64 // synapse weights
-	biases [][]float64
+	ssx    [][]float64 // neuron outputs
+	layers []layer
 }
 
 func NewPerceptron(ds ...int) *Perceptron {
@@ -21,35 +25,31 @@ func NewPerceptron(ds ...int) *Perceptron {
 		ssx[i] = make([]float64, ds[i])
 	}
 
-	sssw := make([][][]float64, len(ds)-1)
-	for i := range sssw {
-		sssw[i] = newMatrix2(ds[i+1], ds[i])
-	}
-
-	biases := make([][]float64, len(ds)-1)
-	for i := range biases {
-		biases[i] = make([]float64, ds[i+1])
+	layers := make([]layer, len(ds)-1)
+	for i := range layers {
+		layers[i] = layer{
+			ssw:    newMatrix2(ds[i+1], ds[i]),
+			biases: make([]float64, ds[i+1]),
+		}
 	}
 
 	return &Perceptron{
 		a:      0.5,
 		ssx:    ssx,
-		sssw:   sssw,
-		biases: biases,
+		layers: layers,
 	}
 }
 
 func (p *Perceptron) RandomizeWeights(r *rand.Rand) {
-	for _, ssw := range p.sssw {
-		for _, sw := range ssw {
+	for _, layer := range p.layers {
+		for _, sw := range layer.ssw {
 			for i := range sw {
 				sw[i] = randWeight(r)
 			}
 		}
-	}
-	for _, bias := range p.biases {
-		for i := range bias {
-			bias[i] = randWeight(r)
+		biases := layer.biases
+		for i := range biases {
+			biases[i] = randWeight(r)
 		}
 	}
 }
@@ -93,18 +93,19 @@ func (p *Perceptron) GetOutputs(outputs []float64) error {
 }
 
 func (p *Perceptron) Calculate() {
-	for k, ssw := range p.sssw {
+	for k, layer := range p.layers {
 		var (
-			sxi  = p.ssx[k]
-			sxj  = p.ssx[k+1]
-			bias = p.biases[k]
+			sxi = p.ssx[k]
+			sxj = p.ssx[k+1]
+
+			biases = layer.biases
 		)
-		for j, sw := range ssw {
+		for j, sw := range layer.ssw {
 			sum := 0.0
 			for i, w := range sw {
 				sum += w * sxi[i]
 			}
-			sum += bias[j]
+			sum += biases[j]
 			sxj[j] = sigmoid(sum, p.a)
 		}
 	}
@@ -119,9 +120,9 @@ func (p *Perceptron) CalculateMSE(sample Sample) float64 {
 }
 
 func (p *Perceptron) PrintWeights() {
-	for l, ssw := range p.sssw {
+	for l, layer := range p.layers {
 		fmt.Printf("layer %d:\n", l)
-		for j, sw := range ssw {
+		for j, sw := range layer.ssw {
 			for i, w := range sw {
 				fmt.Printf("%d->%d: %.7f\n", i, j, w)
 			}
@@ -130,8 +131,8 @@ func (p *Perceptron) PrintWeights() {
 }
 
 func (p *Perceptron) PrintBiases() {
-	for _, bias := range p.biases {
-		for j, b := range bias {
+	for _, layer := range p.layers {
+		for j, b := range layer.biases {
 			fmt.Printf("->%d: %.7f\n", j, b)
 		}
 	}
