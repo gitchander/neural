@@ -19,7 +19,9 @@ func mul() {
 
 	p := neural.NewPerceptron(2, 3, 1)
 	r := newRand()
+
 	p.RandomizeWeights(r)
+
 	bp := neural.NewBackpropagation()
 	bp.SetLearningRate(0.5)
 
