@@ -15,15 +15,15 @@ import (
 )
 
 func main() {
-	testOperator(operatorOR)
-	//xorDraw()
+	testOperator(XOR)
+	//makeOperatorImage(AND)
 }
 
 func testOperator(op operator) {
 
 	samples := makeSamplesByOperator(op)
 
-	p := neural.NewPerceptron(2, 1)
+	p := neural.NewPerceptron(2, 3, 1)
 	p.RandomizeWeights(newRand())
 	bp := neural.NewBackpropagation()
 	bp.SetLearningRate(0.5)
@@ -61,8 +61,10 @@ func testOperator(op operator) {
 		p.Calculate()
 		p.GetOutputs(outputs)
 
-		fmt.Printf("%g XOR %g = %f\n",
-			sample.Inputs[0], sample.Inputs[1],
+		fmt.Printf("%g %s %g = %f\n",
+			sample.Inputs[0],
+			op.name,
+			sample.Inputs[1],
 			outputs[0])
 	}
 
@@ -70,10 +72,9 @@ func testOperator(op operator) {
 	//	p.PrintBiases()
 }
 
-func xorDraw() {
+func makeOperatorImage(op operator) {
 
-	operator := operatorXOR
-	samples := makeSamplesByOperator(operator)
+	samples := makeSamplesByOperator(op)
 
 	p := neural.NewPerceptron(2, 3, 1)
 	p.RandomizeWeights(newRand())
@@ -81,8 +82,8 @@ func xorDraw() {
 	bp.SetLearningRate(0.5)
 
 	epoch := 0
-	epochMax := 10000
-	const epsilon = 0.001
+	epochMax := 1000
+	const epsilon = 0.01
 	for epoch < epochMax {
 		worst := 0.0
 		for _, sample := range samples {
@@ -116,8 +117,10 @@ func xorDraw() {
 		p.Calculate()
 		p.GetOutputs(outputs)
 
-		fmt.Printf("%g XOR %g = %f\n",
-			sample.Inputs[0], sample.Inputs[1],
+		fmt.Printf("%g %s %g = %f\n",
+			sample.Inputs[0],
+			op.name,
+			sample.Inputs[1],
 			outputs[0])
 	}
 
@@ -144,7 +147,8 @@ func xorDraw() {
 	var buf bytes.Buffer
 	err := png.Encode(&buf, m)
 	checkError(err)
-	err = ioutil.WriteFile("xor.png", buf.Bytes(), 0666)
+	filename := fmt.Sprintf("op_%s.png", op.name)
+	err = ioutil.WriteFile(filename, buf.Bytes(), 0666)
 	checkError(err)
 }
 
@@ -158,26 +162,27 @@ func checkError(err error) {
 	}
 }
 
-func boolToFloat(b bool) float64 {
-	if b {
-		return 0.9
+type operator struct {
+	name string
+	f    func(a, b bool) bool
+}
+
+var (
+	OR = operator{
+		name: "OR",
+		f:    func(a, b bool) bool { return a || b },
 	}
-	return 0.1
-}
 
-type operator func(a, b bool) bool
+	AND = operator{
+		name: "AND",
+		f:    func(a, b bool) bool { return a && b },
+	}
 
-func operatorOR(a, b bool) bool {
-	return a || b
-}
-
-func operatorAND(a, b bool) bool {
-	return a && b
-}
-
-func operatorXOR(a, b bool) bool {
-	return a != b
-}
+	XOR = operator{
+		name: "XOR",
+		f:    func(a, b bool) bool { return a != b },
+	}
+)
 
 func makeSamplesByOperator(op operator) (samples []neural.Sample) {
 	var bs = []bool{false, true}
@@ -189,11 +194,18 @@ func makeSamplesByOperator(op operator) (samples []neural.Sample) {
 					boolToFloat(b2),
 				},
 				Outputs: []float64{
-					boolToFloat(op(b1, b2)),
+					boolToFloat(op.f(b1, b2)),
 				},
 			}
 			samples = append(samples, sample)
 		}
 	}
 	return samples
+}
+
+func boolToFloat(b bool) float64 {
+	if b {
+		return 0.9
+	}
+	return 0.1
 }
