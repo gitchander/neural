@@ -7,30 +7,17 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"os"
 	"strconv"
 
 	"github.com/gitchander/neural"
+	"github.com/gocarina/gocsv"
 )
 
 func main() {
-	data, err := ioutil.ReadFile("iris_dataset.csv")
-	checkError(err)
-	r := csv.NewReader(bytes.NewReader(data))
-	var ps []*Params
-	for {
-		record, err := r.Read()
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			checkError(err)
-		}
-		//fmt.Println(record)
-		p, err := parseParams(record)
-		checkError(err)
-		ps = append(ps, p)
-	}
 
+	ps, err := readParams2("iris_dataset.csv")
+	checkError(err)
 	//fmt.Println(len(ps))
 
 	m := make(map[string]int)
@@ -61,7 +48,7 @@ func main() {
 		samples = append(samples, sample)
 	}
 
-	p := neural.NewPerceptron(4, 4, 3)
+	p := neural.NewPerceptron(4, 3, 3)
 	p.RandomizeWeights(neural.NewRand())
 	bp := neural.NewBackpropagation(p)
 	bp.SetLearningRate(0.1)
@@ -80,6 +67,43 @@ func main() {
 	fmt.Println("Failure")
 }
 
+func readParams1(filename string) (ps []*Params, err error) {
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	r := csv.NewReader(bytes.NewReader(data))
+
+	skipFirst := true
+	for {
+		record, err := r.Read()
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return nil, err
+		}
+		if skipFirst {
+			skipFirst = false
+		} else {
+			p, err := parseParams(record)
+			checkError(err)
+			ps = append(ps, p)
+		}
+	}
+	return ps, nil
+}
+
+func readParams2(filename string) (ps []*Params, err error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	err = gocsv.UnmarshalFile(file, &ps)
+	return ps, err
+}
+
 func checkError(err error) {
 	if err != nil {
 		log.Fatal(err)
@@ -87,16 +111,16 @@ func checkError(err error) {
 }
 
 type Params struct {
-	SepalLength float64
-	SepalWidth  float64
-	PetalLength float64
-	PetalWidth  float64
-	Species     string
+	SepalLength float64 `csv:"sepal_length"`
+	SepalWidth  float64 `csv:"sepal_width"`
+	PetalLength float64 `csv:"petal_length"`
+	PetalWidth  float64 `csv:"petal_width"`
+	Species     string  `csv:"species"`
 }
 
 func parseParams(record []string) (*Params, error) {
 	if len(record) != 5 {
-		return nil, fmt.Errorf("invalid number parameters: %d", len(record))
+		return nil, fmt.Errorf("invalid number of parameters: %d", len(record))
 	}
 	var vs [4]float64
 	for i := range vs {

@@ -24,7 +24,7 @@ func testOperator(op operator) {
 	p := neural.NewPerceptron(2, 3, 1)
 	p.RandomizeWeights(neural.NewRand())
 	bp := neural.NewBackpropagation(p)
-	bp.SetLearningRate(0.5)
+	bp.SetLearningRate(0.6)
 
 	outputs := make([]float64, 1)
 

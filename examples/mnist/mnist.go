@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"image"
 	"image/color"
@@ -13,14 +14,14 @@ import (
 // http://yann.lecun.com/exdb/mnist
 
 type ImagesHeader struct {
-	Magic           uint32 // 2051
+	Magic           uint32 // = 2051
 	NumberOfImages  uint32
 	NumberOfRows    uint32
 	NumberOfColumns uint32
 }
 
 type LabelsHeader struct {
-	Magic         uint32 // 2049
+	Magic         uint32 // = 2049
 	NumberOfItems uint32
 }
 
@@ -86,6 +87,9 @@ func WalkMNIST(nameImages, nameLabels string, f func(size image.Point, data []by
 }
 
 func imageFromData(size image.Point, data []byte) (*image.Gray, error) {
+	if len(data) < size.X*size.Y {
+		return nil, errors.New("insufficient data length")
+	}
 	g := image.NewGray(image.Rectangle{Max: size})
 	for y := 0; y < size.Y; y++ {
 		for x := 0; x < size.X; x++ {

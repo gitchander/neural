@@ -99,7 +99,6 @@ func (p *Perceptron) GetOutputs(outputs []float64) error {
 	for i, n := range ns {
 		outputs[i] = n.out
 	}
-
 	return nil
 }
 
@@ -114,7 +113,7 @@ func (p *Perceptron) Calculate() {
 			for i, n_prev := range layerPrev.ns {
 				sum += n.weights[i] * n_prev.out
 			}
-			sum += n.bias
+			sum += n.bias * 1
 			n.out = p.af.Func(sum)
 		}
 	}
@@ -141,23 +140,3 @@ func (p *Perceptron) CalculateMSE(sample Sample) float64 {
 	}
 	return sum / float64(len(ns))
 }
-
-//func (p *Perceptron) PrintWeights() {
-//	for k, layer := range p.layers {
-//		fmt.Printf("layer %d:\n", k)
-//		for j, n := range layer.ns {
-//			for i, w := range n.weights {
-//				fmt.Printf("%d->%d: %.7f\n", i, j, w)
-//			}
-//		}
-//	}
-//}
-
-//func (p *Perceptron) PrintBiases() {
-//	for k, layer := range p.layers {
-//		fmt.Printf("layer %d:\n", k)
-//		for j, n := range layer.ns {
-//			fmt.Printf("->%d: %.7f\n", j, n.bias)
-//		}
-//	}
-//}
