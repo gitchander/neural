@@ -8,8 +8,6 @@ import (
 	"image/png"
 	"io/ioutil"
 	"log"
-	"math/rand"
-	"time"
 
 	"github.com/gitchander/neural"
 )
@@ -24,8 +22,8 @@ func testOperator(op operator) {
 	samples := makeSamplesByOperator(op)
 
 	p := neural.NewPerceptron(2, 3, 1)
-	p.RandomizeWeights(newRand())
-	bp := neural.NewBackpropagation()
+	p.RandomizeWeights(neural.NewRand())
+	bp := neural.NewBackpropagation(p)
 	bp.SetLearningRate(0.5)
 
 	outputs := make([]float64, 1)
@@ -34,16 +32,10 @@ func testOperator(op operator) {
 	epochMax := 10000
 	const epsilon = 0.01
 	for epoch < epochMax {
-		worst := 0.0
-		for _, sample := range samples {
-			bp.Learn(p, sample)
-			mse := p.CalculateMSE(sample)
-			if mse > worst {
-				worst = mse
-			}
-		}
-		if worst < epsilon {
-			fmt.Printf("mse: %.7f\n", worst)
+		mse, err := bp.LearnSamples(samples)
+		checkError(err)
+		if mse < epsilon {
+			fmt.Printf("mse: %.7f\n", mse)
 			break
 		}
 		epoch++
@@ -67,9 +59,6 @@ func testOperator(op operator) {
 			sample.Inputs[1],
 			outputs[0])
 	}
-
-	//	p.PrintWeights()
-	//	p.PrintBiases()
 }
 
 func makeOperatorImage(op operator) {
@@ -77,8 +66,8 @@ func makeOperatorImage(op operator) {
 	samples := makeSamplesByOperator(op)
 
 	p := neural.NewPerceptron(2, 3, 1)
-	p.RandomizeWeights(newRand())
-	bp := neural.NewBackpropagation()
+	p.RandomizeWeights(neural.NewRand())
+	bp := neural.NewBackpropagation(p)
 	bp.SetLearningRate(0.5)
 
 	epoch := 0
@@ -87,7 +76,7 @@ func makeOperatorImage(op operator) {
 	for epoch < epochMax {
 		worst := 0.0
 		for _, sample := range samples {
-			bp.Learn(p, sample)
+			bp.Learn(sample)
 			mse := p.CalculateMSE(sample)
 			if mse > worst {
 				worst = mse
@@ -150,10 +139,6 @@ func makeOperatorImage(op operator) {
 	filename := fmt.Sprintf("op_%s.png", op.name)
 	err = ioutil.WriteFile(filename, buf.Bytes(), 0666)
 	checkError(err)
-}
-
-func newRand() *rand.Rand {
-	return rand.New(rand.NewSource(time.Now().UnixNano()))
 }
 
 func checkError(err error) {

@@ -6,17 +6,8 @@ import (
 	"math/rand"
 )
 
-/*
-______
-\\    |
- \\
- /
-/_____|
-
-*/
-
 type neuron struct {
-	weights []float64
+	weights []float64 // InputWeights
 	bias    float64
 	delta   float64 // for backpropagation
 	out     float64 // output value
@@ -27,8 +18,9 @@ type layer struct {
 }
 
 // Multilayer Perceptron
+// FeedForward
 type Perceptron struct {
-	a      float64
+	af     ActivationFunc
 	layers []*layer
 }
 
@@ -46,7 +38,7 @@ func NewPerceptron(ds ...int) *Perceptron {
 		layers[i] = &layer{ns: ns}
 	}
 	return &Perceptron{
-		a:      0.5,
+		af:     Sigmoid{},
 		layers: layers,
 	}
 }
@@ -57,44 +49,53 @@ func (p *Perceptron) RandomizeWeights(r *rand.Rand) {
 		for _, n := range layer.ns {
 			ws := n.weights
 			for i := range ws {
-				ws[i] = randWeight(r)
+				ws[i] = randRange(r, -0.5, 0.5)
 			}
-			n.bias = randWeight(r)
+			n.bias = randRange(r, -0.5, 0.5)
 		}
 	}
 }
 
-func (p *Perceptron) SetInputs(inputs []float64) error {
-
+func (p *Perceptron) checkInputs(inputs []float64) error {
 	if len(p.layers) == 0 {
 		return errors.New("network is not init")
 	}
-
-	ns := p.layers[0].ns
-
-	if len(inputs) != len(ns) {
-		return fmt.Errorf("count inputs (%d) not equal count network inputs (%d)", len(inputs), len(ns))
+	firstLayer := p.layers[0]
+	if len(inputs) != len(firstLayer.ns) {
+		return fmt.Errorf("count inputs (%d) not equal count network inputs (%d)",
+			len(inputs), len(firstLayer.ns))
 	}
+	return nil
+}
 
+func (p *Perceptron) checkOutputs(outputs []float64) error {
+	if len(p.layers) == 0 {
+		return errors.New("network is not init")
+	}
+	ns := p.layers[len(p.layers)-1].ns
+	if len(outputs) != len(ns) {
+		return fmt.Errorf("count outputs (%d) not equal count network outputs (%d)",
+			len(outputs), len(ns))
+	}
+	return nil
+}
+
+func (p *Perceptron) SetInputs(inputs []float64) error {
+	if err := p.checkInputs(inputs); err != nil {
+		return err
+	}
+	ns := p.layers[0].ns
 	for i, v := range inputs {
 		ns[i].out = v
 	}
-
 	return nil
 }
 
 func (p *Perceptron) GetOutputs(outputs []float64) error {
-
-	if len(p.layers) == 0 {
-		return errors.New("network is not init")
+	if err := p.checkOutputs(outputs); err != nil {
+		return err
 	}
-
 	ns := p.layers[len(p.layers)-1].ns
-
-	if len(outputs) != len(ns) {
-		return fmt.Errorf("count outputs (%d) not equal count network outputs (%d)", len(outputs), len(ns))
-	}
-
 	for i, n := range ns {
 		outputs[i] = n.out
 	}
@@ -114,41 +115,49 @@ func (p *Perceptron) Calculate() {
 				sum += n.weights[i] * n_prev.out
 			}
 			sum += n.bias
-			n.out = sigmoid(sum, p.a)
+			n.out = p.af.Func(sum)
 		}
 	}
 }
 
 func (p *Perceptron) CalculateMSE(sample Sample) float64 {
-	p.SetInputs(sample.Inputs)
-	p.Calculate()
-	//p.GetOutputs(outputs)
+	err := p.SetInputs(sample.Inputs)
+	if err != nil {
+		panic(err)
+	}
 
-	last := p.layers[len(p.layers)-1]
+	p.Calculate()
+
+	err = p.checkOutputs(sample.Outputs)
+	if err != nil {
+		panic(err)
+	}
+
+	ns := p.layers[len(p.layers)-1].ns
 	var sum float64
-	for i, n := range last.ns {
+	for i, n := range ns {
 		delta := sample.Outputs[i] - n.out
 		sum += delta * delta
 	}
-	return sum / float64(len(last.ns))
+	return sum / float64(len(ns))
 }
 
-func (p *Perceptron) PrintWeights() {
-	for k, layer := range p.layers {
-		fmt.Printf("layer %d:\n", k)
-		for j, n := range layer.ns {
-			for i, w := range n.weights {
-				fmt.Printf("%d->%d: %.7f\n", i, j, w)
-			}
-		}
-	}
-}
+//func (p *Perceptron) PrintWeights() {
+//	for k, layer := range p.layers {
+//		fmt.Printf("layer %d:\n", k)
+//		for j, n := range layer.ns {
+//			for i, w := range n.weights {
+//				fmt.Printf("%d->%d: %.7f\n", i, j, w)
+//			}
+//		}
+//	}
+//}
 
-func (p *Perceptron) PrintBiases() {
-	for k, layer := range p.layers {
-		fmt.Printf("layer %d:\n", k)
-		for j, n := range layer.ns {
-			fmt.Printf("->%d: %.7f\n", j, n.bias)
-		}
-	}
-}
+//func (p *Perceptron) PrintBiases() {
+//	for k, layer := range p.layers {
+//		fmt.Printf("layer %d:\n", k)
+//		for j, n := range layer.ns {
+//			fmt.Printf("->%d: %.7f\n", j, n.bias)
+//		}
+//	}
+//}

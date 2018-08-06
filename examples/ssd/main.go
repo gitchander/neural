@@ -3,8 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"math/rand"
-	"time"
+	"log"
 
 	"github.com/gitchander/neural"
 )
@@ -15,8 +14,6 @@ func main() {
 
 // seven-segment display (SSD)
 func exampleSSD() {
-
-	const epsilon = 0.001
 
 	var digits = []uint{
 		0x0: 0x3F,
@@ -52,23 +49,18 @@ func exampleSSD() {
 	//	return
 
 	p := neural.NewPerceptron(4, 20, 7)
-	p.RandomizeWeights(newRand())
-	bp := neural.NewBackpropagation()
+	p.RandomizeWeights(neural.NewRand())
+	bp := neural.NewBackpropagation(p)
 	bp.SetLearningRate(0.7)
 
+	const epsilon = 0.001
 	const epochMax = 100000
 	for epoch := 0; epoch < epochMax; epoch++ {
-		var worst float64
-		for _, sample := range samples {
-			bp.Learn(p, sample)
-			mse := p.CalculateMSE(sample)
-			if mse > worst {
-				worst = mse
-			}
-		}
-		if worst < epsilon {
+		mse, err := bp.LearnSamples(samples)
+		checkError(err)
+		if mse < epsilon {
 			fmt.Println("Success!")
-			fmt.Printf("mse: %.7f\n", worst)
+			fmt.Printf("mse: %.7f\n", mse)
 			fmt.Println("epoch =", epoch)
 			return
 		}
@@ -76,18 +68,27 @@ func exampleSSD() {
 	fmt.Println("Failure")
 }
 
+func checkError(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func boolToFloat(b bool) float64 {
+	if b {
+		return 0.9
+	}
+	return 0.1
+}
+
+func floatToBool(f float64) bool {
+	return f > 0.5
+}
+
 func bitsToFloats(x uint, n int) []float64 {
-	const (
-		v0 = 0.1
-		v1 = 0.9
-	)
 	vs := make([]float64, n)
 	for i := range vs {
-		v := v0
-		if (x & 1) == 1 {
-			v = v1
-		}
-		vs[i] = v
+		vs[i] = boolToFloat((x & 1) == 1)
 		x >>= 1
 	}
 	return vs
@@ -119,7 +120,7 @@ func PrintableSSD(vs []float64, prefix string) string {
 	}
 	for i, v := range vs {
 		var b byte = b_off
-		if v > 0.5 {
+		if floatToBool(v) {
 			b = b_on
 		}
 		switch i {
@@ -164,8 +165,4 @@ func PrintableSSD(vs []float64, prefix string) string {
 		buf.WriteByte('\n')
 	}
 	return buf.String()
-}
-
-func newRand() *rand.Rand {
-	return rand.New(rand.NewSource(time.Now().UnixNano()))
 }

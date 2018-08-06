@@ -7,16 +7,14 @@ import (
 	"image/png"
 	"io/ioutil"
 	"log"
-	"math/rand"
 	"path/filepath"
-	"time"
 
 	"github.com/gitchander/neural"
 )
 
 func main() {
 
-	dir := "../../../../../neural_samples/mnist/samples"
+	dir := "mnist/samples"
 
 	var (
 		nameImages = filepath.Join(dir, "train-images.idx3-ubyte")
@@ -24,8 +22,8 @@ func main() {
 	)
 
 	p := neural.NewPerceptron(28*28, 1500, 10)
-	p.RandomizeWeights(rand.New(rand.NewSource(time.Now().UnixNano())))
-	bp := neural.NewBackpropagation()
+	p.RandomizeWeights(neural.NewRand())
+	bp := neural.NewBackpropagation(p)
 	bp.SetLearningRate(0.7)
 
 	var (
@@ -64,7 +62,7 @@ func main() {
 			Inputs:  inputs,
 			Outputs: outputs,
 		}
-		bp.Learn(p, sample)
+		bp.Learn(sample)
 		mse := p.CalculateMSE(sample)
 		fmt.Printf("%d, mse = %.8f\n", i, mse)
 

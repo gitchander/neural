@@ -2,6 +2,7 @@ package neural
 
 import (
 	"math/rand"
+	"time"
 )
 
 // mean squared error
@@ -27,9 +28,8 @@ func Mean(xs []float64) float64 {
 	return sum / float64(len(xs))
 }
 
-// (-0.5 < w < +0.5)
-func randWeight(r *rand.Rand) float64 {
-	return r.Float64() - 0.5
+func randRange(r *rand.Rand, a, b float64) float64 {
+	return a + (b-a)*r.Float64()
 }
 
 func crop_01(x float64) float64 {
@@ -40,4 +40,8 @@ func crop_01(x float64) float64 {
 		x = 1
 	}
 	return x
+}
+
+func NewRand() *rand.Rand {
+	return rand.New(rand.NewSource(time.Now().UTC().UnixNano()))
 }
