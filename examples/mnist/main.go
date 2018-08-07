@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"errors"
+	"flag"
 	"fmt"
 	"image"
 	"image/png"
@@ -10,67 +12,111 @@ import (
 	"path/filepath"
 
 	"github.com/gitchander/neural"
+	"github.com/gitchander/neural/dataset/mnist"
 )
 
 func main() {
 
-	dir := "mnist/samples"
+	var dirname string
+	flag.StringVar(&dirname, "dir", ".", "mnist directory")
+
+	flag.Parse()
 
 	var (
-		nameImages = filepath.Join(dir, "train-images.idx3-ubyte")
-		nameLabels = filepath.Join(dir, "train-labels.idx1-ubyte")
+		nameImages = filepath.Join(dirname, "train-images-idx3-ubyte.gz")
+		nameLabels = filepath.Join(dirname, "train-labels-idx1-ubyte.gz")
 	)
 
-	p := neural.NewPerceptron(28*28, 1500, 10)
+	samples, err := makeSamples(nameImages, nameLabels)
+	checkError(err)
+
+	fmt.Println(len(samples))
+
+	p := neural.NewPerceptron(28*28, 1000, 10)
 	p.RandomizeWeights(neural.NewRand())
 	bp := neural.NewBackpropagation(p)
-	bp.SetLearningRate(0.7)
+	bp.SetLearningRate(0.9)
 
-	var (
-		inputs  = make([]float64, 28*28)
-		outputs = make([]float64, 10)
-	)
+	//outputs := make([]float64, 10)
+	//	epochMax := 1000
+	//	for epoch := 0; epoch < epochMax; epoch++ {
+	//		for i, sample := range samples[:10] {
+	//			err := bp.Learn(sample)
+	//			checkError(err)
+	//			//			mse := p.CalculateMSE(sample)
+	//			//			fmt.Printf("%d: mse = %.15f\n", i, mse)
+	//			p.SetInputs(sample.Inputs)
+	//			p.Calculate()
+	//			p.GetOutputs(outputs)
+	//			fmt.Printf("%d:\n", i)
+	//			fmt.Println(sample.Outputs)
+	//			for _, v := range outputs {
+	//				fmt.Printf("%.5f ", v)
+	//			}
+	//			fmt.Println()
+	//			fmt.Printf("mse = %.15f\n", neural.MSE(sample.Outputs, outputs))
+	//			fmt.Println()
+	//		}
+	//	}
+	//----------------------------------------
+	epochMax := 100000
+	for epoch := 0; epoch < epochMax; epoch++ {
+		mse, err := bp.LearnSamples(samples[:100])
+		checkError(err)
+		fmt.Printf("%d: mse = %.15f\n", epoch, mse)
+	}
+	//----------------------------------------
+	//	subSamples := samples[:20]
+	//	epochMax := 100000
+	//	for epoch := 0; epoch < epochMax; epoch++ {
+	//		var sumMSE float64
+	//		for _, sample := range subSamples {
+	//			bp.Learn(sample)
+	//			mse := p.CalculateMSE(sample)
+	//			sumMSE += mse
+	//		}
+	//		fmt.Printf("%d: mse = %.15f\n", epoch, sumMSE/float64(len(subSamples)))
+	//	}
+}
 
-	i := 0
-	f := func(size image.Point, data []byte, label byte) bool {
+func makeSamples(nameImages, nameLabels string) ([]neural.Sample, error) {
+	images, err := mnist.ReadImagesFile(nameImages)
+	if err != nil {
+		return nil, err
+	}
+	labels, err := mnist.ReadLabelsFile(nameLabels)
+	if err != nil {
+		return nil, err
+	}
 
-		//		if i == 1001 {
-		//			g, err := imageFromData(size, data)
-		//			if err != nil {
-		//				log.Fatal(err)
-		//			}
-		//			err = saveImagePNG(g, "test.png")
-		//			if err != nil {
-		//				log.Fatal(err)
-		//			}
-		//			fmt.Println(label)
-		//			return false
-		//		}
+	n := len(images)
+	if n != len(labels) {
+		return nil, errors.New("number of images not equal number of labels")
+	}
 
-		//		if i > 10 {
-		//			return false
-		//		}
-		for i := range inputs {
-			inputs[i] = float64(data[i]) / 255
+	samples := make([]neural.Sample, n)
+
+	for i, g := range images {
+		inputs := make([]float64, len(g.Pix))
+		for j, p := range g.Pix {
+			inputs[j] = float64(p) / 255
 		}
+		outputs := make([]float64, 10)
 		for i := range outputs {
 			outputs[i] = 0
 		}
-		outputs[label] = 1
+		outputs[labels[i]] = 1
 
-		sample := neural.Sample{
+		samples[i] = neural.Sample{
 			Inputs:  inputs,
 			Outputs: outputs,
 		}
-		bp.Learn(sample)
-		mse := p.CalculateMSE(sample)
-		fmt.Printf("%d, mse = %.8f\n", i, mse)
-
-		i++
-		return true
 	}
 
-	err := WalkMNIST(nameImages, nameLabels, f)
+	return samples, nil
+}
+
+func checkError(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}

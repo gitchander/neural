@@ -30,7 +30,7 @@ func testOperator(op operator) {
 
 	epoch := 0
 	epochMax := 10000
-	const epsilon = 0.01
+	const epsilon = 0.001
 	for epoch < epochMax {
 		mse, err := bp.LearnSamples(samples)
 		checkError(err)

@@ -48,10 +48,10 @@ func main() {
 		samples = append(samples, sample)
 	}
 
-	p := neural.NewPerceptron(4, 3, 3)
+	p := neural.NewPerceptron(4, 4, 3)
 	p.RandomizeWeights(neural.NewRand())
 	bp := neural.NewBackpropagation(p)
-	bp.SetLearningRate(0.1)
+	bp.SetLearningRate(0.6)
 	const epsilon = 0.01
 	epochMax := 1000
 	for epoch := 0; epoch < epochMax; epoch++ {

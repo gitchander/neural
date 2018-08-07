@@ -105,12 +105,12 @@ func (p *Perceptron) GetOutputs(outputs []float64) error {
 func (p *Perceptron) Calculate() {
 	for k := 1; k < len(p.layers); k++ {
 		var (
+			prevLayer = p.layers[k-1]
 			layer     = p.layers[k]
-			layerPrev = p.layers[k-1]
 		)
 		for _, n := range layer.ns {
 			var sum float64
-			for i, n_prev := range layerPrev.ns {
+			for i, n_prev := range prevLayer.ns {
 				sum += n.weights[i] * n_prev.out
 			}
 			sum += n.bias * 1
