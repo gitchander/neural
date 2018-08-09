@@ -17,7 +17,7 @@ type layer struct {
 	ns []*neuron
 }
 
-// Multilayer Perceptron
+// Multilayer perceptron (MLP)
 // FeedForward
 type Perceptron struct {
 	af     ActivationFunc
@@ -44,14 +44,17 @@ func NewPerceptron(ds ...int) *Perceptron {
 }
 
 func (p *Perceptron) RandomizeWeights(r *rand.Rand) {
+	random := func() float64 {
+		return randRange(r, -0.5, 0.5)
+	}
 	for k := 1; k < len(p.layers); k++ {
 		layer := p.layers[k]
 		for _, n := range layer.ns {
 			ws := n.weights
 			for i := range ws {
-				ws[i] = randRange(r, -0.5, 0.5)
+				ws[i] = random()
 			}
-			n.bias = randRange(r, -0.5, 0.5)
+			n.bias = random()
 		}
 	}
 }
@@ -72,10 +75,10 @@ func (p *Perceptron) checkOutputs(outputs []float64) error {
 	if len(p.layers) == 0 {
 		return errors.New("network is not init")
 	}
-	ns := p.layers[len(p.layers)-1].ns
-	if len(outputs) != len(ns) {
+	lastLayer := p.layers[len(p.layers)-1]
+	if len(outputs) != len(lastLayer.ns) {
 		return fmt.Errorf("count outputs (%d) not equal count network outputs (%d)",
-			len(outputs), len(ns))
+			len(outputs), len(lastLayer.ns))
 	}
 	return nil
 }
@@ -84,7 +87,8 @@ func (p *Perceptron) SetInputs(inputs []float64) error {
 	if err := p.checkInputs(inputs); err != nil {
 		return err
 	}
-	ns := p.layers[0].ns
+	firstLayer := p.layers[0]
+	ns := firstLayer.ns
 	for i, v := range inputs {
 		ns[i].out = v
 	}
@@ -95,8 +99,8 @@ func (p *Perceptron) GetOutputs(outputs []float64) error {
 	if err := p.checkOutputs(outputs); err != nil {
 		return err
 	}
-	ns := p.layers[len(p.layers)-1].ns
-	for i, n := range ns {
+	lastLayer := p.layers[len(p.layers)-1]
+	for i, n := range lastLayer.ns {
 		outputs[i] = n.out
 	}
 	return nil
@@ -119,7 +123,7 @@ func (p *Perceptron) Calculate() {
 	}
 }
 
-func (p *Perceptron) CalculateMSE(sample Sample) float64 {
+func (p *Perceptron) SampleError(sample Sample) float64 {
 	err := p.SetInputs(sample.Inputs)
 	if err != nil {
 		panic(err)
@@ -132,11 +136,10 @@ func (p *Perceptron) CalculateMSE(sample Sample) float64 {
 		panic(err)
 	}
 
-	ns := p.layers[len(p.layers)-1].ns
+	lastLayer := p.layers[len(p.layers)-1]
 	var sum float64
-	for i, n := range ns {
-		delta := sample.Outputs[i] - n.out
-		sum += delta * delta
+	for j, n := range lastLayer.ns {
+		sum += ef.Func(sample.Outputs[j], n.out)
 	}
-	return sum / float64(len(ns))
+	return sum
 }

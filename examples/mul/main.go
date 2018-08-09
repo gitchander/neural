@@ -24,13 +24,13 @@ func main() {
 		}
 	}
 
-	const epsilon = 0.01
+	const epsilon = 0.001
 	epoch := 0
 	epochMax := 1000
 	for epoch < epochMax {
-		mse, err := bp.LearnSamples(samples)
+		le, err := bp.LearnSamples(samples)
 		checkError(err)
-		if mse < epsilon {
+		if le < epsilon {
 			break
 		}
 		epoch++

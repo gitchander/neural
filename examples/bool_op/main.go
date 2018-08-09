@@ -14,7 +14,7 @@ import (
 
 func main() {
 	testOperator(XOR)
-	//makeOperatorImage(AND)
+	//makeOperatorImage(XOR)
 }
 
 func testOperator(op operator) {
@@ -32,10 +32,10 @@ func testOperator(op operator) {
 	epochMax := 10000
 	const epsilon = 0.001
 	for epoch < epochMax {
-		mse, err := bp.LearnSamples(samples)
+		le, err := bp.LearnSamples(samples)
 		checkError(err)
-		if mse < epsilon {
-			fmt.Printf("mse: %.7f\n", mse)
+		if le < epsilon {
+			fmt.Printf("error: %.7f\n", le)
 			break
 		}
 		epoch++
@@ -68,22 +68,22 @@ func makeOperatorImage(op operator) {
 	p := neural.NewPerceptron(2, 3, 1)
 	p.RandomizeWeights(neural.NewRand())
 	bp := neural.NewBackpropagation(p)
-	bp.SetLearningRate(0.5)
+	bp.SetLearningRate(0.6)
 
 	epoch := 0
-	epochMax := 1000
-	const epsilon = 0.01
+	epochMax := 10000
+	const epsilon = 0.001
 	for epoch < epochMax {
 		worst := 0.0
 		for _, sample := range samples {
 			bp.Learn(sample)
-			mse := p.CalculateMSE(sample)
-			if mse > worst {
-				worst = mse
+			e := p.SampleError(sample)
+			if e > worst {
+				worst = e
 			}
 		}
 		if worst < epsilon {
-			fmt.Printf("mse: %.7f\n", worst)
+			fmt.Printf("error: %.7f\n", worst)
 			break
 		}
 		epoch++

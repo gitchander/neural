@@ -153,11 +153,9 @@ func Backpropagation(p *Perceptron, inputs, outputs []float64) {
 		var layer = p.layers[m+1]
 		for j, d := range sd {
 			n := layer[j]
-
 			for _, syn := range n.inputs {
 				syn.weight -= speed * d * syn.input.val
 			}
 		}
 	}
-
 }

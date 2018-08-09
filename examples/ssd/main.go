@@ -56,11 +56,11 @@ func exampleSSD() {
 	const epsilon = 0.001
 	const epochMax = 100000
 	for epoch := 0; epoch < epochMax; epoch++ {
-		mse, err := bp.LearnSamples(samples)
+		le, err := bp.LearnSamples(samples)
 		checkError(err)
-		if mse < epsilon {
+		if le < epsilon {
 			fmt.Println("Success!")
-			fmt.Printf("mse: %.7f\n", mse)
+			fmt.Printf("error: %.7f\n", le)
 			fmt.Println("epoch =", epoch)
 			return
 		}

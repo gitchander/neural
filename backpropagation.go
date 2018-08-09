@@ -21,6 +21,16 @@ func (bp *Backpropagation) SetLearningRate(learningRate float64) {
 	bp.learningRate = crop_01(learningRate)
 }
 
+func crop_01(x float64) float64 {
+	if x < 0 {
+		x = 0
+	}
+	if x > 1 {
+		x = 1
+	}
+	return x
+}
+
 func (bp *Backpropagation) Learn(sample Sample) error {
 
 	p := bp.p
@@ -38,7 +48,7 @@ func (bp *Backpropagation) Learn(sample Sample) error {
 		lastLayer = p.layers[lastIndex]
 	)
 	for j, n := range lastLayer.ns {
-		n.delta = p.af.Derivative(n.out) * (n.out - sample.Outputs[j])
+		n.delta = p.af.Derivative(n.out) * ef.Derivative(sample.Outputs[j], n.out)
 	}
 
 	for k := lastIndex - 1; k > 0; k-- {
@@ -71,17 +81,15 @@ func (bp *Backpropagation) Learn(sample Sample) error {
 	return nil
 }
 
-func (bp *Backpropagation) LearnSamples(samples []Sample) (mse float64, err error) {
-	var worst float64
+func (bp *Backpropagation) LearnSamples(samples []Sample) (le float64, err error) {
+	var sum float64
 	for _, sample := range samples {
-		err := bp.Learn(sample)
+		err = bp.Learn(sample)
 		if err != nil {
 			return 0, err
 		}
-		mse := bp.p.CalculateMSE(sample)
-		if mse > worst {
-			worst = mse
-		}
+		sum += bp.p.SampleError(sample)
 	}
-	return worst, nil
+	le = sum / float64(len(samples))
+	return le, nil
 }
