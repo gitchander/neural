@@ -13,6 +13,7 @@ import (
 
 	"github.com/gitchander/neural"
 	"github.com/gitchander/neural/dataset/mnist"
+	"github.com/gitchander/neural/neutil"
 )
 
 func main() {
@@ -32,10 +33,12 @@ func main() {
 
 	fmt.Println(len(samples))
 
-	p := neural.NewPerceptron(28*28, 200, 10)
-	p.RandomizeWeights(neural.NewRand())
+	p := neural.NewPerceptron(28*28, 100, 10)
+	p.RandomizeWeights(neutil.NewRand())
 	bp := neural.NewBackpropagation(p)
 	bp.SetLearningRate(0.9)
+
+	encodeNeural(p)
 
 	//----------------------------------------
 	//	epochMax := 100000
@@ -47,7 +50,7 @@ func main() {
 	//----------------------------------------
 	subSamples := samples[:]
 	i := 0
-	var st neural.Statistics
+	var st neutil.Statistics
 	epochMax := 100000
 	for epoch := 0; epoch < epochMax; epoch++ {
 		for _, sample := range subSamples {
@@ -61,6 +64,16 @@ func main() {
 			}
 		}
 	}
+}
+
+func encodeNeural(p *neural.Perceptron) {
+	var buf bytes.Buffer
+	err := neural.Encode(&buf, p)
+	checkError(err)
+	fmt.Println("len =", len(buf.Bytes()))
+	q, err := neural.Decode(&buf)
+	checkError(err)
+	fmt.Println(neural.Equal(p, q))
 }
 
 func makeSamples(nameImages, nameLabels string) ([]neural.Sample, error) {

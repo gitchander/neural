@@ -59,6 +59,10 @@ func (p *Perceptron) RandomizeWeights(r *rand.Rand) {
 	}
 }
 
+func randRange(r *rand.Rand, a, b float64) float64 {
+	return a + (b-a)*r.Float64()
+}
+
 func (p *Perceptron) checkInputs(inputs []float64) error {
 	if len(p.layers) == 0 {
 		return errors.New("network is not init")
@@ -139,7 +143,48 @@ func (p *Perceptron) SampleError(sample Sample) float64 {
 	lastLayer := p.layers[len(p.layers)-1]
 	var sum float64
 	for j, n := range lastLayer.ns {
-		sum += ef.Func(sample.Outputs[j], n.out)
+		sum += errFunc.Func(sample.Outputs[j], n.out)
 	}
 	return sum
+}
+
+func Equal(a, b *Perceptron) bool {
+	var (
+		layersA = a.layers
+		layersB = b.layers
+	)
+	if len(layersA) != len(layersB) {
+		return false
+	}
+	for k := range layersA {
+		var (
+			nsA = layersA[k].ns
+			nsB = layersB[k].ns
+		)
+		if len(nsA) != len(nsB) {
+			return false
+		}
+		for i := range nsA {
+			var (
+				nA = nsA[i]
+				nB = nsB[i]
+			)
+			var (
+				wsA = nA.weights
+				wsB = nB.weights
+			)
+			if len(wsA) != len(wsB) {
+				return false
+			}
+			for j := range wsA {
+				if wsA[j] != wsB[j] {
+					return false
+				}
+			}
+			if nA.bias != nB.bias {
+				return false
+			}
+		}
+	}
+	return true
 }

@@ -12,4 +12,4 @@ func (errorFunc) Derivative(t, x float64) float64 {
 	return x - t
 }
 
-var ef = errorFunc{}
+var errFunc = errorFunc{}

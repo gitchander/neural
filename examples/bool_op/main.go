@@ -10,6 +10,7 @@ import (
 	"log"
 
 	"github.com/gitchander/neural"
+	"github.com/gitchander/neural/neutil"
 )
 
 func main() {
@@ -22,7 +23,7 @@ func testOperator(op operator) {
 	samples := makeSamplesByOperator(op)
 
 	p := neural.NewPerceptron(2, 3, 1)
-	p.RandomizeWeights(neural.NewRand())
+	p.RandomizeWeights(neutil.NewRand())
 	bp := neural.NewBackpropagation(p)
 	bp.SetLearningRate(0.6)
 
@@ -66,7 +67,7 @@ func makeOperatorImage(op operator) {
 	samples := makeSamplesByOperator(op)
 
 	p := neural.NewPerceptron(2, 3, 1)
-	p.RandomizeWeights(neural.NewRand())
+	p.RandomizeWeights(neutil.NewRand())
 	bp := neural.NewBackpropagation(p)
 	bp.SetLearningRate(0.6)
 

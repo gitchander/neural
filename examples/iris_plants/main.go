@@ -11,6 +11,7 @@ import (
 	"strconv"
 
 	"github.com/gitchander/neural"
+	"github.com/gitchander/neural/neutil"
 	"github.com/gocarina/gocsv"
 )
 
@@ -49,7 +50,7 @@ func main() {
 	}
 
 	p := neural.NewPerceptron(4, 3, 3)
-	p.RandomizeWeights(neural.NewRand())
+	p.RandomizeWeights(neutil.NewRand())
 	bp := neural.NewBackpropagation(p)
 	bp.SetLearningRate(0.6)
 	const epsilon = 0.001

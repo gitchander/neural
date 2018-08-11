@@ -48,7 +48,7 @@ func (bp *Backpropagation) Learn(sample Sample) error {
 		lastLayer = p.layers[lastIndex]
 	)
 	for j, n := range lastLayer.ns {
-		n.delta = p.af.Derivative(n.out) * ef.Derivative(sample.Outputs[j], n.out)
+		n.delta = p.af.Derivative(n.out) * errFunc.Derivative(sample.Outputs[j], n.out)
 	}
 
 	for k := lastIndex - 1; k > 0; k-- {

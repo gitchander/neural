@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/gitchander/neural"
+	"github.com/gitchander/neural/neutil"
 )
 
 func main() {
@@ -49,7 +50,7 @@ func exampleSSD() {
 	//	return
 
 	p := neural.NewPerceptron(4, 20, 7)
-	p.RandomizeWeights(neural.NewRand())
+	p.RandomizeWeights(neutil.NewRand())
 	bp := neural.NewBackpropagation(p)
 	bp.SetLearningRate(0.7)
 

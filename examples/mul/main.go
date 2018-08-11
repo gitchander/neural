@@ -5,11 +5,12 @@ import (
 	"log"
 
 	"github.com/gitchander/neural"
+	"github.com/gitchander/neural/neutil"
 )
 
 func main() {
 
-	r := neural.NewRand()
+	r := neutil.NewRand()
 	p := neural.NewPerceptron(2, 3, 1)
 	p.RandomizeWeights(r)
 	bp := neural.NewBackpropagation(p)
