@@ -49,9 +49,10 @@ func main() {
 		samples = append(samples, sample)
 	}
 
-	p := neural.NewPerceptron(4, 3, 3)
+	p, err := neural.NewMLP(4, 3, 3)
+	checkError(err)
 	p.RandomizeWeights(neutil.NewRand())
-	bp := neural.NewBackpropagation(p)
+	bp := neural.NewBP(p)
 	bp.SetLearningRate(0.6)
 	const epsilon = 0.001
 	epochMax := 1000

@@ -16,15 +16,17 @@ import (
 func main() {
 	testOperator(XOR)
 	//makeOperatorImage(XOR)
+	//testNot()
 }
 
 func testOperator(op operator) {
 
 	samples := makeSamplesByOperator(op)
 
-	p := neural.NewPerceptron(2, 3, 1)
+	p, err := neural.NewMLP(2, 3, 1)
+	checkError(err)
 	p.RandomizeWeights(neutil.NewRand())
-	bp := neural.NewBackpropagation(p)
+	bp := neural.NewBP(p)
 	bp.SetLearningRate(0.6)
 
 	outputs := make([]float64, 1)
@@ -66,9 +68,10 @@ func makeOperatorImage(op operator) {
 
 	samples := makeSamplesByOperator(op)
 
-	p := neural.NewPerceptron(2, 3, 1)
+	p, err := neural.NewMLP(2, 3, 1)
+	checkError(err)
 	p.RandomizeWeights(neutil.NewRand())
-	bp := neural.NewBackpropagation(p)
+	bp := neural.NewBP(p)
 	bp.SetLearningRate(0.6)
 
 	epoch := 0
@@ -135,7 +138,7 @@ func makeOperatorImage(op operator) {
 	}
 
 	var buf bytes.Buffer
-	err := png.Encode(&buf, m)
+	err = png.Encode(&buf, m)
 	checkError(err)
 	filename := fmt.Sprintf("op_%s.png", op.name)
 	err = ioutil.WriteFile(filename, buf.Bytes(), 0666)
@@ -194,4 +197,27 @@ func boolToFloat(b bool) float64 {
 		return 0.9
 	}
 	return 0.1
+}
+
+func testNot() {
+	samples := []neural.Sample{
+		{
+			Inputs:  []float64{0},
+			Outputs: []float64{1},
+		},
+		{
+			Inputs:  []float64{1},
+			Outputs: []float64{0},
+		},
+	}
+	p, err := neural.NewMLP(1, 1)
+	checkError(err)
+	p.RandomizeWeights(neutil.NewRand())
+	bp := neural.NewBP(p)
+	bp.SetLearningRate(0.9)
+	for epoch := 0; epoch < 1000; epoch++ {
+		le, err := bp.LearnSamples(samples)
+		checkError(err)
+		fmt.Printf("%.7f\n", le)
+	}
 }

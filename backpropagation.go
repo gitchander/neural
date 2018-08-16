@@ -5,19 +5,20 @@ type Sample struct {
 	Outputs []float64
 }
 
-type Backpropagation struct {
-	p            *Perceptron
+// Backpropagation
+type BP struct {
+	p            *MLP
 	learningRate float64 // (0 <= learningRate <= 1)
 }
 
-func NewBackpropagation(p *Perceptron) *Backpropagation {
-	return &Backpropagation{
+func NewBP(p *MLP) *BP {
+	return &BP{
 		p:            p,
 		learningRate: 1,
 	}
 }
 
-func (bp *Backpropagation) SetLearningRate(learningRate float64) {
+func (bp *BP) SetLearningRate(learningRate float64) {
 	bp.learningRate = crop_01(learningRate)
 }
 
@@ -31,7 +32,7 @@ func crop_01(x float64) float64 {
 	return x
 }
 
-func (bp *Backpropagation) Learn(sample Sample) error {
+func (bp *BP) Learn(sample Sample) error {
 
 	p := bp.p
 	err := p.SetInputs(sample.Inputs)
@@ -81,7 +82,7 @@ func (bp *Backpropagation) Learn(sample Sample) error {
 	return nil
 }
 
-func (bp *Backpropagation) LearnSamples(samples []Sample) (le float64, err error) {
+func (bp *BP) LearnSamples(samples []Sample) (le float64, err error) {
 	var sum float64
 	for _, sample := range samples {
 		err = bp.Learn(sample)

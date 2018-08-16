@@ -33,10 +33,11 @@ func main() {
 
 	fmt.Println(len(samples))
 
-	p := neural.NewPerceptron(28*28, 100, 10)
+	p, err := neural.NewMLP(28*28, 14*14, 7*7, 10)
+	checkError(err)
 	p.RandomizeWeights(neutil.NewRand())
-	bp := neural.NewBackpropagation(p)
-	bp.SetLearningRate(0.9)
+	bp := neural.NewBP(p)
+	bp.SetLearningRate(0.6)
 
 	encodeNeural(p)
 
@@ -66,7 +67,7 @@ func main() {
 	}
 }
 
-func encodeNeural(p *neural.Perceptron) {
+func encodeNeural(p *neural.MLP) {
 	var buf bytes.Buffer
 	err := neural.Encode(&buf, p)
 	checkError(err)

@@ -11,9 +11,10 @@ import (
 func main() {
 
 	r := neutil.NewRand()
-	p := neural.NewPerceptron(2, 3, 1)
+	p, err := neural.NewMLP(2, 3, 1)
+	checkError(err)
 	p.RandomizeWeights(r)
-	bp := neural.NewBackpropagation(p)
+	bp := neural.NewBP(p)
 	bp.SetLearningRate(0.5)
 
 	var samples = make([]neural.Sample, 1000)

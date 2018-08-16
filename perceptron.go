@@ -19,12 +19,19 @@ type layer struct {
 
 // Multilayer perceptron (MLP)
 // FeedForward
-type Perceptron struct {
+// Fully Connected Layers
+type MLP struct {
 	af     ActivationFunc
 	layers []*layer
+
+	inputLayer  *layer
+	outputLayer *layer
 }
 
-func NewPerceptron(ds ...int) *Perceptron {
+func NewMLP(ds ...int) (*MLP, error) {
+	if len(ds) < 2 {
+		return nil, errors.New("neural: invalid number of layers")
+	}
 	layers := make([]*layer, len(ds))
 	for i := range layers {
 		ns := make([]*neuron, ds[i])
@@ -37,80 +44,77 @@ func NewPerceptron(ds ...int) *Perceptron {
 		}
 		layers[i] = &layer{ns: ns}
 	}
-	return &Perceptron{
-		af:     Sigmoid{},
-		layers: layers,
+	p := &MLP{
+		af:          Sigmoid{},
+		layers:      layers,
+		inputLayer:  layers[0],
+		outputLayer: layers[len(layers)-1],
 	}
+	return p, nil
 }
 
-func (p *Perceptron) RandomizeWeights(r *rand.Rand) {
-	random := func() float64 {
-		return randRange(r, -0.5, 0.5)
-	}
+func (p *MLP) RandomizeWeights(r *rand.Rand) {
 	for k := 1; k < len(p.layers); k++ {
 		layer := p.layers[k]
 		for _, n := range layer.ns {
 			ws := n.weights
 			for i := range ws {
-				ws[i] = random()
+				ws[i] = randWeight(r)
 			}
-			n.bias = random()
+			n.bias = randWeight(r)
 		}
 	}
 }
 
-func randRange(r *rand.Rand, a, b float64) float64 {
-	return a + (b-a)*r.Float64()
+func randWeight(r *rand.Rand) float64 {
+	return randRange(r, -0.5, 0.5)
 }
 
-func (p *Perceptron) checkInputs(inputs []float64) error {
-	if len(p.layers) == 0 {
-		return errors.New("network is not init")
-	}
-	firstLayer := p.layers[0]
-	if len(inputs) != len(firstLayer.ns) {
+func randRange(r *rand.Rand, min, max float64) float64 {
+	return min + (max-min)*r.Float64()
+}
+
+func (p *MLP) checkInputs(inputs []float64) error {
+	ns := p.inputLayer.ns
+	if len(inputs) != len(ns) {
 		return fmt.Errorf("count inputs (%d) not equal count network inputs (%d)",
-			len(inputs), len(firstLayer.ns))
+			len(inputs), len(ns))
 	}
 	return nil
 }
 
-func (p *Perceptron) checkOutputs(outputs []float64) error {
-	if len(p.layers) == 0 {
-		return errors.New("network is not init")
-	}
-	lastLayer := p.layers[len(p.layers)-1]
-	if len(outputs) != len(lastLayer.ns) {
+func (p *MLP) checkOutputs(outputs []float64) error {
+	ns := p.outputLayer.ns
+	if len(outputs) != len(ns) {
 		return fmt.Errorf("count outputs (%d) not equal count network outputs (%d)",
-			len(outputs), len(lastLayer.ns))
+			len(outputs), len(ns))
 	}
 	return nil
 }
 
-func (p *Perceptron) SetInputs(inputs []float64) error {
+func (p *MLP) SetInputs(inputs []float64) error {
 	if err := p.checkInputs(inputs); err != nil {
 		return err
 	}
-	firstLayer := p.layers[0]
-	ns := firstLayer.ns
-	for i, v := range inputs {
-		ns[i].out = v
+	ns := p.inputLayer.ns
+	for i, n := range ns {
+		n.out = inputs[i]
 	}
 	return nil
 }
 
-func (p *Perceptron) GetOutputs(outputs []float64) error {
+func (p *MLP) GetOutputs(outputs []float64) error {
 	if err := p.checkOutputs(outputs); err != nil {
 		return err
 	}
-	lastLayer := p.layers[len(p.layers)-1]
-	for i, n := range lastLayer.ns {
+	ns := p.outputLayer.ns
+	for i, n := range ns {
 		outputs[i] = n.out
 	}
 	return nil
 }
 
-func (p *Perceptron) Calculate() {
+func (p *MLP) Calculate() {
 	for k := 1; k < len(p.layers); k++ {
 		var (
 			prevLayer = p.layers[k-1]
@@ -127,7 +131,7 @@ func (p *Perceptron) Calculate() {
 	}
 }
 
-func (p *Perceptron) SampleError(sample Sample) float64 {
+func (p *MLP) SampleError(sample Sample) float64 {
 	err := p.SetInputs(sample.Inputs)
 	if err != nil {
 		panic(err)
@@ -148,7 +152,7 @@ func (p *Perceptron) SampleError(sample Sample) float64 {
 	return sum
 }
 
-func Equal(a, b *Perceptron) bool {
+func Equal(a, b *MLP) bool {
 	var (
 		layersA = a.layers
 		layersB = b.layers

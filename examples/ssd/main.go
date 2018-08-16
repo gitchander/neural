@@ -49,9 +49,10 @@ func exampleSSD() {
 	//	}
 	//	return
 
-	p := neural.NewPerceptron(4, 20, 7)
+	p, err := neural.NewMLP(4, 20, 7)
+	checkError(err)
 	p.RandomizeWeights(neutil.NewRand())
-	bp := neural.NewBackpropagation(p)
+	bp := neural.NewBP(p)
 	bp.SetLearningRate(0.7)
 
 	const epsilon = 0.001

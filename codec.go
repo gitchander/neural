@@ -8,7 +8,7 @@ import (
 
 var byteOrder = binary.BigEndian
 
-func Encode(w io.Writer, p *Perceptron) error {
+func Encode(w io.Writer, p *MLP) error {
 
 	bw := newBaseWriter(w)
 
@@ -40,7 +40,7 @@ func Encode(w io.Writer, p *Perceptron) error {
 	return nil
 }
 
-func Decode(r io.Reader) (*Perceptron, error) {
+func Decode(r io.Reader) (*MLP, error) {
 
 	br := newBaseReader(r)
 
@@ -56,7 +56,10 @@ func Decode(r io.Reader) (*Perceptron, error) {
 		ds = append(ds, int(u))
 	}
 
-	p := NewPerceptron(ds...)
+	p, err := NewMLP(ds...)
+	if err != nil {
+		return nil, err
+	}
 
 	for k := 1; k < len(p.layers); k++ {
 		layer := p.layers[k]
