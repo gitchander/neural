@@ -7,54 +7,52 @@ import (
 // https://en.wikipedia.org/wiki/Activation_function
 
 // The activation function
-type ActivationFunc interface {
+type activationFunc interface {
 	Func(x float64) float64 // f(x)
 
 	// {\frac {\partial f(x)}{\partial x}}
 	Derivative(fx float64) float64
 }
 
-type Sigmoid struct{}
+type sigmoid struct{}
 
-var _ ActivationFunc = Sigmoid{}
+var _ activationFunc = sigmoid{}
 
 // sigmoid implements the sigmoid function
 // for use in activation functions.
-func (Sigmoid) Func(x float64) float64 {
+func (sigmoid) Func(x float64) float64 {
 	// {f(x) = {\frac {1}{1 + e^{-x}}}}
 	return 1 / (1 + math.Exp(-x))
 }
 
 // sigmoidPrime implements the derivative
 // of the sigmoid function for backpropagation.
-func (Sigmoid) Derivative(fx float64) float64 {
+func (sigmoid) Derivative(fx float64) float64 {
 	// {{\frac {\partial f(x)}{\partial x}} = f(x)(1 - f(x))}
 	return fx * (1 - fx)
 }
 
-type SigmoidAlpha struct {
+type sigmoidAlpha struct {
 	Alpha float64
 }
 
-var _ ActivationFunc = SigmoidAlpha{}
+var _ activationFunc = sigmoidAlpha{}
 
-func (p SigmoidAlpha) Func(x float64) float64 {
+func (p sigmoidAlpha) Func(x float64) float64 {
 	// {f(x) = {\frac {1}{1 + e^{-2 \alpha x}}}}
 	return 1 / (1 + math.Exp(-2*p.Alpha*x))
 }
 
-func (p SigmoidAlpha) Derivative(fx float64) float64 {
+func (p sigmoidAlpha) Derivative(fx float64) float64 {
 	// {{\frac {\partial f(x)}{\partial x}} = 2 \alpha f(x) (1 - f(x))}
 	return 2 * p.Alpha * fx * (1 - fx)
 }
 
-type TanH struct{}
+type tanH struct{} // range (-1, 1)
 
-// range (-1, 1)
+var _ activationFunc = tanH{}
 
-var _ ActivationFunc = TanH{}
-
-func (p TanH) Func(x float64) float64 {
+func (p tanH) Func(x float64) float64 {
 	var (
 		ex  = math.Exp(x)
 		e_x = math.Exp(-x)
@@ -62,6 +60,6 @@ func (p TanH) Func(x float64) float64 {
 	return (ex - e_x) / (ex + e_x)
 }
 
-func (p TanH) Derivative(fx float64) float64 {
+func (p tanH) Derivative(fx float64) float64 {
 	return (1 - fx*fx)
 }

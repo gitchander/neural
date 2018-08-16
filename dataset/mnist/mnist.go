@@ -1,12 +1,10 @@
 package mnist
 
 import (
-	"compress/gzip"
 	"encoding/binary"
 	"errors"
 	"image"
 	"io"
-	"os"
 )
 
 // http://yann.lecun.com/exdb/mnist
@@ -30,23 +28,7 @@ type labelsHeader struct {
 	NumberOfItems uint32
 }
 
-func ReadImagesFile(filename string) ([]*image.Gray, error) {
-	file, err := os.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	zr, err := gzip.NewReader(file)
-	if err != nil {
-		return nil, err
-	}
-	defer zr.Close()
-
-	return readImages(zr)
-}
-
-func readImages(r io.Reader) ([]*image.Gray, error) {
+func ReadImages(r io.Reader) ([]*image.Gray, error) {
 	var h imagesHeader
 	err := binary.Read(r, binary.BigEndian, &h)
 	if err != nil {
@@ -76,23 +58,7 @@ func readImages(r io.Reader) ([]*image.Gray, error) {
 	return gs, nil
 }
 
-func ReadLabelsFile(filename string) ([]uint8, error) {
-	file, err := os.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	zr, err := gzip.NewReader(file)
-	if err != nil {
-		return nil, err
-	}
-	defer zr.Close()
-
-	return readLabels(zr)
-}
-
-func readLabels(r io.Reader) ([]uint8, error) {
+func ReadLabels(r io.Reader) ([]uint8, error) {
 	var h labelsHeader
 	err := binary.Read(r, binary.BigEndian, &h)
 	if err != nil {

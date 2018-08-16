@@ -87,7 +87,7 @@ func makeOperatorImage(op operator) {
 			}
 		}
 		if worst < epsilon {
-			fmt.Printf("error: %.7f\n", worst)
+			fmt.Printf("loss: %.7f\n", worst)
 			break
 		}
 		epoch++

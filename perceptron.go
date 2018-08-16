@@ -21,7 +21,7 @@ type layer struct {
 // FeedForward
 // Fully Connected Layers
 type MLP struct {
-	af     ActivationFunc
+	af     activationFunc
 	layers []*layer
 
 	inputLayer  *layer
@@ -45,7 +45,7 @@ func NewMLP(ds ...int) (*MLP, error) {
 		layers[i] = &layer{ns: ns}
 	}
 	p := &MLP{
-		af:          Sigmoid{},
+		af:          sigmoid{},
 		layers:      layers,
 		inputLayer:  layers[0],
 		outputLayer: layers[len(layers)-1],
@@ -150,45 +150,4 @@ func (p *MLP) SampleError(sample Sample) float64 {
 		sum += errFunc.Func(sample.Outputs[j], n.out)
 	}
 	return sum
-}
-
-func Equal(a, b *MLP) bool {
-	var (
-		layersA = a.layers
-		layersB = b.layers
-	)
-	if len(layersA) != len(layersB) {
-		return false
-	}
-	for k := range layersA {
-		var (
-			nsA = layersA[k].ns
-			nsB = layersB[k].ns
-		)
-		if len(nsA) != len(nsB) {
-			return false
-		}
-		for i := range nsA {
-			var (
-				nA = nsA[i]
-				nB = nsB[i]
-			)
-			var (
-				wsA = nA.weights
-				wsB = nB.weights
-			)
-			if len(wsA) != len(wsB) {
-				return false
-			}
-			for j := range wsA {
-				if wsA[j] != wsB[j] {
-					return false
-				}
-			}
-			if nA.bias != nB.bias {
-				return false
-			}
-		}
-	}
-	return true
 }

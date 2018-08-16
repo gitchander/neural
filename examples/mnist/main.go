@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"errors"
 	"flag"
 	"fmt"
 	"image"
@@ -18,37 +17,49 @@ import (
 
 func main() {
 
-	var dirname string
+	var (
+		dirname string
+		mode    string
+		nameMLP string
+	)
 	flag.StringVar(&dirname, "dir", ".", "mnist directory")
+	flag.StringVar(&mode, "mode", "test", "train or test mode")
+	flag.StringVar(&nameMLP, "mlp", "mlp1ws", "filename MLP structure")
 
 	flag.Parse()
+
+	switch mode {
+	case "train":
+		train(dirname, nameMLP)
+	case "test":
+		test(dirname, nameMLP)
+	default:
+		log.Fatalf("invalid mode: %s", mode)
+	}
+}
+
+func train(dirname, nameMLP string) {
 
 	var (
 		nameImages = filepath.Join(dirname, "train-images-idx3-ubyte.gz")
 		nameLabels = filepath.Join(dirname, "train-labels-idx1-ubyte.gz")
 	)
 
-	samples, err := makeSamples(nameImages, nameLabels)
+	samples, err := mnist.MakeSamples(nameImages, nameLabels)
 	checkError(err)
 
-	fmt.Println(len(samples))
+	//fmt.Println(len(samples))
 
-	p, err := neural.NewMLP(28*28, 14*14, 7*7, 10)
-	checkError(err)
-	p.RandomizeWeights(neutil.NewRand())
+	p, err := neural.ReadFile(nameMLP)
+	if err != nil {
+		p, err = neural.NewMLP(28*28, 14*14, 7*7, 10)
+		checkError(err)
+		p.RandomizeWeights(neutil.NewRand())
+	}
+
 	bp := neural.NewBP(p)
 	bp.SetLearningRate(0.6)
 
-	encodeNeural(p)
-
-	//----------------------------------------
-	//	epochMax := 100000
-	//	for epoch := 0; epoch < epochMax; epoch++ {
-	//		le, err := bp.LearnSamples(samples[:1000])
-	//		checkError(err)
-	//		fmt.Printf("%d: error = %.15f\n", epoch, le)
-	//	}
-	//----------------------------------------
 	subSamples := samples[:]
 	i := 0
 	var st neutil.Statistics
@@ -59,59 +70,73 @@ func main() {
 			ce := p.SampleError(sample)
 			st.Add(ce)
 			i++
-			if (i % 1000) == 0 {
-				fmt.Printf("epoch=%d; error=%.10f\n", epoch, st.Mean())
+			if (i % 10000) == 0 {
+				fmt.Printf("epoch=%d; loss=%.10f\n", epoch, st.Mean())
 				st.Reset()
 			}
 		}
+		err = neural.WriteFile(nameMLP, p)
+		checkError(err)
 	}
 }
 
-func encodeNeural(p *neural.MLP) {
-	var buf bytes.Buffer
-	err := neural.Encode(&buf, p)
-	checkError(err)
-	fmt.Println("len =", len(buf.Bytes()))
-	q, err := neural.Decode(&buf)
-	checkError(err)
-	fmt.Println(neural.Equal(p, q))
-}
+func test(dirname, nameMLP string) {
+	var (
+		nameImages = filepath.Join(dirname, "t10k-images-idx3-ubyte.gz")
+		nameLabels = filepath.Join(dirname, "t10k-labels-idx1-ubyte.gz")
+	)
 
-func makeSamples(nameImages, nameLabels string) ([]neural.Sample, error) {
 	images, err := mnist.ReadImagesFile(nameImages)
-	if err != nil {
-		return nil, err
-	}
+	checkError(err)
+
 	labels, err := mnist.ReadLabelsFile(nameLabels)
-	if err != nil {
-		return nil, err
-	}
+	checkError(err)
 
-	n := len(images)
-	if n != len(labels) {
-		return nil, errors.New("number of images not equal number of labels")
-	}
+	p, err := neural.ReadFile(nameMLP)
+	checkError(err)
 
-	samples := make([]neural.Sample, n)
+	outputs := make([]float64, 10)
 
+	var wrongCount int
 	for i, g := range images {
-		inputs := make([]float64, len(g.Pix))
-		for j, p := range g.Pix {
-			inputs[j] = float64(p) / 255
-		}
-		outputs := make([]float64, 10)
-		for i := range outputs {
-			outputs[i] = 0
-		}
-		outputs[labels[i]] = 1
+		inputs := mnist.InputsFromImage(g)
 
-		samples[i] = neural.Sample{
-			Inputs:  inputs,
-			Outputs: outputs,
+		err = p.SetInputs(inputs)
+		checkError(err)
+
+		p.Calculate()
+
+		err = p.GetOutputs(outputs)
+		checkError(err)
+
+		var (
+			labelIdeal = int(labels[i])
+			label      = maxFloat64Index(outputs)
+		)
+		if labelIdeal != label {
+			//			name := filepath.Join("bad_images", fmt.Sprintf("test_%05d_%d_%d.png", i, labelIdeal, label))
+			//			err = saveImagePNG(g, name)
+			//			checkError(err)
+
+			//fmt.Printf("%d: (%d != %d)\n", i, labelIdeal, label)
+
+			wrongCount++
 		}
 	}
+	fmt.Printf("error rate: %.3f %%\n", 100*float64(wrongCount)/float64(len(images)))
+}
 
-	return samples, nil
+func maxFloat64Index(vs []float64) (max int) {
+	n := len(vs)
+	if n == 0 {
+		return -1
+	}
+	for i := 1; i < n; i++ {
+		if vs[i] > vs[max] {
+			max = i
+		}
+	}
+	return max
 }
 
 func checkError(err error) {
