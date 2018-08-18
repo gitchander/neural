@@ -35,10 +35,10 @@ func testOperator(op operator) {
 	epochMax := 10000
 	const epsilon = 0.001
 	for epoch < epochMax {
-		le, err := bp.LearnSamples(samples)
+		averageCost, err := bp.LearnSamples(samples)
 		checkError(err)
-		if le < epsilon {
-			fmt.Printf("error: %.7f\n", le)
+		if averageCost < epsilon {
+			fmt.Printf("average cost: %.7f\n", averageCost)
 			break
 		}
 		epoch++
@@ -78,16 +78,10 @@ func makeOperatorImage(op operator) {
 	epochMax := 10000
 	const epsilon = 0.001
 	for epoch < epochMax {
-		worst := 0.0
-		for _, sample := range samples {
-			bp.Learn(sample)
-			e := p.SampleError(sample)
-			if e > worst {
-				worst = e
-			}
-		}
-		if worst < epsilon {
-			fmt.Printf("loss: %.7f\n", worst)
+		averageCost, err := bp.LearnSamples(samples)
+		checkError(err)
+		if averageCost < epsilon {
+			fmt.Printf("average cost: %.7f\n", averageCost)
 			break
 		}
 		epoch++
@@ -216,8 +210,8 @@ func testNot() {
 	bp := neural.NewBP(p)
 	bp.SetLearningRate(0.9)
 	for epoch := 0; epoch < 1000; epoch++ {
-		le, err := bp.LearnSamples(samples)
+		averageCost, err := bp.LearnSamples(samples)
 		checkError(err)
-		fmt.Printf("%.7f\n", le)
+		fmt.Printf("average cost: %.7f\n", averageCost)
 	}
 }

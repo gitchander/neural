@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"path/filepath"
+	"time"
 
 	"github.com/gitchander/neural"
 	"github.com/gitchander/neural/dataset/mnist"
@@ -52,7 +53,7 @@ func train(dirname, nameMLP string) {
 
 	p, err := neural.ReadFile(nameMLP)
 	if err != nil {
-		p, err = neural.NewMLP(28*28, 14*14, 7*7, 10)
+		p, err = neural.NewMLP(28*28, 800, 10)
 		checkError(err)
 		p.RandomizeWeights(neutil.NewRand())
 	}
@@ -60,23 +61,17 @@ func train(dirname, nameMLP string) {
 	bp := neural.NewBP(p)
 	bp.SetLearningRate(0.6)
 
-	subSamples := samples[:]
-	i := 0
-	var st neutil.Statistics
 	epochMax := 100000
 	for epoch := 0; epoch < epochMax; epoch++ {
-		for _, sample := range subSamples {
-			bp.Learn(sample)
-			ce := p.SampleError(sample)
-			st.Add(ce)
-			i++
-			if (i % 10000) == 0 {
-				fmt.Printf("epoch=%d; loss=%.10f\n", epoch, st.Mean())
-				st.Reset()
-			}
-		}
+		averageCost, err := bp.LearnSamples(samples)
+		checkError(err)
+
 		err = neural.WriteFile(nameMLP, p)
 		checkError(err)
+
+		fmt.Printf("%s: epoch = %d; average cost = %.10f\n",
+			time.Now().Format("15:04:05"),
+			epoch, averageCost)
 	}
 }
 

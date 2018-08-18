@@ -66,14 +66,6 @@ func (p *MLP) RandomizeWeights(r *rand.Rand) {
 	}
 }
 
-func randWeight(r *rand.Rand) float64 {
-	return randRange(r, -0.5, 0.5)
-}
-
-func randRange(r *rand.Rand, min, max float64) float64 {
-	return min + (max-min)*r.Float64()
-}
-
 func (p *MLP) checkInputs(inputs []float64) error {
 	ns := p.inputLayer.ns
 	if len(inputs) != len(ns) {
@@ -131,7 +123,7 @@ func (p *MLP) Calculate() {
 	}
 }
 
-func (p *MLP) SampleError(sample Sample) float64 {
+func (p *MLP) SampleCost(sample Sample) (cost float64) {
 	err := p.SetInputs(sample.Inputs)
 	if err != nil {
 		panic(err)
@@ -144,9 +136,9 @@ func (p *MLP) SampleError(sample Sample) float64 {
 		panic(err)
 	}
 
-	lastLayer := p.layers[len(p.layers)-1]
+	ns := p.outputLayer.ns
 	var sum float64
-	for j, n := range lastLayer.ns {
+	for j, n := range ns {
 		sum += errFunc.Func(sample.Outputs[j], n.out)
 	}
 	return sum

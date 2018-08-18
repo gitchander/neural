@@ -57,11 +57,11 @@ func main() {
 	const epsilon = 0.001
 	epochMax := 1000
 	for epoch := 0; epoch < epochMax; epoch++ {
-		le, err := bp.LearnSamples(samples)
+		averageCost, err := bp.LearnSamples(samples)
 		checkError(err)
-		if le < epsilon {
+		if averageCost < epsilon {
 			fmt.Println("Success!")
-			fmt.Printf("error: %.7f\n", le)
+			fmt.Printf("average cost: %.7f\n", averageCost)
 			fmt.Println("epoch =", epoch)
 			return
 		}

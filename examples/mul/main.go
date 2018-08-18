@@ -30,9 +30,9 @@ func main() {
 	epoch := 0
 	epochMax := 1000
 	for epoch < epochMax {
-		le, err := bp.LearnSamples(samples)
+		averageCost, err := bp.LearnSamples(samples)
 		checkError(err)
-		if le < epsilon {
+		if averageCost < epsilon {
 			break
 		}
 		epoch++
