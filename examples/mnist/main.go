@@ -39,11 +39,30 @@ func main() {
 	}
 }
 
+type names struct {
+	imagesName string
+	labelsName string
+}
+
+var (
+	trainNames = names{
+		imagesName: "train-images-idx3-ubyte.gz",
+		labelsName: "train-labels-idx1-ubyte.gz",
+	}
+
+	testNames = names{
+		imagesName: "t10k-images-idx3-ubyte.gz",
+		labelsName: "t10k-labels-idx1-ubyte.gz",
+	}
+)
+
 func train(dirname, nameMLP string) {
 
 	var (
-		nameImages = filepath.Join(dirname, "train-images-idx3-ubyte.gz")
-		nameLabels = filepath.Join(dirname, "train-labels-idx1-ubyte.gz")
+		ns = trainNames
+
+		nameImages = filepath.Join(dirname, ns.imagesName)
+		nameLabels = filepath.Join(dirname, ns.labelsName)
 	)
 
 	samples, err := mnist.MakeSamples(nameImages, nameLabels)
@@ -77,8 +96,11 @@ func train(dirname, nameMLP string) {
 
 func test(dirname, nameMLP string) {
 	var (
-		nameImages = filepath.Join(dirname, "t10k-images-idx3-ubyte.gz")
-		nameLabels = filepath.Join(dirname, "t10k-labels-idx1-ubyte.gz")
+		ns = testNames
+		//ns = trainNames
+
+		nameImages = filepath.Join(dirname, ns.imagesName)
+		nameLabels = filepath.Join(dirname, ns.labelsName)
 	)
 
 	images, err := mnist.ReadImagesFile(nameImages)
@@ -118,7 +140,7 @@ func test(dirname, nameMLP string) {
 			wrongCount++
 		}
 	}
-	fmt.Printf("error rate: %.3f %%\n", 100*float64(wrongCount)/float64(len(images)))
+	fmt.Printf("average cost: %.3f %%\n", 100*float64(wrongCount)/float64(len(images)))
 }
 
 func maxFloat64Index(vs []float64) (max int) {
