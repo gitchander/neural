@@ -29,7 +29,7 @@ func joinNeuronsBySynapse(input, output *neuron) {
 }
 
 type Perceptron struct {
-	a      float64
+	af     ActivationFunc
 	layers [][]*neuron
 }
 
@@ -57,7 +57,7 @@ func NewPerceptron(ds ...int) *Perceptron {
 	}
 
 	return &Perceptron{
-		a:      0.5,
+		af:     Sigmoid{},
 		layers: layers,
 	}
 }
@@ -95,7 +95,7 @@ func (p *Perceptron) Calculate() {
 			for _, syn := range n.inputs {
 				sum += syn.input.val * syn.weight
 			}
-			n.val = sigmoid(sum, p.a)
+			n.val = p.af.F(sum)
 		}
 	}
 }
@@ -130,7 +130,7 @@ func Backpropagation(p *Perceptron, inputs, outputs []float64) {
 	layer := p.layers[m+1] // last layer
 
 	for j, n := range layer {
-		delta[j] = sigmoidPrime(n.val, p.a) * (n.val - outputs[j])
+		delta[j] = p.af.Df(n.val) * (n.val - outputs[j])
 	}
 	m--
 
@@ -145,7 +145,7 @@ func Backpropagation(p *Perceptron, inputs, outputs []float64) {
 			for k, syn := range n.outputs {
 				sum += deltaChildren[k] * syn.weight
 			}
-			delta[j] = sigmoidPrime(n.val, p.a) * sum
+			delta[j] = p.af.Df(n.val) * sum
 		}
 	}
 
