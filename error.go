@@ -9,7 +9,8 @@ func (errorFunc) Func(t, x float64) float64 {
 }
 
 func (errorFunc) Derivative(t, x float64) float64 {
-	return x - t
+	delta := t - x
+	return -delta
 }
 
 var errFunc = errorFunc{}

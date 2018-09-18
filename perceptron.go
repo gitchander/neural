@@ -21,7 +21,7 @@ type layer struct {
 // FeedForward
 // Fully Connected Layers
 type MLP struct {
-	af     activationFunc
+	af     ActivationFunc
 	layers []*layer
 
 	inputLayer  *layer
@@ -45,12 +45,16 @@ func NewMLP(ds ...int) (*MLP, error) {
 		layers[i] = &layer{ns: ns}
 	}
 	p := &MLP{
-		af:          sigmoid{},
+		af:          Sigmoid{},
 		layers:      layers,
 		inputLayer:  layers[0],
 		outputLayer: layers[len(layers)-1],
 	}
 	return p, nil
+}
+
+func (p *MLP) SetActivationFunc(af ActivationFunc) {
+	p.af = af
 }
 
 func (p *MLP) RandomizeWeights(r *rand.Rand) {
