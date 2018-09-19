@@ -127,7 +127,7 @@ func ReadOutputs(r io.Reader) ([][]float64, error) {
 
 	var ssv = make([][]float64, len(labels))
 	for i, label := range labels {
-		ssv[i] = neutil.MakeOutputs(10, int(label))
+		ssv[i] = neutil.OneHot(10, int(label))
 	}
 
 	return ssv, err

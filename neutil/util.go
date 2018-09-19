@@ -4,13 +4,14 @@ import (
 	"github.com/gitchander/neural"
 )
 
-func MakeOutputs(n, i int) []float64 {
-	outputs := make([]float64, n)
-	outputs[i] = 1
-	return outputs
+// https://en.wikipedia.org/wiki/One-hot
+func OneHot(n, i int) []float64 {
+	vs := make([]float64, n)
+	vs[i] = 1
+	return vs
 }
 
-func NormalizationInputs(samples []neural.Sample) {
+func NormalizeInputs(samples []neural.Sample) {
 
 	var (
 		firstSample = samples[0]
@@ -40,11 +41,11 @@ func NormalizationInputs(samples []neural.Sample) {
 	for _, sample := range samples {
 		var vs = sample.Inputs
 		for i := range vs {
-			vs[i] = normal(vs[i], min[i], max[i])
+			vs[i] = normalize(vs[i], min[i], max[i])
 		}
 	}
 }
 
-func normal(x, min, max float64) float64 {
+func normalize(x, min, max float64) float64 {
 	return (x - min) / (max - min)
 }

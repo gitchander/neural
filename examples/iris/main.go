@@ -18,9 +18,8 @@ import (
 func main() {
 	ps, err := readParamsGo("iris.csv")
 	checkError(err)
-	//fmt.Println(len(ps))
 	samples := makeSamples(ps)
-	neutil.NormalizationInputs(samples)
+	neutil.NormalizeInputs(samples)
 	p, err := neural.NewMLP(4, 3, 3)
 	checkError(err)
 	p.RandomizeWeights(neutil.NewRand())
@@ -130,9 +129,8 @@ func makeSamples(ps []*Params) (samples []neural.Sample) {
 				p.PetalLength,
 				p.PetalWidth,
 			},
-			Outputs: neutil.MakeOutputs(len(m), m[p.Species]),
+			Outputs: neutil.OneHot(len(m), m[p.Species]),
 		}
-		//fmt.Println(sample.Outputs)
 		samples = append(samples, sample)
 	}
 	return samples

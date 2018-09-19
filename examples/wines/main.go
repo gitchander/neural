@@ -17,7 +17,7 @@ func main() {
 	for i, w := range ws {
 		samples[i] = makeSample(w)
 	}
-	neutil.NormalizationInputs(samples)
+	neutil.NormalizeInputs(samples)
 	p, err := neural.NewMLP(13, 3, 3)
 	checkError(err)
 	p.RandomizeWeights(neutil.NewRand())
@@ -88,6 +88,6 @@ func makeSample(w *WineInfo) neural.Sample {
 			w.OD,
 			float64(w.Proline),
 		},
-		Outputs: neutil.MakeOutputs(3, w.WineType-1),
+		Outputs: neutil.OneHot(3, w.WineType-1),
 	}
 }
