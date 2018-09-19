@@ -9,26 +9,26 @@ import (
 
 func MakeSamples(nameImages, nameLabels string) ([]neural.Sample, error) {
 
-	images, err := ReadImagesFile(nameImages)
+	inputs, err := ReadInputsFile(nameImages)
 	if err != nil {
 		return nil, err
 	}
 
-	labels, err := ReadLabelsFile(nameLabels)
+	outputs, err := ReadOutputsFile(nameLabels)
 	if err != nil {
 		return nil, err
 	}
 
-	n := len(images)
-	if n != len(labels) {
-		return nil, errors.New("number of images not equal number of labels")
+	n := len(inputs)
+	if n != len(outputs) {
+		return nil, errors.New("number of inputs not equal number of outputs")
 	}
 
 	samples := make([]neural.Sample, n)
 	for i := 0; i < n; i++ {
 		samples[i] = neural.Sample{
-			Inputs:  InputsFromImage(images[i]),
-			Outputs: OutputsFromLabel(labels[i]),
+			Inputs:  inputs[i],
+			Outputs: outputs[i],
 		}
 	}
 	return samples, nil

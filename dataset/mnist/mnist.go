@@ -73,3 +73,62 @@ func ReadLabels(r io.Reader) ([]uint8, error) {
 	_, err = io.ReadFull(r, labels)
 	return labels, err
 }
+
+func ReadInputs(r io.Reader) ([][]float64, error) {
+	var h imagesHeader
+	err := binary.Read(r, binary.BigEndian, &h)
+	if err != nil {
+		return nil, err
+	}
+
+	if h.Magic != imagesMagic {
+		return nil, errInvalidFile
+	}
+
+	var (
+		ssv = make([][]float64, h.NumberOfImages)
+
+		n   = h.NumberOfColumns * h.NumberOfRows
+		buf = make([]byte, n)
+	)
+	for i := range ssv {
+		_, err := io.ReadFull(r, buf)
+		if err != nil {
+			return nil, err
+		}
+		sv := make([]float64, n)
+		for j, b := range buf {
+			sv[j] = float64(b) / 255
+		}
+		ssv[i] = sv
+	}
+
+	return ssv, nil
+}
+
+func ReadOutputs(r io.Reader) ([][]float64, error) {
+	var h labelsHeader
+	err := binary.Read(r, binary.BigEndian, &h)
+	if err != nil {
+		return nil, err
+	}
+
+	if h.Magic != labelsMagic {
+		return nil, errInvalidFile
+	}
+
+	labels := make([]uint8, h.NumberOfItems)
+	_, err = io.ReadFull(r, labels)
+	if err != nil {
+		return nil, err
+	}
+
+	var ssv = make([][]float64, len(labels))
+	for i, label := range labels {
+		sv := make([]float64, 10)
+		sv[label] = 1
+		ssv[i] = sv
+	}
+
+	return ssv, err
+}

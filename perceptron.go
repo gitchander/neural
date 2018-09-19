@@ -53,6 +53,14 @@ func NewMLP(ds ...int) (*MLP, error) {
 	return p, nil
 }
 
+func (p *MLP) Topology() []int {
+	ds := make([]int, len(p.layers))
+	for i, layer := range p.layers {
+		ds[i] = len(layer.ns)
+	}
+	return ds
+}
+
 func (p *MLP) SetActivationFunc(af ActivationFunc) {
 	p.af = af
 }

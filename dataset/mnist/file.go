@@ -37,3 +37,35 @@ func ReadLabelsFile(filename string) ([]uint8, error) {
 
 	return ReadLabels(zr)
 }
+
+func ReadInputsFile(filename string) ([][]float64, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	zr, err := gzip.NewReader(file)
+	if err != nil {
+		return nil, err
+	}
+	defer zr.Close()
+
+	return ReadInputs(zr)
+}
+
+func ReadOutputsFile(filename string) ([][]float64, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	zr, err := gzip.NewReader(file)
+	if err != nil {
+		return nil, err
+	}
+	defer zr.Close()
+
+	return ReadOutputs(zr)
+}

@@ -68,11 +68,9 @@ func train(dirname, nameMLP string) {
 	samples, err := mnist.MakeSamples(nameImages, nameLabels)
 	checkError(err)
 
-	//fmt.Println(len(samples))
-
 	p, err := neural.ReadFile(nameMLP)
 	if err != nil {
-		p, err = neural.NewMLP(28*28, 800, 10)
+		p, err = neural.NewMLP(28*28, 14*14, 7*7, 10)
 		checkError(err)
 		p.RandomizeWeights(neutil.NewRand())
 	}
@@ -103,7 +101,7 @@ func test(dirname, nameMLP string) {
 		nameLabels = filepath.Join(dirname, ns.labelsName)
 	)
 
-	images, err := mnist.ReadImagesFile(nameImages)
+	inputs, err := mnist.ReadInputsFile(nameImages)
 	checkError(err)
 
 	labels, err := mnist.ReadLabelsFile(nameLabels)
@@ -112,13 +110,13 @@ func test(dirname, nameMLP string) {
 	p, err := neural.ReadFile(nameMLP)
 	checkError(err)
 
+	fmt.Println("topology:", p.Topology())
+
 	outputs := make([]float64, 10)
 
 	var wrongCount int
-	for i, g := range images {
-		inputs := mnist.InputsFromImage(g)
-
-		err = p.SetInputs(inputs)
+	for i := range inputs {
+		err = p.SetInputs(inputs[i])
 		checkError(err)
 
 		p.Calculate()
@@ -140,7 +138,7 @@ func test(dirname, nameMLP string) {
 			wrongCount++
 		}
 	}
-	fmt.Printf("average cost: %.3f %%\n", 100*float64(wrongCount)/float64(len(images)))
+	fmt.Printf("average cost: %.3f %%\n", 100*float64(wrongCount)/float64(len(inputs)))
 }
 
 func maxFloat64Index(vs []float64) (max int) {
