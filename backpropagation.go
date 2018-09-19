@@ -9,12 +9,16 @@ type Sample struct {
 type BP struct {
 	p            *MLP
 	learningRate float64 // (0 <= learningRate <= 1)
+	outputs      []float64
+	cf           CostFunc
 }
 
 func NewBP(p *MLP) *BP {
 	return &BP{
 		p:            p,
 		learningRate: 1,
+		outputs:      make([]float64, len(p.outputLayer.ns)),
+		cf:           costMSE{},
 	}
 }
 
@@ -39,7 +43,7 @@ func (bp *BP) Learn(sample Sample) error {
 		lastLayer = p.layers[lastIndex]
 	)
 	for j, n := range lastLayer.ns {
-		n.delta = p.af.Derivative(n.out) * errFunc.Derivative(sample.Outputs[j], n.out)
+		n.delta = p.af.Derivative(n.out) * bp.cf.Derivative(sample.Outputs[j], n.out)
 	}
 
 	for k := lastIndex - 1; k > 0; k-- {
@@ -72,6 +76,24 @@ func (bp *BP) Learn(sample Sample) error {
 	return nil
 }
 
+func (bp *BP) SampleCost(sample Sample) (cost float64) {
+
+	p := bp.p
+	err := p.SetInputs(sample.Inputs)
+	if err != nil {
+		panic(err)
+	}
+
+	p.Calculate()
+
+	err = p.GetOutputs(bp.outputs)
+	if err != nil {
+		panic(err)
+	}
+
+	return bp.cf.Func(sample.Outputs, bp.outputs)
+}
+
 func (bp *BP) LearnSamples(samples []Sample) (averageCost float64, err error) {
 	var sum float64
 	for _, sample := range samples {
@@ -79,7 +101,7 @@ func (bp *BP) LearnSamples(samples []Sample) (averageCost float64, err error) {
 		if err != nil {
 			return 0, err
 		}
-		sum += bp.p.SampleCost(sample)
+		sum += bp.SampleCost(sample)
 	}
 	averageCost = sum / float64(len(samples))
 	return averageCost, nil

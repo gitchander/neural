@@ -6,10 +6,8 @@ import "math"
 
 // The activation function
 type ActivationFunc interface {
-	Func(x float64) float64 // f(x)
-
-	// {\frac {\partial f(x)}{\partial x}}
-	Derivative(fx float64) float64
+	Func(x float64) float64        // f(x)
+	Derivative(fx float64) float64 // {\frac {\partial f(x)}{\partial x}}
 }
 
 type Step struct{}

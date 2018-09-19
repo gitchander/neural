@@ -126,24 +126,3 @@ func (p *MLP) Calculate() {
 		}
 	}
 }
-
-func (p *MLP) SampleCost(sample Sample) (cost float64) {
-	err := p.SetInputs(sample.Inputs)
-	if err != nil {
-		panic(err)
-	}
-
-	p.Calculate()
-
-	err = p.checkOutputs(sample.Outputs)
-	if err != nil {
-		panic(err)
-	}
-
-	ns := p.outputLayer.ns
-	var sum float64
-	for j, n := range ns {
-		sum += errFunc.Func(sample.Outputs[j], n.out)
-	}
-	return sum
-}
