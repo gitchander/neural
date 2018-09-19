@@ -5,6 +5,8 @@ import (
 	"errors"
 	"image"
 	"io"
+
+	"github.com/gitchander/neural/neutil"
 )
 
 // http://yann.lecun.com/exdb/mnist
@@ -125,9 +127,7 @@ func ReadOutputs(r io.Reader) ([][]float64, error) {
 
 	var ssv = make([][]float64, len(labels))
 	for i, label := range labels {
-		sv := make([]float64, 10)
-		sv[label] = 1
-		ssv[i] = sv
+		ssv[i] = neutil.MakeOutputs(10, int(label))
 	}
 
 	return ssv, err

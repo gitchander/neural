@@ -16,39 +16,11 @@ import (
 )
 
 func main() {
-
-	ps, err := readParams2("iris_dataset.csv")
+	ps, err := readParamsGo("iris.csv")
 	checkError(err)
 	//fmt.Println(len(ps))
-
-	m := make(map[string]int)
-	index := 0
-	for _, p := range ps {
-		if _, ok := m[p.Species]; !ok {
-			m[p.Species] = index
-			index++
-		}
-	}
-
-	var samples []neural.Sample
-	for _, p := range ps {
-
-		outputs := make([]float64, len(m))
-		outputs[m[p.Species]] = 1
-
-		sample := neural.Sample{
-			Inputs: []float64{
-				p.SepalLength,
-				p.SepalWidth,
-				p.PetalLength,
-				p.PetalWidth,
-			},
-			Outputs: outputs,
-		}
-		//fmt.Println(sample.Outputs)
-		samples = append(samples, sample)
-	}
-
+	samples := makeSamples(ps)
+	neutil.NormalizationInputs(samples)
 	p, err := neural.NewMLP(4, 3, 3)
 	checkError(err)
 	p.RandomizeWeights(neutil.NewRand())
@@ -69,7 +41,7 @@ func main() {
 	fmt.Println("Failure")
 }
 
-func readParams1(filename string) (ps []*Params, err error) {
+func readParams(filename string) (ps []*Params, err error) {
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
@@ -96,7 +68,7 @@ func readParams1(filename string) (ps []*Params, err error) {
 	return ps, nil
 }
 
-func readParams2(filename string) (ps []*Params, err error) {
+func readParamsGo(filename string) (ps []*Params, err error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
@@ -139,4 +111,29 @@ func parseParams(record []string) (*Params, error) {
 		PetalWidth:  vs[3],
 		Species:     record[4],
 	}, nil
+}
+
+func makeSamples(ps []*Params) (samples []neural.Sample) {
+	m := make(map[string]int)
+	index := 0
+	for _, p := range ps {
+		if _, ok := m[p.Species]; !ok {
+			m[p.Species] = index
+			index++
+		}
+	}
+	for _, p := range ps {
+		sample := neural.Sample{
+			Inputs: []float64{
+				p.SepalLength,
+				p.SepalWidth,
+				p.PetalLength,
+				p.PetalWidth,
+			},
+			Outputs: neutil.MakeOutputs(len(m), m[p.Species]),
+		}
+		//fmt.Println(sample.Outputs)
+		samples = append(samples, sample)
+	}
+	return samples
 }
