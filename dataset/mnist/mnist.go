@@ -6,7 +6,7 @@ import (
 	"image"
 	"io"
 
-	"github.com/gitchander/neural/neutil"
+	"github.com/gitchander/neural"
 )
 
 // http://yann.lecun.com/exdb/mnist
@@ -127,7 +127,7 @@ func ReadOutputs(r io.Reader) ([][]float64, error) {
 
 	var ssv = make([][]float64, len(labels))
 	for i, label := range labels {
-		ssv[i] = neutil.OneHot(10, int(label))
+		ssv[i] = neural.OneHot(10, int(label))
 	}
 
 	return ssv, err

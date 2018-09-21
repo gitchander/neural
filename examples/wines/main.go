@@ -6,21 +6,16 @@ import (
 	"os"
 
 	"github.com/gitchander/neural"
-	"github.com/gitchander/neural/neutil"
 	"github.com/gocarina/gocsv"
 )
 
 func main() {
-	ws, err := readWines("wine.csv")
+	samples, err := makeSamplesFile("wine.csv")
 	checkError(err)
-	samples := make([]neural.Sample, len(ws))
-	for i, w := range ws {
-		samples[i] = makeSample(w)
-	}
-	neutil.NormalizeInputs(samples)
+	neural.NormalizeInputs(samples)
 	p, err := neural.NewMLP(13, 3, 3)
 	checkError(err)
-	p.RandomizeWeights(neutil.NewRand())
+	p.RandomizeWeights()
 	bp := neural.NewBP(p)
 	bp.SetLearningRate(0.6)
 	const epsilon = 0.001
@@ -44,8 +39,20 @@ func checkError(err error) {
 	}
 }
 
+func makeSamplesFile(filename string) (samples []neural.Sample, err error) {
+	ws, err := readWines(filename)
+	if err != nil {
+		return nil, err
+	}
+	samples = make([]neural.Sample, len(ws))
+	for i, w := range ws {
+		samples[i] = makeSample(w)
+	}
+	return samples, nil
+}
+
 type WineInfo struct {
-	WineType            int     `csv:"wine_type"`
+	WineClass           int     `csv:"wine_class"`
 	Alcohol             float64 `csv:"alcohol"`
 	MalicAcid           float64 `csv:"malic_acid"`
 	Ash                 float64 `csv:"ash"`
@@ -58,7 +65,7 @@ type WineInfo struct {
 	ColorIntensity      float64 `csv:"color_intensity"`
 	Hue                 float64 `csv:"hue"`
 	OD                  float64 `csv:"od"`
-	Proline             int     `csv:"proline"`
+	Proline             float64 `csv:"proline"`
 }
 
 func readWines(filename string) (ws []*WineInfo, err error) {
@@ -86,8 +93,8 @@ func makeSample(w *WineInfo) neural.Sample {
 			w.ColorIntensity,
 			w.Hue,
 			w.OD,
-			float64(w.Proline),
+			w.Proline,
 		},
-		Outputs: neutil.OneHot(3, w.WineType-1),
+		Outputs: neural.OneHot(3, w.WineClass-1),
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"time"
 )
 
 type neuron struct {
@@ -65,7 +66,12 @@ func (p *MLP) SetActivationFunc(af ActivationFunc) {
 	p.af = af
 }
 
-func (p *MLP) RandomizeWeights(r *rand.Rand) {
+func (p *MLP) RandomizeWeights() {
+	r := rand.New(rand.NewSource(time.Now().UTC().UnixNano()))
+	p.RandomizeWeightsRand(r)
+}
+
+func (p *MLP) RandomizeWeightsRand(r *rand.Rand) {
 	for k := 1; k < len(p.layers); k++ {
 		layer := p.layers[k]
 		for _, n := range layer.ns {

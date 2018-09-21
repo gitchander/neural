@@ -13,7 +13,6 @@ import (
 
 	"github.com/gitchander/neural"
 	"github.com/gitchander/neural/dataset/mnist"
-	"github.com/gitchander/neural/neutil"
 )
 
 func main() {
@@ -72,7 +71,7 @@ func train(dirname, nameMLP string) {
 	if err != nil {
 		p, err = neural.NewMLP(28*28, 14*14, 7*7, 10)
 		checkError(err)
-		p.RandomizeWeights(neutil.NewRand())
+		p.RandomizeWeights()
 	}
 
 	bp := neural.NewBP(p)

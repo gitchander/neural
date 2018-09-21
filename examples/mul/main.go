@@ -13,7 +13,7 @@ func main() {
 	r := neutil.NewRand()
 	p, err := neural.NewMLP(2, 3, 1)
 	checkError(err)
-	p.RandomizeWeights(r)
+	p.RandomizeWeightsRand(r)
 	bp := neural.NewBP(p)
 	bp.SetLearningRate(0.5)
 

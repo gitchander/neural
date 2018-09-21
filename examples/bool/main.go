@@ -10,7 +10,6 @@ import (
 	"log"
 
 	"github.com/gitchander/neural"
-	"github.com/gitchander/neural/neutil"
 )
 
 func main() {
@@ -25,11 +24,9 @@ func testOperator(op operator) {
 
 	p, err := neural.NewMLP(2, 3, 1)
 	checkError(err)
-	p.RandomizeWeights(neutil.NewRand())
+	p.RandomizeWeights()
 	bp := neural.NewBP(p)
 	bp.SetLearningRate(0.6)
-
-	outputs := make([]float64, 1)
 
 	epoch := 0
 	epochMax := 10000
@@ -50,7 +47,7 @@ func testOperator(op operator) {
 	}
 
 	fmt.Println("epoch:", epoch)
-
+	outputs := make([]float64, 1)
 	for _, sample := range samples {
 		p.SetInputs(sample.Inputs)
 		p.Calculate()
@@ -70,7 +67,7 @@ func makeOperatorImage(op operator) {
 
 	p, err := neural.NewMLP(2, 3, 1)
 	checkError(err)
-	p.RandomizeWeights(neutil.NewRand())
+	p.RandomizeWeights()
 	bp := neural.NewBP(p)
 	bp.SetLearningRate(0.6)
 
@@ -206,7 +203,7 @@ func testNot() {
 	}
 	p, err := neural.NewMLP(1, 1)
 	checkError(err)
-	p.RandomizeWeights(neutil.NewRand())
+	p.RandomizeWeights()
 	bp := neural.NewBP(p)
 	bp.SetLearningRate(0.9)
 	for epoch := 0; epoch < 1000; epoch++ {

@@ -3,8 +3,6 @@ package neural
 import (
 	"bytes"
 	"testing"
-
-	"github.com/gitchander/neural/neutil"
 )
 
 func TestEncode(t *testing.T) {
@@ -12,7 +10,7 @@ func TestEncode(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	p.RandomizeWeights(neutil.NewRand())
+	p.RandomizeWeights()
 
 	var buf bytes.Buffer
 	err = Encode(&buf, p)

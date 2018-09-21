@@ -6,7 +6,6 @@ import (
 	"log"
 
 	"github.com/gitchander/neural"
-	"github.com/gitchander/neural/neutil"
 )
 
 func main() {
@@ -16,34 +15,7 @@ func main() {
 // seven-segment display (SSD)
 func exampleSSD() {
 
-	var digits = []uint{
-		0x0: 0x3F,
-		0x1: 0x06,
-		0x2: 0x5B,
-		0x3: 0x4F,
-		0x4: 0x66,
-		0x5: 0x6D,
-		0x6: 0x7D,
-		0x7: 0x07,
-		0x8: 0x7F,
-		0x9: 0x6F,
-		0xA: 0x77,
-		0xB: 0x7C,
-		0xC: 0x39,
-		0xD: 0x5E,
-		0xE: 0x79,
-		0xF: 0x71,
-	}
-
-	samples := make([]neural.Sample, len(digits))
-
-	for i, d := range digits {
-		samples[i] = neural.Sample{
-			Inputs:  bitsToFloats(uint(i), 4),
-			Outputs: bitsToFloats(d, 7),
-		}
-	}
-
+	samples := makeSamples()
 	//	for _, sample := range samples {
 	//		fmt.Println(PrintableSSD(sample.Outputs, "\t"))
 	//	}
@@ -51,7 +23,7 @@ func exampleSSD() {
 
 	p, err := neural.NewMLP(4, 20, 7)
 	checkError(err)
-	p.RandomizeWeights(neutil.NewRand())
+	p.RandomizeWeights()
 	bp := neural.NewBP(p)
 	bp.SetLearningRate(0.7)
 
@@ -74,6 +46,37 @@ func checkError(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func makeSamples() (samples []neural.Sample) {
+	var digits = []uint{
+		0x0: 0x3F,
+		0x1: 0x06,
+		0x2: 0x5B,
+		0x3: 0x4F,
+		0x4: 0x66,
+		0x5: 0x6D,
+		0x6: 0x7D,
+		0x7: 0x07,
+		0x8: 0x7F,
+		0x9: 0x6F,
+		0xA: 0x77,
+		0xB: 0x7C,
+		0xC: 0x39,
+		0xD: 0x5E,
+		0xE: 0x79,
+		0xF: 0x71,
+	}
+
+	samples = make([]neural.Sample, len(digits))
+
+	for i, d := range digits {
+		samples[i] = neural.Sample{
+			Inputs:  bitsToFloats(uint(i), 4),
+			Outputs: bitsToFloats(d, 7),
+		}
+	}
+	return samples
 }
 
 func boolToFloat(b bool) float64 {

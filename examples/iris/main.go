@@ -11,18 +11,16 @@ import (
 	"strconv"
 
 	"github.com/gitchander/neural"
-	"github.com/gitchander/neural/neutil"
 	"github.com/gocarina/gocsv"
 )
 
 func main() {
-	ps, err := readParamsGo("iris.csv")
+	samples, err := makeSamplesFile("iris.csv")
 	checkError(err)
-	samples := makeSamples(ps)
-	neutil.NormalizeInputs(samples)
+	neural.NormalizeInputs(samples)
 	p, err := neural.NewMLP(4, 3, 3)
 	checkError(err)
-	p.RandomizeWeights(neutil.NewRand())
+	p.RandomizeWeights()
 	bp := neural.NewBP(p)
 	bp.SetLearningRate(0.6)
 	const epsilon = 0.001
@@ -129,9 +127,18 @@ func makeSamples(ps []*Params) (samples []neural.Sample) {
 				p.PetalLength,
 				p.PetalWidth,
 			},
-			Outputs: neutil.OneHot(len(m), m[p.Species]),
+			Outputs: neural.OneHot(len(m), m[p.Species]),
 		}
 		samples = append(samples, sample)
 	}
 	return samples
+}
+
+func makeSamplesFile(filename string) (samples []neural.Sample, err error) {
+	ps, err := readParamsGo(filename)
+	if err != nil {
+		return nil, err
+	}
+	samples = makeSamples(ps)
+	return samples, nil
 }
