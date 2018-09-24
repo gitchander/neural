@@ -185,9 +185,9 @@ func makeSamplesByOperator(op operator) (samples []neural.Sample) {
 
 func boolToFloat(b bool) float64 {
 	if b {
-		return 0.9
+		return 1
 	}
-	return 0.1
+	return 0
 }
 
 func testNot() {

@@ -125,7 +125,7 @@ func test(dirname, nameMLP string) {
 
 		var (
 			labelIdeal = int(labels[i])
-			label      = maxFloat64Index(outputs)
+			label      = neural.IndexOfMax(outputs)
 		)
 		if labelIdeal != label {
 			//			name := filepath.Join("bad_images", fmt.Sprintf("test_%05d_%d_%d.png", i, labelIdeal, label))
@@ -138,19 +138,6 @@ func test(dirname, nameMLP string) {
 		}
 	}
 	fmt.Printf("average cost: %.3f %%\n", 100*float64(wrongCount)/float64(len(inputs)))
-}
-
-func maxFloat64Index(vs []float64) (max int) {
-	n := len(vs)
-	if n == 0 {
-		return -1
-	}
-	for i := 1; i < n; i++ {
-		if vs[i] > vs[max] {
-			max = i
-		}
-	}
-	return max
 }
 
 func checkError(err error) {

@@ -12,9 +12,9 @@ type CostFunc interface {
 	Derivative(ti, xi float64) float64
 }
 
-type costMSE struct{}
+type costMeanSquared struct{}
 
-func (costMSE) Func(t, x []float64) float64 {
+func (costMeanSquared) Func(t, x []float64) float64 {
 	var sum float64
 	for i := range t {
 		delta := t[i] - x[i]
@@ -23,12 +23,12 @@ func (costMSE) Func(t, x []float64) float64 {
 	return sum / 2
 }
 
-func (costMSE) Derivative(ti, xi float64) float64 {
+func (costMeanSquared) Derivative(ti, xi float64) float64 {
 	delta := ti - xi
 	return -delta
 }
 
-//func (costMSE) Func(t, x []float64) float64 {
+//func (costMeanSquared) Func(t, x []float64) float64 {
 //	var sum float64
 //	for i := range t {
 //		delta := x[i] - t[i]
@@ -37,7 +37,7 @@ func (costMSE) Derivative(ti, xi float64) float64 {
 //	return sum / 2
 //}
 
-//func (costMSE) Derivative(ti, xi float64) float64 {
+//func (costMeanSquared) Derivative(ti, xi float64) float64 {
 //	delta := xi - ti
 //	return delta
 //}
@@ -55,31 +55,25 @@ func (CrossEntropy) Func(t, x []float64) float64 {
 		// if (t[i] == 1) -> -log(x[i])
 		// if (t[i] == 0) -> -log(1-x[i])
 
-		sum += -t[i]*math.Log(x[i]) - (1-t[i])*math.Log(1-x[i])
+		sum -= t[i]*math.Log(x[i]) + (1-t[i])*math.Log(1-x[i])
 	}
-	return sum / float64(len(t))
+	return sum
 }
 
-func Softmax(xs []float64) {
+func Softmax(xs []float64) []float64 {
+	i_max := IndexOfMax(xs)
+	if i_max == -1 {
+		return nil
+	}
+	max := xs[i_max]
+	ys := make([]float64, len(xs))
 	var sum float64
-	max := maxFloats(xs)
 	for i, x := range xs {
-		xs[i] = math.Exp(x - max)
-		sum += xs[i]
+		ys[i] = math.Exp(x - max)
+		sum += ys[i]
 	}
-	for i := range xs {
-		xs[i] /= sum
+	for i := range ys {
+		ys[i] /= sum
 	}
-}
-
-func maxFloats(xs []float64) (max float64) {
-	if len(xs) > 0 {
-		max = xs[0]
-		for _, x := range xs {
-			if x > max {
-				max = x
-			}
-		}
-	}
-	return max
+	return ys
 }

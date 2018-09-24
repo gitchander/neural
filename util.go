@@ -23,6 +23,11 @@ func crop_01(x float64) float64 {
 }
 
 // https://en.wikipedia.org/wiki/One-hot
+// OneHot(3, 0): [1, 0, 0]
+// OneHot(3, 1): [0, 1, 0]
+// OneHot(3, 2): [0, 0, 1]
+// OneHot(4, 0): [1, 0, 0, 0]
+// OneHot(4, 3): [0, 0, 0, 1]
 func OneHot(n, i int) []float64 {
 	vs := make([]float64, n)
 	vs[i] = 1
@@ -65,4 +70,30 @@ func NormalizeInputs(samples []Sample) {
 
 func normalize(x, min, max float64) float64 {
 	return (x - min) / (max - min)
+}
+
+func IndexOfMin(vs []float64) (min int) {
+	n := len(vs)
+	if n == 0 {
+		return -1
+	}
+	for i := 1; i < n; i++ {
+		if vs[i] < vs[min] {
+			min = i
+		}
+	}
+	return min
+}
+
+func IndexOfMax(vs []float64) (max int) {
+	n := len(vs)
+	if n == 0 {
+		return -1
+	}
+	for i := 1; i < n; i++ {
+		if vs[max] < vs[i] {
+			max = i
+		}
+	}
+	return max
 }
