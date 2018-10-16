@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 
 	"github.com/gitchander/neural"
 	"github.com/gitchander/neural/neutil"
@@ -11,12 +12,38 @@ import (
 func main() {
 
 	r := neutil.NewRand()
+	samples := makeSamples(r)
+
 	p, err := neural.NewMLP(2, 3, 1)
 	checkError(err)
 	p.RandomizeWeightsRand(r)
-	bp := neural.NewBP(p)
-	bp.SetLearningRate(0.5)
 
+	const (
+		learnRate = 0.7
+		epochMax  = 1000
+		epsilon   = 0.001
+	)
+
+	f := func(epoch int, averageCost float64) bool {
+		if averageCost < epsilon {
+			fmt.Println("epoch:", epoch)
+			fmt.Printf("average cost: %.7f\n", averageCost)
+			return false
+		}
+		return true
+	}
+
+	err = neural.Learn(p, samples, learnRate, epochMax, f)
+	checkError(err)
+}
+
+func checkError(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func makeSamples(r *rand.Rand) []neural.Sample {
 	var samples = make([]neural.Sample, 1000)
 	for i := range samples {
 		a, b := r.Float64(), r.Float64()
@@ -25,27 +52,5 @@ func main() {
 			Outputs: []float64{a * b},
 		}
 	}
-
-	const epsilon = 0.001
-	epoch := 0
-	epochMax := 1000
-	for epoch < epochMax {
-		averageCost, err := bp.LearnSamples(samples)
-		checkError(err)
-		if averageCost < epsilon {
-			break
-		}
-		epoch++
-	}
-	if epoch < epochMax {
-		fmt.Println("success: epoch =", epoch)
-	} else {
-		fmt.Println("failure")
-	}
-}
-
-func checkError(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
+	return samples
 }

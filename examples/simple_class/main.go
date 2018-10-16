@@ -9,9 +9,42 @@ import (
 
 func main() {
 
-	// https://www.youtube.com/watch?v=ILsA4nyG7I0
+	samples := makeSamples()
 
-	const outN = 4
+	p, err := neural.NewMLP(4, 8, outN)
+	checkError(err)
+	p.RandomizeWeights()
+
+	const (
+		learnRate = 0.6
+		epochMax  = 10000
+		epsilon   = 0.001
+	)
+
+	f := func(epoch int, averageCost float64) bool {
+		if averageCost < epsilon {
+			fmt.Println("epoch:", epoch)
+			fmt.Printf("average cost: %.7f\n", averageCost)
+			return false
+		}
+		return true
+	}
+
+	err = neural.Learn(p, samples, learnRate, epochMax, f)
+	checkError(err)
+}
+
+func checkError(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+const outN = 4
+
+func makeSamples() []neural.Sample {
+
+	// https://www.youtube.com/watch?v=ILsA4nyG7I0
 
 	const (
 		solid = iota
@@ -82,28 +115,5 @@ func main() {
 			Outputs: neural.OneHot(outN, diagonal),
 		},
 	}
-	p, err := neural.NewMLP(4, 8, outN)
-	checkError(err)
-	p.RandomizeWeights()
-	bp := neural.NewBP(p)
-	bp.SetLearningRate(0.6)
-	const epsilon = 0.001
-	epochMax := 10000
-	for epoch := 0; epoch < epochMax; epoch++ {
-		averageCost, err := bp.LearnSamples(samples)
-		checkError(err)
-		if averageCost < epsilon {
-			fmt.Println("Success!")
-			fmt.Printf("average cost: %.7f\n", averageCost)
-			fmt.Println("epoch =", epoch)
-			return
-		}
-	}
-	fmt.Println("Failure")
-}
-
-func checkError(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
+	return samples
 }

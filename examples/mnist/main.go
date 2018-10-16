@@ -74,21 +74,25 @@ func train(dirname, nameMLP string) {
 		p.RandomizeWeights()
 	}
 
-	bp := neural.NewBP(p)
-	bp.SetLearningRate(0.6)
+	const (
+		learnRate = 0.6
+		epochMax  = 100000
+	)
 
-	epochMax := 100000
-	for epoch := 0; epoch < epochMax; epoch++ {
-		averageCost, err := bp.LearnSamples(samples)
-		checkError(err)
+	f := func(epoch int, averageCost float64) bool {
 
 		err = neural.WriteFile(nameMLP, p)
 		checkError(err)
 
-		fmt.Printf("%s: epoch = %d; average cost = %.10f\n",
+		fmt.Printf("%s: epoch: %d; average cost = %.10f\n",
 			time.Now().Format("15:04:05"),
 			epoch, averageCost)
+
+		return true
 	}
+
+	err = neural.Learn(p, samples, learnRate, epochMax, f)
+	checkError(err)
 }
 
 func test(dirname, nameMLP string) {

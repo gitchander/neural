@@ -25,28 +25,24 @@ func testOperator(op operator) {
 	p, err := neural.NewMLP(2, 3, 1)
 	checkError(err)
 	p.RandomizeWeights()
-	bp := neural.NewBP(p)
-	bp.SetLearningRate(0.6)
+	const (
+		learnRate = 0.7
+		epochMax  = 100000
+		epsilon   = 0.001
+	)
 
-	epoch := 0
-	epochMax := 10000
-	const epsilon = 0.001
-	for epoch < epochMax {
-		averageCost, err := bp.LearnSamples(samples)
-		checkError(err)
+	f := func(epoch int, averageCost float64) bool {
 		if averageCost < epsilon {
+			fmt.Println("epoch:", epoch)
 			fmt.Printf("average cost: %.7f\n", averageCost)
-			break
+			return false
 		}
-		epoch++
+		return true
 	}
 
-	if epoch == epochMax {
-		fmt.Println("failure")
-		return
-	}
+	err = neural.Learn(p, samples, learnRate, epochMax, f)
+	checkError(err)
 
-	fmt.Println("epoch:", epoch)
 	outputs := make([]float64, 1)
 	for _, sample := range samples {
 		p.SetInputs(sample.Inputs)
@@ -68,28 +64,24 @@ func makeOperatorImage(op operator) {
 	p, err := neural.NewMLP(2, 3, 1)
 	checkError(err)
 	p.RandomizeWeights()
-	bp := neural.NewBP(p)
-	bp.SetLearningRate(0.6)
 
-	epoch := 0
-	epochMax := 10000
-	const epsilon = 0.001
-	for epoch < epochMax {
-		averageCost, err := bp.LearnSamples(samples)
-		checkError(err)
+	const (
+		learnRate = 0.6
+		epochMax  = 10000
+		epsilon   = 0.001
+	)
+
+	f := func(epoch int, averageCost float64) bool {
 		if averageCost < epsilon {
+			fmt.Println("epoch:", epoch)
 			fmt.Printf("average cost: %.7f\n", averageCost)
-			break
+			return false
 		}
-		epoch++
+		return true
 	}
 
-	if epoch == epochMax {
-		fmt.Println("failure")
-		return
-	}
-
-	fmt.Println("epoch:", epoch)
+	err = neural.Learn(p, samples, learnRate, epochMax, f)
+	checkError(err)
 
 	var (
 		inputs  = make([]float64, 2)
@@ -204,11 +196,22 @@ func testNot() {
 	p, err := neural.NewMLP(1, 1)
 	checkError(err)
 	p.RandomizeWeights()
-	bp := neural.NewBP(p)
-	bp.SetLearningRate(0.9)
-	for epoch := 0; epoch < 1000; epoch++ {
-		averageCost, err := bp.LearnSamples(samples)
-		checkError(err)
-		fmt.Printf("average cost: %.7f\n", averageCost)
+
+	const (
+		learnRate = 0.8
+		epochMax  = 1000
+		epsilon   = 0.001
+	)
+
+	f := func(epoch int, averageCost float64) bool {
+		if averageCost < epsilon {
+			fmt.Println("epoch:", epoch)
+			fmt.Printf("average cost: %.7f\n", averageCost)
+			return false
+		}
+		return true
 	}
+
+	err = neural.Learn(p, samples, learnRate, epochMax, f)
+	checkError(err)
 }

@@ -26,7 +26,7 @@ func (bp *BP) SetLearningRate(learningRate float64) {
 	bp.learningRate = crop_01(learningRate)
 }
 
-func (bp *BP) Learn(sample Sample) error {
+func (bp *BP) LearnSample(sample Sample) error {
 
 	p := bp.p
 	err := p.SetInputs(sample.Inputs)
@@ -97,7 +97,7 @@ func (bp *BP) SampleCost(sample Sample) (cost float64) {
 func (bp *BP) LearnSamples(samples []Sample) (averageCost float64, err error) {
 	var sum float64
 	for _, sample := range samples {
-		err = bp.Learn(sample)
+		err = bp.LearnSample(sample)
 		if err != nil {
 			return 0, err
 		}
@@ -105,4 +105,21 @@ func (bp *BP) LearnSamples(samples []Sample) (averageCost float64, err error) {
 	}
 	averageCost = sum / float64(len(samples))
 	return averageCost, nil
+}
+
+func Learn(p *MLP, samples []Sample, learnRate float64, epochMax int,
+	f func(epoch int, averageCost float64) bool) error {
+
+	bp := NewBP(p)
+	bp.SetLearningRate(learnRate)
+	for epoch := 0; epoch < epochMax; epoch++ {
+		averageCost, err := bp.LearnSamples(samples)
+		if err != nil {
+			return err
+		}
+		if !f(epoch, averageCost) {
+			break
+		}
+	}
+	return nil
 }

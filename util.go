@@ -2,14 +2,20 @@ package neural
 
 import (
 	"math/rand"
+
+	"github.com/gitchander/minmax"
 )
 
-func randWeight(r *rand.Rand) float64 {
-	return randRange(r, -0.5, 0.5)
+type Range struct {
+	Min, Max float64
 }
 
-func randRange(r *rand.Rand, min, max float64) float64 {
-	return min + (max-min)*r.Float64()
+func randWeight(r *rand.Rand) float64 {
+	return randRange(r, Range{Min: -0.5, Max: 0.5})
+}
+
+func randRange(r *rand.Rand, e Range) float64 {
+	return e.Min + (e.Max-e.Min)*r.Float64()
 }
 
 func crop_01(x float64) float64 {
@@ -36,64 +42,50 @@ func OneHot(n, i int) []float64 {
 
 func NormalizeInputs(samples []Sample) {
 
-	var mins, maxs []float64
+	n := len(samples)
+	if n == 0 {
+		return
+	}
 
-	for k, sample := range samples {
-		var vs = sample.Inputs
-		if k == 0 {
-			n := len(vs)
-			mins = make([]float64, n)
-			maxs = make([]float64, n)
-			for i, v := range vs {
-				mins[i] = v
-				maxs[i] = v
+	var vs = samples[0].Inputs
+	var rs = make([]Range, len(vs))
+	for i, v := range vs {
+		rs[i] = Range{Min: v, Max: v}
+	}
+
+	for k := 1; k < n; k++ {
+		var vs = samples[k].Inputs
+		for i, v := range vs {
+			if v < rs[i].Min {
+				rs[i].Min = v
 			}
-		} else {
-			for i, v := range vs {
-				if v < mins[i] {
-					mins[i] = v
-				}
-				if v > maxs[i] {
-					maxs[i] = v
-				}
+			if v > rs[i].Max {
+				rs[i].Max = v
 			}
 		}
 	}
 
 	for _, sample := range samples {
 		var vs = sample.Inputs
-		for i := range vs {
-			vs[i] = normalize(vs[i], mins[i], maxs[i])
+		for i, v := range vs {
+			vs[i] = normalize(v, rs[i])
 		}
 	}
 }
 
-func normalize(x, min, max float64) float64 {
-	return (x - min) / (max - min)
+func normalize(x float64, r Range) float64 {
+	return (x - r.Min) / (r.Max - r.Min)
 }
+
+type float64Slice []float64
+
+func (v float64Slice) Len() int           { return len(v) }
+func (v float64Slice) Less(i, j int) bool { return v[i] < v[j] }
 
 func IndexOfMin(vs []float64) (min int) {
-	n := len(vs)
-	if n == 0 {
-		return -1
-	}
-	for i := 1; i < n; i++ {
-		if vs[i] < vs[min] {
-			min = i
-		}
-	}
-	return min
+	return minmax.IndexOfMin(float64Slice(vs))
 }
 
 func IndexOfMax(vs []float64) (max int) {
-	n := len(vs)
-	if n == 0 {
-		return -1
-	}
-	for i := 1; i < n; i++ {
-		if vs[max] < vs[i] {
-			max = i
-		}
-	}
-	return max
+	return minmax.IndexOfMax(float64Slice(vs))
 }
