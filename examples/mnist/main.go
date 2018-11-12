@@ -119,13 +119,9 @@ func test(dirname, nameMLP string) {
 
 	var wrongCount int
 	for i := range inputs {
-		err = p.SetInputs(inputs[i])
-		checkError(err)
-
+		p.SetInputs(inputs[i])
 		p.Calculate()
-
-		err = p.GetOutputs(outputs)
-		checkError(err)
+		p.GetOutputs(outputs)
 
 		var (
 			labelIdeal = int(labels[i])

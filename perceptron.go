@@ -2,16 +2,15 @@ package neural
 
 import (
 	"errors"
-	"fmt"
 	"math/rand"
 	"time"
 )
 
 type neuron struct {
-	weights []float64 // InputWeights
-	bias    float64
-	delta   float64 // for backpropagation
-	out     float64 // output value
+	weights []float64 // input weights
+	bias    float64   // input bias
+	delta   float64   // for backpropagation
+	out     float64   // output value
 }
 
 type layer struct {
@@ -84,44 +83,34 @@ func (p *MLP) RandomizeWeightsRand(r *rand.Rand) {
 	}
 }
 
-func (p *MLP) checkInputs(inputs []float64) error {
-	ns := p.inputLayer.ns
-	if len(inputs) != len(ns) {
-		return fmt.Errorf("count inputs (%d) not equal count network inputs (%d)",
-			len(inputs), len(ns))
-	}
-	return nil
-}
+//func (p *MLP) checkInputs(inputs []float64) error {
+//	ns := p.inputLayer.ns
+//	if len(inputs) != len(ns) {
+//		return fmt.Errorf("count inputs (%d) not equal count network inputs (%d)",
+//			len(inputs), len(ns))
+//	}
+//	return nil
+//}
 
-func (p *MLP) checkOutputs(outputs []float64) error {
-	ns := p.outputLayer.ns
-	if len(outputs) != len(ns) {
-		return fmt.Errorf("count outputs (%d) not equal count network outputs (%d)",
-			len(outputs), len(ns))
-	}
-	return nil
-}
+//func (p *MLP) checkOutputs(outputs []float64) error {
+//	ns := p.outputLayer.ns
+//	if len(outputs) != len(ns) {
+//		return fmt.Errorf("count outputs (%d) not equal count network outputs (%d)",
+//			len(outputs), len(ns))
+//	}
+//	return nil
+//}
 
-func (p *MLP) SetInputs(inputs []float64) error {
-	if err := p.checkInputs(inputs); err != nil {
-		return err
-	}
-	ns := p.inputLayer.ns
-	for i, n := range ns {
+func (p *MLP) SetInputs(inputs []float64) {
+	for i, n := range p.inputLayer.ns {
 		n.out = inputs[i]
 	}
-	return nil
 }
 
-func (p *MLP) GetOutputs(outputs []float64) error {
-	if err := p.checkOutputs(outputs); err != nil {
-		return err
-	}
-	ns := p.outputLayer.ns
-	for i, n := range ns {
+func (p *MLP) GetOutputs(outputs []float64) {
+	for i, n := range p.outputLayer.ns {
 		outputs[i] = n.out
 	}
-	return nil
 }
 
 func (p *MLP) Calculate() {

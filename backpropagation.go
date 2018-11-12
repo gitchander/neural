@@ -1,5 +1,9 @@
 package neural
 
+import (
+	"fmt"
+)
+
 type Sample struct {
 	Inputs  []float64
 	Outputs []float64
@@ -23,21 +27,18 @@ func NewBP(p *MLP) *BP {
 }
 
 func (bp *BP) SetLearningRate(learningRate float64) {
-	bp.learningRate = crop_01(learningRate)
+	bp.learningRate = crop(learningRate)
 }
 
-func (bp *BP) LearnSample(sample Sample) error {
+func (bp *BP) LearnSample(sample Sample) {
 
 	p := bp.p
-	err := p.SetInputs(sample.Inputs)
-	if err != nil {
-		return err
-	}
+	p.SetInputs(sample.Inputs)
 	p.Calculate()
 
-	if err = p.checkOutputs(sample.Outputs); err != nil {
-		return err
-	}
+	//	if err = p.checkOutputs(sample.Outputs); err != nil {
+	//		return err
+	//	}
 	var (
 		lastIndex = len(p.layers) - 1
 		lastLayer = p.layers[lastIndex]
@@ -72,54 +73,63 @@ func (bp *BP) LearnSample(sample Sample) error {
 			n.bias -= bp.learningRate * n.delta * 1
 		}
 	}
-
-	return nil
 }
 
 func (bp *BP) SampleCost(sample Sample) (cost float64) {
-
 	p := bp.p
-	err := p.SetInputs(sample.Inputs)
-	if err != nil {
-		panic(err)
-	}
-
+	p.SetInputs(sample.Inputs)
 	p.Calculate()
-
-	err = p.GetOutputs(bp.outputs)
-	if err != nil {
-		panic(err)
-	}
-
+	p.GetOutputs(bp.outputs)
 	return bp.costFunc.Func(sample.Outputs, bp.outputs)
 }
 
-func (bp *BP) LearnSamples(samples []Sample) (averageCost float64, err error) {
+func (bp *BP) LearnSamples(samples []Sample) (averageCost float64) {
 	var sum float64
 	for _, sample := range samples {
-		err = bp.LearnSample(sample)
-		if err != nil {
-			return 0, err
-		}
+		bp.LearnSample(sample)
 		sum += bp.SampleCost(sample)
 	}
 	averageCost = sum / float64(len(samples))
-	return averageCost, nil
+	return averageCost
 }
 
 func Learn(p *MLP, samples []Sample, learnRate float64, epochMax int,
 	f func(epoch int, averageCost float64) bool) error {
 
+	err := checkSamplesTopology(p, samples)
+	if err != nil {
+		return err
+	}
+
 	bp := NewBP(p)
 	bp.SetLearningRate(learnRate)
 	for epoch := 0; epoch < epochMax; epoch++ {
-		averageCost, err := bp.LearnSamples(samples)
-		if err != nil {
-			return err
-		}
+		averageCost := bp.LearnSamples(samples)
 		if !f(epoch, averageCost) {
 			break
 		}
 	}
+
+	return nil
+}
+
+func checkSamplesTopology(p *MLP, samples []Sample) error {
+
+	format := "invalid sample (%d): wrong %s length (%d), must be (%d)"
+
+	var (
+		inLen  = len(p.inputLayer.ns)
+		outLen = len(p.outputLayer.ns)
+	)
+
+	for i, sample := range samples {
+		if len(sample.Inputs) != inLen {
+			return fmt.Errorf(format, i, "inputs", len(sample.Inputs), inLen)
+		}
+		if len(sample.Outputs) != outLen {
+			return fmt.Errorf(format, i, "outputs", len(sample.Outputs), outLen)
+		}
+	}
+
 	return nil
 }

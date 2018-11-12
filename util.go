@@ -15,10 +15,14 @@ func randWeight(r *rand.Rand) float64 {
 }
 
 func randRange(r *rand.Rand, e Range) float64 {
-	return e.Min + (e.Max-e.Min)*r.Float64()
+	return lerp(e.Min, e.Max, r.Float64())
 }
 
-func crop_01(x float64) float64 {
+func lerp(v0, v1 float64, t float64) float64 {
+	return v0*(1-t) + v1*t
+}
+
+func crop(x float64) float64 {
 	if x < 0 {
 		x = 0
 	}

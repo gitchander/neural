@@ -18,10 +18,8 @@ func TestEncode(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	bs := buf.Bytes()
-
-	t.Logf("len bytes %d", len(bs))
-	//t.Logf("%x", bs)
+	//bs := buf.Bytes()
+	//t.Logf("len bytes %d", len(bs))
 
 	q, err := Decode(&buf)
 	if err != nil {
