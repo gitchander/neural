@@ -60,7 +60,9 @@ func (CrossEntropy) Func(t, x []float64) float64 {
 	return sum
 }
 
-func Softmax(xs []float64) []float64 {
+// https://deepnotes.io/softmax-crossentropy
+
+func softmax_1(xs []float64) []float64 {
 	i_max := IndexOfMax(xs)
 	if i_max == -1 {
 		return nil
@@ -76,4 +78,17 @@ func Softmax(xs []float64) []float64 {
 		ys[i] /= sum
 	}
 	return ys
+}
+
+func softmax_2(as []float64) []float64 {
+	bs := make([]float64, len(as))
+	var sum float64
+	for i, a := range as {
+		bs[i] = math.Exp(a)
+		sum += bs[i]
+	}
+	for i := range bs {
+		bs[i] /= sum
+	}
+	return bs
 }

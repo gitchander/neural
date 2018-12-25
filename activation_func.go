@@ -10,6 +10,7 @@ type ActivationFunc interface {
 	Derivative(fx float64) float64 // {\frac {\partial f(x)}{\partial x}}
 }
 
+// Binary Step
 type Step struct{}
 
 var _ ActivationFunc = Step{}

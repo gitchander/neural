@@ -44,7 +44,7 @@ func (bp *BP) LearnSample(sample Sample) {
 		lastLayer = p.layers[lastIndex]
 	)
 	for j, n := range lastLayer.ns {
-		n.delta = p.actFunc.Derivative(n.out) * bp.costFunc.Derivative(sample.Outputs[j], n.out)
+		n.delta = lastLayer.actFunc.Derivative(n.out) * bp.costFunc.Derivative(sample.Outputs[j], n.out)
 	}
 
 	for k := lastIndex - 1; k > 0; k-- {
@@ -57,7 +57,7 @@ func (bp *BP) LearnSample(sample Sample) {
 			for _, n_next := range nextLayer.ns {
 				sum += n_next.delta * n_next.weights[j]
 			}
-			n.delta = p.actFunc.Derivative(n.out) * sum
+			n.delta = layer.actFunc.Derivative(n.out) * sum
 		}
 	}
 

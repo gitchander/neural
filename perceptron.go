@@ -14,15 +14,15 @@ type neuron struct {
 }
 
 type layer struct {
-	ns []*neuron
+	actFunc ActivationFunc
+	ns      []*neuron
 }
 
 // Multilayer perceptron (MLP)
 // FeedForward
 // Fully Connected Layers
 type MLP struct {
-	actFunc ActivationFunc
-	layers  []*layer
+	layers []*layer
 
 	inputLayer  *layer
 	outputLayer *layer
@@ -42,10 +42,12 @@ func NewMLP(ds ...int) (*MLP, error) {
 			}
 			ns[j] = n
 		}
-		layers[i] = &layer{ns: ns}
+		layers[i] = &layer{
+			actFunc: new(Sigmoid),
+			ns:      ns,
+		}
 	}
 	p := &MLP{
-		actFunc:     Sigmoid{},
 		layers:      layers,
 		inputLayer:  layers[0],
 		outputLayer: layers[len(layers)-1],
@@ -61,9 +63,9 @@ func (p *MLP) Topology() []int {
 	return ds
 }
 
-func (p *MLP) SetActivationFunc(af ActivationFunc) {
-	p.actFunc = af
-}
+//func (p *MLP) SetActivationFunc(af ActivationFunc) {
+//	p.actFunc = af
+//}
 
 func (p *MLP) RandomizeWeights() {
 	r := rand.New(rand.NewSource(time.Now().UTC().UnixNano()))
@@ -125,7 +127,7 @@ func (p *MLP) Calculate() {
 				sum += n.weights[i] * n_prev.out
 			}
 			sum += n.bias * 1
-			n.out = p.actFunc.Func(sum)
+			n.out = layer.actFunc.Func(sum)
 		}
 	}
 }

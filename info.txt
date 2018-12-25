@@ -12,3 +12,301 @@ f(s)={\frac{1}{1+e^{-2 \alpha s}}}
 \delta_{k}=\left ( 2 \alpha o_{k} \left(1 - o_{k} \right) \right ) \ast  \left ( o_{k} - t_{k} \right )
 
 \delta_{j}=\left ( 2 \alpha o_{j} \left(1 - o_{j} \right) \right ) \ast  \sum_{k \in children(j)} \delta_{k} w_{j,k}
+
+//-----------------------------------------------------------
+
+The Softmax Function
+
+https://deepnotes.io/softmax-crossentropy
+
+//-----------------------------------------------------------------
+p_i = \frac {
+	e^{a_i}
+}{
+	\sum_{k=1}^{N} {e^{a_k}}
+}
+
+//-----------------------------------------------------------------
+\frac {
+	\partial p_i
+}{
+	\partial a_j
+} = \frac {
+	\partial {
+		\left (
+			\frac {
+				e^{a_i}
+			}{
+				\sum_{k=1}^{N} {e^{a_k}}
+			}
+		\right )
+	}
+}{
+	\partial a_j
+}
+
+//-----------------------------------------------------------------
+f(x) = \frac {
+	g(x)
+}{
+	h(x)
+}
+ , \;
+f'(x) = \frac{
+	g'(x) \cdot h(x) - g(x) \cdot h'(x)
+}{
+	\left( h(x) \right)^{2}
+}
+
+//-----------------------------------------------------------------
+g(x) = e^{a_i} \\
+g'(x) = \frac {
+	\partial {e^{a_i}}
+}{
+	\partial {a_j}
+} =
+\begin{cases}
+	e^{a_i} & \text{ if } i=j \\
+	0 & \text{ if } i \neq j
+\end{cases} \\
+
+h(x) = \sum_{k=1}^{N} {e^{a_k}} \\
+h'(x) = \frac {
+	\partial {
+		\left(
+			\sum_{k=1}^{N} {e^{a_k}}
+		\right)
+	}
+}{
+	\partial a_j
+} = e^{a_j}
+
+//-----------------------------------------------------------------
+\text{ if } i=j:\;
+\frac {
+	\partial {p_i}
+}{
+	\partial {a_j}
+} =
+\frac {
+	\left(
+		e^{a_i} \cdot
+		\left(
+			\sum_{k=1}^{N} {e^{a_k}}
+		\right)
+		- e^{a_i} \cdot e^{a_j}
+	\right)
+}{
+	\left(
+		\sum_{k=1}^{N} {e^{a_k}}
+	\right)^2
+} = \\
+= \frac {
+	e^{a_i} \cdot
+	\left(
+		\left(
+			\sum_{k=1}^{N} {e^{a_k}}
+		\right)
+		- e^{a_j}
+	\right)
+}{
+	\left(
+		\sum_{k=1}^{N} {e^{a_k}}
+	\right)^2
+} = \\
+= \frac {
+	e^{a_i}
+}{
+	\sum_{k=1}^{N} {e^{a_k}}
+} \cdot
+\frac {
+	\left(
+		\left(
+			\sum_{k=1}^{N} {e^{a_k}}
+		\right)
+		- e^{a_j}
+	\right)
+}{
+	\sum_{k=1}^{N} {e^{a_k}}
+} = \\
+= \left(
+	\frac {
+		e^{a_i}
+	}{
+		\sum_{k=1}^{N} {e^{a_k}}
+	}
+\right) \cdot
+\left(
+	1 -
+	\left(
+		\frac {
+			e^{a_j}
+		}{
+			\sum_{k=1}^{N} {e^{a_k}}
+		}
+	\right)
+\right) =
+p_i \left(1 - p_j \right)
+
+//-----------------------------------------------------------------
+\text{ if } i \neq j:\;
+\frac {
+	\partial {p_i}
+}{
+	\partial {a_j}
+} =
+\frac {
+	\left(
+		0 \cdot
+		\left(
+			\sum_{k=1}^{N} {e^{a_k}}
+		\right)
+		- e^{a_i} \cdot e^{a_j}
+	\right)
+}{
+	\left(
+		\sum_{k=1}^{N} {e^{a_k}}
+	\right)^2
+} = \\
+= - \frac{
+	e^{a_i} \cdot e^{a_j}
+}{
+	\left(
+		\sum_{k=1}^{N} {e^{a_k}}
+	\right)^2
+} = \\
+= - \left(
+	\frac{
+		e^{a_i}
+	}{
+		\sum_{k=1}^{N} {e^{a_k}}
+	}
+\right) \cdot
+\left(
+	\frac{
+		e^{a_j}
+	}{
+		\sum_{k=1}^{N} {e^{a_k}}
+	}
+\right) =
+- p_{i} \cdot p_{j}
+
+//-----------------------------------------------------------------
+\frac {
+	\partial {p_i}
+}{
+	\partial {a_j}
+} =
+\begin{cases}
+	p_{i}   \cdot (1 - p_{j}) & \text{ if } i = j \\
+	- p_{i} \cdot p_{j}       & \text{ if } i \neq j
+\end{cases}
+
+//-----------------------------------------------------------------
+L = - \sum_{i} t_i \cdot \log {p_i} \\
+\frac {
+	\partial L
+}{
+	\partial a_j
+} =
+- \sum_{i}
+	\left(
+		t_{i} \cdot
+		\frac{
+			\partial
+				\left(
+					\log
+						\left(
+							p_{i}
+						\right)
+				\right)
+		}{
+			\partial a_{j}
+		}
+	\right)
+= \\
+= - \sum_{i}
+	\left(
+		t_{i} \cdot
+		\frac{
+			\partial
+				\left(
+					\log
+						\left(
+							p_{i}
+						\right)
+				\right)
+		}{
+			\partial p_{i}
+		} \cdot
+		\frac {
+			\partial p_i
+		}{
+			\partial a_j
+		}
+	\right)
+= - \sum_{i}
+	\left(
+		t_{i} \cdot
+		\frac{
+			1
+		}{
+			p_{i}
+		} \cdot
+		\frac {
+			\partial p_i
+		}{
+			\partial a_j
+		}
+	\right)
+= \\
+= \left(
+	- t_{i} \cdot
+	\frac {1}{p_{i}} \cdot
+	p_{i} \cdot
+	\left(
+		1 - p_j
+	\right)
+\right)_{i=j} +
+\left(
+	- \sum_{i \neq j}
+	\left(
+		t_i \cdot
+		\frac {1}{p_{i}} \cdot
+		\left(
+			- p_i \cdot p_j
+		\right)
+	\right)
+\right)_{i \neq j}
+= \\
+= \left(
+	- t_j \cdot
+	\left(
+		1 - p_j
+	\right)
+\right) +
+\sum_{i \neq j}
+\left(
+	t_i \cdot p_j
+\right)
+= p_j \cdot t_j - t_j
++ p_j \cdot
+\sum_{i \neq j} t_i
+= \\
+= p_j \cdot \left(
+	t_j + \sum_{i \neq j} t_i
+\right)_{
+	\left(
+		\sum = 1
+	\right)
+} - t_j
+= p_j - t_j
+
+//-----------------------------------------------------------------
+\frac {
+	\partial L
+}{
+	\partial a_j
+} = p_j - t_j
+
+//-----------------------------------------------------------------
