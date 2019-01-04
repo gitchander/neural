@@ -51,6 +51,22 @@ type CrossEntropy struct{}
 func (CrossEntropy) Func(t, x []float64) float64 {
 	var sum float64
 	for i := range t {
+		sum -= t[i] * math.Log(x[i])
+	}
+	return sum
+}
+
+func (CrossEntropy) Derivative(ti, xi float64) float64 {
+	return xi - ti
+}
+
+type BinaryCrossEntropy struct{}
+
+// t[i] - ideal output = [0 or 1]
+// x[i] - real output = [0..1]
+func (BinaryCrossEntropy) Func(t, x []float64) float64 {
+	var sum float64
+	for i := range t {
 
 		// if (t[i] == 1) -> -log(x[i])
 		// if (t[i] == 0) -> -log(1-x[i])
@@ -58,37 +74,4 @@ func (CrossEntropy) Func(t, x []float64) float64 {
 		sum -= t[i]*math.Log(x[i]) + (1-t[i])*math.Log(1-x[i])
 	}
 	return sum
-}
-
-// https://deepnotes.io/softmax-crossentropy
-
-func softmax_1(xs []float64) []float64 {
-	i_max := IndexOfMax(xs)
-	if i_max == -1 {
-		return nil
-	}
-	max := xs[i_max]
-	ys := make([]float64, len(xs))
-	var sum float64
-	for i, x := range xs {
-		ys[i] = math.Exp(x - max)
-		sum += ys[i]
-	}
-	for i := range ys {
-		ys[i] /= sum
-	}
-	return ys
-}
-
-func softmax_2(as []float64) []float64 {
-	bs := make([]float64, len(as))
-	var sum float64
-	for i, a := range as {
-		bs[i] = math.Exp(a)
-		sum += bs[i]
-	}
-	for i := range bs {
-		bs[i] /= sum
-	}
-	return bs
 }
