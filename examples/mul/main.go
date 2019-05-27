@@ -6,12 +6,12 @@ import (
 	"math/rand"
 
 	"github.com/gitchander/neural"
-	"github.com/gitchander/neural/neutil"
+	"github.com/gitchander/neural/neutil/random"
 )
 
 func main() {
 
-	r := neutil.NewRand()
+	r := random.NewRandNow()
 	samples := makeSamples(r)
 
 	p, err := neural.NewMLP(2, 3, 1)

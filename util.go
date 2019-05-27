@@ -6,15 +6,15 @@ import (
 	"github.com/gitchander/minmax"
 )
 
-type Range struct {
+type intRange struct {
 	Min, Max float64
 }
 
 func randWeight(r *rand.Rand) float64 {
-	return randRange(r, Range{Min: -0.5, Max: 0.5})
+	return randRange(r, intRange{Min: -0.5, Max: 0.5})
 }
 
-func randRange(r *rand.Rand, e Range) float64 {
+func randRange(r *rand.Rand, e intRange) float64 {
 	return lerp(e.Min, e.Max, r.Float64())
 }
 
@@ -22,12 +22,12 @@ func lerp(v0, v1 float64, t float64) float64 {
 	return v0*(1-t) + v1*t
 }
 
-func crop(x float64) float64 {
-	if x < 0 {
-		x = 0
+func cropFloat64(x float64, min, max float64) float64 {
+	if x < min {
+		x = min
 	}
-	if x > 1 {
-		x = 1
+	if x > max {
+		x = max
 	}
 	return x
 }
@@ -52,9 +52,9 @@ func NormalizeInputs(samples []Sample) {
 	}
 
 	var vs = samples[0].Inputs
-	var rs = make([]Range, len(vs))
+	var rs = make([]intRange, len(vs))
 	for i, v := range vs {
-		rs[i] = Range{Min: v, Max: v}
+		rs[i] = intRange{Min: v, Max: v}
 	}
 
 	for k := 1; k < n; k++ {
@@ -77,7 +77,7 @@ func NormalizeInputs(samples []Sample) {
 	}
 }
 
-func normalize(x float64, r Range) float64 {
+func normalize(x float64, r intRange) float64 {
 	return (x - r.Min) / (r.Max - r.Min)
 }
 

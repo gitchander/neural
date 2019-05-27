@@ -27,7 +27,7 @@ func NewBP(p *MLP) *BP {
 }
 
 func (bp *BP) SetLearningRate(learningRate float64) {
-	bp.learningRate = crop(learningRate)
+	bp.learningRate = cropFloat64(learningRate, 0, 1)
 }
 
 func (bp *BP) LearnSample(sample Sample) {

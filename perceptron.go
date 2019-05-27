@@ -3,7 +3,8 @@ package neural
 import (
 	"errors"
 	"math/rand"
-	"time"
+
+	"github.com/gitchander/neural/neutil/random"
 )
 
 type neuron struct {
@@ -63,12 +64,8 @@ func (p *MLP) Topology() []int {
 	return ds
 }
 
-//func (p *MLP) SetActivationFunc(af ActivationFunc) {
-//	p.actFunc = af
-//}
-
 func (p *MLP) RandomizeWeights() {
-	r := rand.New(rand.NewSource(time.Now().UTC().UnixNano()))
+	r := random.NewRandNow()
 	p.RandomizeWeightsRand(r)
 }
 
@@ -85,24 +82,6 @@ func (p *MLP) RandomizeWeightsRand(r *rand.Rand) {
 	}
 }
 
-//func (p *MLP) checkInputs(inputs []float64) error {
-//	ns := p.inputLayer.ns
-//	if len(inputs) != len(ns) {
-//		return fmt.Errorf("count inputs (%d) not equal count network inputs (%d)",
-//			len(inputs), len(ns))
-//	}
-//	return nil
-//}
-
-//func (p *MLP) checkOutputs(outputs []float64) error {
-//	ns := p.outputLayer.ns
-//	if len(outputs) != len(ns) {
-//		return fmt.Errorf("count outputs (%d) not equal count network outputs (%d)",
-//			len(outputs), len(ns))
-//	}
-//	return nil
-//}
-
 func (p *MLP) SetInputs(inputs []float64) {
 	for i, n := range p.inputLayer.ns {
 		n.out = inputs[i]
@@ -116,18 +95,21 @@ func (p *MLP) GetOutputs(outputs []float64) {
 }
 
 func (p *MLP) Calculate() {
-	for k := 1; k < len(p.layers); k++ {
-		var (
-			prevLayer = p.layers[k-1]
-			layer     = p.layers[k]
-		)
+	n := len(p.layers)
+	if n == 0 {
+		return
+	}
+	prevLayer := p.layers[0]
+	for k := 1; k < n; k++ {
+		layer := p.layers[k]
 		for _, n := range layer.ns {
 			var sum float64
-			for i, n_prev := range prevLayer.ns {
-				sum += n.weights[i] * n_prev.out
+			for i, prevNeuron := range prevLayer.ns {
+				sum += n.weights[i] * prevNeuron.out
 			}
 			sum += n.bias * 1
 			n.out = layer.actFunc.Func(sum)
 		}
+		prevLayer = layer
 	}
 }
