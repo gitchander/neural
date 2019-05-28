@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"math"
 	"math/rand"
+	"time"
 
 	"github.com/fogleman/gg"
 	"github.com/gitchander/neural"
@@ -20,11 +21,11 @@ import (
 // https://www.youtube.com/watch?v=PRSva4fIkXA
 
 func main() {
-	// Test1()
-	Test2()
+	spiral1()
+	//spiral2()
 }
 
-func Test1() {
+func spiral1() {
 
 	size := image.Point{X: 512, Y: 512}
 
@@ -52,25 +53,32 @@ func Test1() {
 
 	fmt.Println("len samples:", len(samples))
 
-	p, err := neural.NewMLP(2, 10, 10, 1)
+	p, err := neural.NewMLP(2, 50, 50, 1)
 	checkError(err)
 	p.RandomizeWeights()
 
 	const (
 		learnRate = 0.8
-		epochMax  = 10000
+		epochMax  = 100000
 		epsilon   = 0.0001
 	)
 
 	filename := "neuro-spiral.png"
 
+	start := time.Now()
 	f := func(epoch int, averageCost float64) bool {
-		fmt.Println("epoch:", epoch)
-		fmt.Printf("average cost: %.7f\n", averageCost)
 
 		if (epoch > 0) && ((epoch % 100) == 0) {
+			fmt.Println("epoch:", epoch)
+			fmt.Printf("average cost: %.7f\n", averageCost)
+		}
+
+		t1 := time.Now()
+		if t1.Sub(start) > 10*time.Second {
 			err = SaveImagePNG(makeGrayFromMLP(p, size), filename)
 			checkError(err)
+
+			start = t1
 		}
 
 		if averageCost < epsilon {
@@ -127,7 +135,7 @@ func drawSpiral(dc *gg.Context, size image.Point) {
 	}
 }
 
-func Test2() {
+func spiral2() {
 	samples := makeSamples()
 	size := image.Point{X: 512, Y: 512}
 

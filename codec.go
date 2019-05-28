@@ -13,8 +13,8 @@ func Encode(w io.Writer, p *MLP) error {
 	bw := newBaseWriter(w)
 
 	var err error
-	for _, layer := range p.layers {
-		u := uint16(len(layer.ns))
+	for _, l := range p.layers {
+		u := uint16(len(l.neurons))
 		if err = bw.writeUint16(u); err != nil {
 			return err
 		}
@@ -24,8 +24,8 @@ func Encode(w io.Writer, p *MLP) error {
 	}
 
 	for k := 1; k < len(p.layers); k++ {
-		layer := p.layers[k]
-		for _, n := range layer.ns {
+		l := p.layers[k]
+		for _, n := range l.neurons {
 			for _, weight := range n.weights {
 				if err = bw.writeFloat64(weight); err != nil {
 					return err
@@ -62,8 +62,8 @@ func Decode(r io.Reader) (*MLP, error) {
 	}
 
 	for k := 1; k < len(p.layers); k++ {
-		layer := p.layers[k]
-		for _, n := range layer.ns {
+		l := p.layers[k]
+		for _, n := range l.neurons {
 			for i := range n.weights {
 				v, err := br.readFloat64()
 				if err != nil {

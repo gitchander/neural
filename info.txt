@@ -1,5 +1,6 @@
 LaTex online editor:
 http://www.codecogs.com/latex/eqneditor.php
+http://www.sciweavers.org/free-online-latex-equation-editor
 
 \Delta w_{i,j} = -\eta \frac {\partial E}{\partial w_{i,j}}
 

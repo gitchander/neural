@@ -21,7 +21,7 @@ func NewBP(p *MLP) *BP {
 	return &BP{
 		p:            p,
 		learningRate: 1,
-		outputs:      make([]float64, len(p.outputLayer.ns)),
+		outputs:      make([]float64, len(p.outputLayer.neurons)),
 		costFunc:     costMeanSquared{},
 	}
 }
@@ -36,41 +36,38 @@ func (bp *BP) LearnSample(sample Sample) {
 	p.SetInputs(sample.Inputs)
 	p.Calculate()
 
-	//	if err = p.checkOutputs(sample.Outputs); err != nil {
-	//		return err
-	//	}
 	var (
 		lastIndex = len(p.layers) - 1
 		lastLayer = p.layers[lastIndex]
 	)
-	for j, n := range lastLayer.ns {
+	for j, n := range lastLayer.neurons {
 		n.delta = lastLayer.actFunc.Derivative(n.out) * bp.costFunc.Derivative(sample.Outputs[j], n.out)
 	}
 
 	for k := lastIndex - 1; k > 0; k-- {
 		var (
-			layer     = p.layers[k]
+			currLayer = p.layers[k]
 			nextLayer = p.layers[k+1]
 		)
-		for j, n := range layer.ns {
+		for j, currNeuron := range currLayer.neurons {
 			var sum float64
-			for _, n_next := range nextLayer.ns {
-				sum += n_next.delta * n_next.weights[j]
+			for _, nextNeuron := range nextLayer.neurons {
+				sum += nextNeuron.delta * nextNeuron.weights[j]
 			}
-			n.delta = layer.actFunc.Derivative(n.out) * sum
+			currNeuron.delta = currLayer.actFunc.Derivative(currNeuron.out) * sum
 		}
 	}
 
 	for k := 1; k < len(p.layers); k++ {
 		var (
 			prevLayer = p.layers[k-1]
-			layer     = p.layers[k]
+			currLayer = p.layers[k]
 		)
-		for _, n := range layer.ns {
-			for i, n_prev := range prevLayer.ns {
-				n.weights[i] -= bp.learningRate * n.delta * n_prev.out
+		for _, currNeuron := range currLayer.neurons {
+			for i, prevNeuron := range prevLayer.neurons {
+				currNeuron.weights[i] -= bp.learningRate * currNeuron.delta * prevNeuron.out
 			}
-			n.bias -= bp.learningRate * n.delta * 1
+			currNeuron.bias -= bp.learningRate * currNeuron.delta * 1
 		}
 	}
 }
@@ -118,8 +115,8 @@ func checkSamplesTopology(p *MLP, samples []Sample) error {
 	format := "invalid sample (%d): wrong %s length (%d), must be (%d)"
 
 	var (
-		inLen  = len(p.inputLayer.ns)
-		outLen = len(p.outputLayer.ns)
+		inLen  = len(p.inputLayer.neurons)
+		outLen = len(p.outputLayer.neurons)
 	)
 
 	for i, sample := range samples {

@@ -10,13 +10,14 @@ import (
 type neuron struct {
 	weights []float64 // input weights
 	bias    float64   // input bias
-	delta   float64   // for backpropagation
 	out     float64   // output value
+
+	delta float64 // for backpropagation
 }
 
 type layer struct {
 	actFunc ActivationFunc
-	ns      []*neuron
+	neurons []*neuron
 }
 
 // Multilayer perceptron (MLP)
@@ -35,17 +36,17 @@ func NewMLP(ds ...int) (*MLP, error) {
 	}
 	layers := make([]*layer, len(ds))
 	for i := range layers {
-		ns := make([]*neuron, ds[i])
-		for j := range ns {
+		neurons := make([]*neuron, ds[i])
+		for j := range neurons {
 			n := new(neuron)
 			if i > 0 {
 				n.weights = make([]float64, ds[i-1])
 			}
-			ns[j] = n
+			neurons[j] = n
 		}
 		layers[i] = &layer{
 			actFunc: new(Sigmoid),
-			ns:      ns,
+			neurons: neurons,
 		}
 	}
 	p := &MLP{
@@ -58,8 +59,8 @@ func NewMLP(ds ...int) (*MLP, error) {
 
 func (p *MLP) Topology() []int {
 	ds := make([]int, len(p.layers))
-	for i, layer := range p.layers {
-		ds[i] = len(layer.ns)
+	for i, l := range p.layers {
+		ds[i] = len(l.neurons)
 	}
 	return ds
 }
@@ -71,8 +72,8 @@ func (p *MLP) RandomizeWeights() {
 
 func (p *MLP) RandomizeWeightsRand(r *rand.Rand) {
 	for k := 1; k < len(p.layers); k++ {
-		layer := p.layers[k]
-		for _, n := range layer.ns {
+		l := p.layers[k]
+		for _, n := range l.neurons {
 			ws := n.weights
 			for i := range ws {
 				ws[i] = randWeight(r)
@@ -83,33 +84,30 @@ func (p *MLP) RandomizeWeightsRand(r *rand.Rand) {
 }
 
 func (p *MLP) SetInputs(inputs []float64) {
-	for i, n := range p.inputLayer.ns {
+	for i, n := range p.inputLayer.neurons {
 		n.out = inputs[i]
 	}
 }
 
 func (p *MLP) GetOutputs(outputs []float64) {
-	for i, n := range p.outputLayer.ns {
+	for i, n := range p.outputLayer.neurons {
 		outputs[i] = n.out
 	}
 }
 
 func (p *MLP) Calculate() {
-	n := len(p.layers)
-	if n == 0 {
-		return
-	}
-	prevLayer := p.layers[0]
-	for k := 1; k < n; k++ {
-		layer := p.layers[k]
-		for _, n := range layer.ns {
+	for k := 1; k < len(p.layers); k++ {
+		var (
+			prevLayer = p.layers[k-1]
+			currLayer = p.layers[k]
+		)
+		for _, currNeuron := range currLayer.neurons {
 			var sum float64
-			for i, prevNeuron := range prevLayer.ns {
-				sum += n.weights[i] * prevNeuron.out
+			for i, prevNeuron := range prevLayer.neurons {
+				sum += currNeuron.weights[i] * prevNeuron.out
 			}
-			sum += n.bias * 1
-			n.out = layer.actFunc.Func(sum)
+			sum += currNeuron.bias * 1
+			currNeuron.out = currLayer.actFunc.Func(sum)
 		}
-		prevLayer = layer
 	}
 }

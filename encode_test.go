@@ -41,8 +41,8 @@ func Equal(a, b *MLP) bool {
 	}
 	for k := range layersA {
 		var (
-			nsA = layersA[k].ns
-			nsB = layersB[k].ns
+			nsA = layersA[k].neurons
+			nsB = layersB[k].neurons
 		)
 		if len(nsA) != len(nsB) {
 			return false
