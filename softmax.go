@@ -19,12 +19,12 @@ func softmax(xs []float64) []float64 {
 	return ys
 }
 
-func stable_softmax(xs []float64) []float64 {
-	i_max := IndexOfMax(xs)
-	if i_max == -1 {
+func softmaxStable(xs []float64) []float64 {
+	index := IndexOfMax(xs)
+	if index == -1 {
 		return nil
 	}
-	max := xs[i_max]
+	max := xs[index]
 	ys := make([]float64, len(xs))
 	var sum float64
 	for i, x := range xs {

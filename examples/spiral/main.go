@@ -21,8 +21,8 @@ import (
 // https://www.youtube.com/watch?v=PRSva4fIkXA
 
 func main() {
-	spiral1()
-	//spiral2()
+	//spiral1()
+	spiral2()
 }
 
 func spiral1() {

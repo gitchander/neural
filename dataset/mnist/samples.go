@@ -7,14 +7,14 @@ import (
 	"github.com/gitchander/neural"
 )
 
-func MakeSamples(nameImages, nameLabels string) ([]neural.Sample, error) {
+func MakeSamples(sf SetFiles) ([]neural.Sample, error) {
 
-	inputs, err := ReadInputsFile(nameImages)
+	inputs, err := ReadInputsFile(sf.Images)
 	if err != nil {
 		return nil, err
 	}
 
-	outputs, err := ReadOutputsFile(nameLabels)
+	outputs, err := ReadOutputsFile(sf.Labels)
 	if err != nil {
 		return nil, err
 	}

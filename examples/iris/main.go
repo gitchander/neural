@@ -8,12 +8,28 @@ import (
 )
 
 func main() {
-	samples, err := makeSamplesFile("iris.csv")
+	err := run()
 	checkError(err)
+}
+
+func checkError(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func run() error {
+
+	samples, err := makeSamplesFile("iris.csv")
+	if err != nil {
+		return err
+	}
 	neural.NormalizeInputs(samples)
 
 	p, err := neural.NewMLP(4, 3, 3)
-	checkError(err)
+	if err != nil {
+		return err
+	}
 	p.RandomizeWeights()
 
 	const (
@@ -31,12 +47,5 @@ func main() {
 		return true
 	}
 
-	err = neural.Learn(p, samples, learnRate, epochMax, f)
-	checkError(err)
-}
-
-func checkError(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
+	return neural.Learn(p, samples, learnRate, epochMax, f)
 }

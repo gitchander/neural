@@ -1,7 +1,7 @@
 package neutil
 
 func Mean(xs []float64) float64 {
-	sum := 0.0
+	var sum float64
 	for _, x := range xs {
 		sum += x
 	}

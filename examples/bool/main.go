@@ -13,8 +13,8 @@ import (
 )
 
 func main() {
-	testOperator(XOR)
-	//makeOperatorImage(XOR)
+	//testOperator(XOR)
+	makeOperatorImage(XOR)
 	//testNot()
 }
 

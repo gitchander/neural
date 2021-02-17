@@ -2,7 +2,7 @@ package mnist
 
 import (
 	"encoding/binary"
-	"errors"
+	"fmt"
 	"image"
 	"io"
 
@@ -16,7 +16,16 @@ const (
 	labelsMagic = 2049
 )
 
-var errInvalidFile = errors.New("invalid file format")
+//var errInvalidFile = errors.New("invalid file format")
+
+func errInvalidMagic(prefix string, haveMagic, wantMagic uint32) error {
+	return fmt.Errorf("%s invalid magic number: have %x, want %x",
+		prefix, haveMagic, wantMagic)
+}
+
+func errInvalidLabel(label uint8) error {
+	return fmt.Errorf("invalid label value %d", label)
+}
 
 type imagesHeader struct {
 	Magic           uint32
@@ -31,6 +40,7 @@ type labelsHeader struct {
 }
 
 func ReadImages(r io.Reader) ([]*image.Gray, error) {
+
 	var h imagesHeader
 	err := binary.Read(r, binary.BigEndian, &h)
 	if err != nil {
@@ -38,7 +48,7 @@ func ReadImages(r io.Reader) ([]*image.Gray, error) {
 	}
 
 	if h.Magic != imagesMagic {
-		return nil, errInvalidFile
+		return nil, errInvalidMagic("mnist.ReadImages:", h.Magic, imagesMagic)
 	}
 
 	size := image.Point{
@@ -61,6 +71,7 @@ func ReadImages(r io.Reader) ([]*image.Gray, error) {
 }
 
 func ReadLabels(r io.Reader) ([]uint8, error) {
+
 	var h labelsHeader
 	err := binary.Read(r, binary.BigEndian, &h)
 	if err != nil {
@@ -68,7 +79,7 @@ func ReadLabels(r io.Reader) ([]uint8, error) {
 	}
 
 	if h.Magic != labelsMagic {
-		return nil, errInvalidFile
+		return nil, errInvalidMagic("mnist.ReadLabels:", h.Magic, labelsMagic)
 	}
 
 	labels := make([]uint8, h.NumberOfItems)
@@ -77,6 +88,7 @@ func ReadLabels(r io.Reader) ([]uint8, error) {
 }
 
 func ReadInputs(r io.Reader) ([][]float64, error) {
+
 	var h imagesHeader
 	err := binary.Read(r, binary.BigEndian, &h)
 	if err != nil {
@@ -84,7 +96,7 @@ func ReadInputs(r io.Reader) ([][]float64, error) {
 	}
 
 	if h.Magic != imagesMagic {
-		return nil, errInvalidFile
+		return nil, errInvalidMagic("mnist.ReadInputs:", h.Magic, imagesMagic)
 	}
 
 	var (
@@ -109,6 +121,7 @@ func ReadInputs(r io.Reader) ([][]float64, error) {
 }
 
 func ReadOutputs(r io.Reader) ([][]float64, error) {
+
 	var h labelsHeader
 	err := binary.Read(r, binary.BigEndian, &h)
 	if err != nil {
@@ -116,7 +129,7 @@ func ReadOutputs(r io.Reader) ([][]float64, error) {
 	}
 
 	if h.Magic != labelsMagic {
-		return nil, errInvalidFile
+		return nil, errInvalidMagic("mnist.ReadOutputs:", h.Magic, labelsMagic)
 	}
 
 	labels := make([]uint8, h.NumberOfItems)
@@ -127,7 +140,11 @@ func ReadOutputs(r io.Reader) ([][]float64, error) {
 
 	var ssv = make([][]float64, len(labels))
 	for i, label := range labels {
-		ssv[i] = neural.OneHot(10, int(label))
+		if (0 <= label) && (label <= 9) {
+			ssv[i] = neural.OneHot(10, int(label))
+		} else {
+			return nil, errInvalidLabel(label)
+		}
 	}
 
 	return ssv, err

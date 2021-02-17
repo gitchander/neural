@@ -4,25 +4,36 @@ import (
 	"math/rand"
 
 	"github.com/gitchander/minmax"
+	"github.com/gitchander/neural/neutil/random"
 )
 
-type intRange struct {
-	Min, Max float64
+type interval struct {
+	min, max float64
+}
+
+func makeInterval(min, max float64) interval {
+	return interval{min, max}
+}
+
+func (v interval) clamp(x float64) float64 {
+	if x < v.min {
+		x = v.min
+	}
+	if x > v.max {
+		x = v.max
+	}
+	return x
+}
+
+func (v interval) normalize(x float64) float64 {
+	return (x - v.min) / (v.max - v.min)
 }
 
 func randWeight(r *rand.Rand) float64 {
-	return randRange(r, intRange{Min: -0.5, Max: 0.5})
+	return random.FloatByInterval(r, -0.5, 0.5)
 }
 
-func randRange(r *rand.Rand, e intRange) float64 {
-	return lerp(e.Min, e.Max, r.Float64())
-}
-
-func lerp(v0, v1 float64, t float64) float64 {
-	return v0*(1-t) + v1*t
-}
-
-func cropFloat64(x float64, min, max float64) float64 {
+func clampFloat64(x float64, min, max float64) float64 {
 	if x < min {
 		x = min
 	}
@@ -52,19 +63,19 @@ func NormalizeInputs(samples []Sample) {
 	}
 
 	var vs = samples[0].Inputs
-	var rs = make([]intRange, len(vs))
+	var rs = make([]interval, len(vs))
 	for i, v := range vs {
-		rs[i] = intRange{Min: v, Max: v}
+		rs[i] = makeInterval(v, v)
 	}
 
 	for k := 1; k < n; k++ {
 		var vs = samples[k].Inputs
 		for i, v := range vs {
-			if v < rs[i].Min {
-				rs[i].Min = v
+			if v < rs[i].min {
+				rs[i].min = v
 			}
-			if v > rs[i].Max {
-				rs[i].Max = v
+			if v > rs[i].max {
+				rs[i].max = v
 			}
 		}
 	}
@@ -72,13 +83,9 @@ func NormalizeInputs(samples []Sample) {
 	for _, sample := range samples {
 		var vs = sample.Inputs
 		for i, v := range vs {
-			vs[i] = normalize(v, rs[i])
+			vs[i] = rs[i].normalize(v)
 		}
 	}
-}
-
-func normalize(x float64, r intRange) float64 {
-	return (x - r.Min) / (r.Max - r.Min)
 }
 
 type float64Slice []float64

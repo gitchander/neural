@@ -25,9 +25,6 @@ type layer struct {
 // Fully Connected Layers
 type MLP struct {
 	layers []*layer
-
-	inputLayer  *layer
-	outputLayer *layer
 }
 
 func NewMLP(ds ...int) (*MLP, error) {
@@ -50,11 +47,17 @@ func NewMLP(ds ...int) (*MLP, error) {
 		}
 	}
 	p := &MLP{
-		layers:      layers,
-		inputLayer:  layers[0],
-		outputLayer: layers[len(layers)-1],
+		layers: layers,
 	}
 	return p, nil
+}
+
+func (p *MLP) getInputLayer() *layer {
+	return p.layers[0]
+}
+
+func (p *MLP) getOutputLayer() *layer {
+	return p.layers[len(p.layers)-1]
 }
 
 func (p *MLP) Topology() []int {
@@ -84,13 +87,15 @@ func (p *MLP) RandomizeWeightsRand(r *rand.Rand) {
 }
 
 func (p *MLP) SetInputs(inputs []float64) {
-	for i, n := range p.inputLayer.neurons {
+	ns := p.getInputLayer().neurons
+	for i, n := range ns {
 		n.out = inputs[i]
 	}
 }
 
 func (p *MLP) GetOutputs(outputs []float64) {
-	for i, n := range p.outputLayer.neurons {
+	ns := p.getOutputLayer().neurons
+	for i, n := range ns {
 		outputs[i] = n.out
 	}
 }

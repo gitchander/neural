@@ -8,7 +8,6 @@ import (
 	"image/png"
 	"io/ioutil"
 	"log"
-	"path/filepath"
 	"time"
 
 	"github.com/gitchander/neural"
@@ -17,60 +16,56 @@ import (
 
 func main() {
 
-	var (
-		dirname string
-		mode    string
-		nameMLP string
-	)
-	flag.StringVar(&dirname, "dir", ".", "mnist directory")
-	flag.StringVar(&mode, "mode", "test", "train or test mode")
-	flag.StringVar(&nameMLP, "mlp", "mlp1ws", "filename MLP structure")
+	var c Config
+
+	flag.StringVar(&(c.Dirname), "dir", ".", "mnist directory")
+	flag.StringVar(&(c.Mode), "mode", "test", "train or test mode")
+	flag.StringVar(&(c.NameMLP), "mlp", "mlp1ws", "filename MLP structure")
 
 	flag.Parse()
 
-	switch mode {
+	err := run(c)
+	checkError_(err)
+}
+
+func checkError_(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+type Config struct {
+	Dirname string
+	Mode    string
+	NameMLP string
+}
+
+func run(c Config) error {
+	switch c.Mode {
 	case "train":
-		train(dirname, nameMLP)
+		return train(c.Dirname, c.NameMLP)
 	case "test":
-		test(dirname, nameMLP)
+		return test(c.Dirname, c.NameMLP)
 	default:
-		log.Fatalf("invalid mode: %s", mode)
+		return fmt.Errorf("invalid mode: %s", c.Mode)
 	}
 }
 
-type names struct {
-	imagesName string
-	labelsName string
-}
+func train(dirname, nameMLP string) error {
 
-var (
-	trainNames = names{
-		imagesName: "train-images-idx3-ubyte.gz",
-		labelsName: "train-labels-idx1-ubyte.gz",
+	dbfs := mnist.MakeDBFiles(dirname)
+
+	samples, err := mnist.MakeSamples(dbfs.TrainingSet)
+	if err != nil {
+		return err
 	}
-
-	testNames = names{
-		imagesName: "t10k-images-idx3-ubyte.gz",
-		labelsName: "t10k-labels-idx1-ubyte.gz",
-	}
-)
-
-func train(dirname, nameMLP string) {
-
-	var (
-		ns = trainNames
-
-		nameImages = filepath.Join(dirname, ns.imagesName)
-		nameLabels = filepath.Join(dirname, ns.labelsName)
-	)
-
-	samples, err := mnist.MakeSamples(nameImages, nameLabels)
-	checkError(err)
 
 	p, err := neural.ReadFile(nameMLP)
 	if err != nil {
 		p, err = neural.NewMLP(28*28, 14*14, 7*7, 10)
-		checkError(err)
+		if err != nil {
+			return err
+		}
 		p.RandomizeWeights()
 	}
 
@@ -79,10 +74,15 @@ func train(dirname, nameMLP string) {
 		epochMax  = 100000
 	)
 
+	var writeError error
+
 	f := func(epoch int, averageCost float64) bool {
 
-		err = neural.WriteFile(nameMLP, p)
-		checkError(err)
+		err := neural.WriteFile(nameMLP, p)
+		if err != nil {
+			writeError = err
+			return false
+		}
 
 		fmt.Printf("%s: epoch: %d; average cost = %.10f\n",
 			time.Now().Format("15:04:05"),
@@ -92,26 +92,31 @@ func train(dirname, nameMLP string) {
 	}
 
 	err = neural.Learn(p, samples, learnRate, epochMax, f)
-	checkError(err)
+	if err != nil {
+		return err
+	}
+
+	return writeError
 }
 
-func test(dirname, nameMLP string) {
-	var (
-		ns = testNames
-		//ns = trainNames
+func test(dirname, nameMLP string) error {
 
-		nameImages = filepath.Join(dirname, ns.imagesName)
-		nameLabels = filepath.Join(dirname, ns.labelsName)
-	)
+	dbfs := mnist.MakeDBFiles(dirname)
 
-	inputs, err := mnist.ReadInputsFile(nameImages)
-	checkError(err)
+	inputs, err := mnist.ReadInputsFile(dbfs.TestSet.Images)
+	if err != nil {
+		return err
+	}
 
-	labels, err := mnist.ReadLabelsFile(nameLabels)
-	checkError(err)
+	labels, err := mnist.ReadLabelsFile(dbfs.TestSet.Labels)
+	if err != nil {
+		return err
+	}
 
 	p, err := neural.ReadFile(nameMLP)
-	checkError(err)
+	if err != nil {
+		return err
+	}
 
 	fmt.Println("topology:", p.Topology())
 
@@ -138,12 +143,8 @@ func test(dirname, nameMLP string) {
 		}
 	}
 	fmt.Printf("average cost: %.3f %%\n", 100*float64(wrongCount)/float64(len(inputs)))
-}
 
-func checkError(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
+	return nil
 }
 
 func saveImagePNG(im image.Image, filename string) error {

@@ -21,13 +21,13 @@ func NewBP(p *MLP) *BP {
 	return &BP{
 		p:            p,
 		learningRate: 1,
-		outputs:      make([]float64, len(p.outputLayer.neurons)),
+		outputs:      make([]float64, len(p.getOutputLayer().neurons)),
 		costFunc:     costMeanSquared{},
 	}
 }
 
 func (bp *BP) SetLearningRate(learningRate float64) {
-	bp.learningRate = cropFloat64(learningRate, 0, 1)
+	bp.learningRate = clampFloat64(learningRate, 0, 1)
 }
 
 func (bp *BP) LearnSample(sample Sample) {
@@ -115,8 +115,8 @@ func checkSamplesTopology(p *MLP, samples []Sample) error {
 	format := "invalid sample (%d): wrong %s length (%d), must be (%d)"
 
 	var (
-		inLen  = len(p.inputLayer.neurons)
-		outLen = len(p.outputLayer.neurons)
+		inLen  = len(p.getInputLayer().neurons)
+		outLen = len(p.getOutputLayer().neurons)
 	)
 
 	for i, sample := range samples {

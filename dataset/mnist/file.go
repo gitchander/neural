@@ -39,6 +39,7 @@ func ReadLabelsFile(filename string) ([]uint8, error) {
 }
 
 func ReadInputsFile(filename string) ([][]float64, error) {
+
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
@@ -55,6 +56,7 @@ func ReadInputsFile(filename string) ([][]float64, error) {
 }
 
 func ReadOutputsFile(filename string) ([][]float64, error) {
+
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
