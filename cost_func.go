@@ -28,6 +28,8 @@ func (costMeanSquared) Derivative(ti, xi float64) float64 {
 	return -delta
 }
 
+var CFMeanSquared CostFunc = costMeanSquared{}
+
 //func (costMeanSquared) Func(t, x []float64) float64 {
 //	var sum float64
 //	for i := range t {

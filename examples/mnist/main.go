@@ -25,10 +25,10 @@ func main() {
 	flag.Parse()
 
 	err := run(c)
-	checkError_(err)
+	checkError(err)
 }
 
-func checkError_(err error) {
+func checkError(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}

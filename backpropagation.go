@@ -12,17 +12,29 @@ type Sample struct {
 // Backpropagation
 type BP struct {
 	p            *MLP
+	ldeltas      [][]float64
 	learningRate float64 // (0 <= learningRate <= 1)
 	outputs      []float64
 	costFunc     CostFunc
 }
 
-func NewBP(p *MLP) *BP {
+func NewBP(p *MLP, cf CostFunc) *BP {
+
+	if cf == nil {
+		cf = costMeanSquared{}
+	}
+
+	ldeltas := make([][]float64, len(p.layers))
+	for i, layer := range p.layers {
+		ldeltas[i] = make([]float64, len(layer.neurons))
+	}
+
 	return &BP{
 		p:            p,
+		ldeltas:      ldeltas,
 		learningRate: 1,
 		outputs:      make([]float64, len(p.getOutputLayer().neurons)),
-		costFunc:     costMeanSquared{},
+		costFunc:     cf,
 	}
 }
 
@@ -37,37 +49,48 @@ func (bp *BP) LearnSample(sample Sample) {
 	p.Calculate()
 
 	var (
-		lastIndex = len(p.layers) - 1
-		lastLayer = p.layers[lastIndex]
+		lastIndex  = len(p.layers) - 1
+		lastLayer  = p.layers[lastIndex]
+		lastDeltas = bp.ldeltas[lastIndex]
 	)
 	for j, n := range lastLayer.neurons {
-		n.delta = lastLayer.actFunc.Derivative(n.out) * bp.costFunc.Derivative(sample.Outputs[j], n.out)
+		var (
+			afD = lastLayer.actFunc.Derivative(n.out)
+			cfD = bp.costFunc.Derivative(sample.Outputs[j], n.out)
+		)
+		lastDeltas[j] = afD * cfD
 	}
 
 	for k := lastIndex - 1; k > 0; k-- {
 		var (
-			currLayer = p.layers[k]
-			nextLayer = p.layers[k+1]
+			currLayer  = p.layers[k]
+			currDeltas = bp.ldeltas[k]
+
+			nextLayer  = p.layers[k+1]
+			nextDeltas = bp.ldeltas[k+1]
 		)
 		for j, currNeuron := range currLayer.neurons {
 			var sum float64
-			for _, nextNeuron := range nextLayer.neurons {
-				sum += nextNeuron.delta * nextNeuron.weights[j]
+			for i, nextNeuron := range nextLayer.neurons {
+				sum += nextDeltas[i] * nextNeuron.weights[j]
 			}
-			currNeuron.delta = currLayer.actFunc.Derivative(currNeuron.out) * sum
+			afD := currLayer.actFunc.Derivative(currNeuron.out)
+			currDeltas[j] = afD * sum
 		}
 	}
 
 	for k := 1; k < len(p.layers); k++ {
 		var (
 			prevLayer = p.layers[k-1]
-			currLayer = p.layers[k]
+
+			currLayer  = p.layers[k]
+			currDeltas = bp.ldeltas[k]
 		)
-		for _, currNeuron := range currLayer.neurons {
+		for j, currNeuron := range currLayer.neurons {
 			for i, prevNeuron := range prevLayer.neurons {
-				currNeuron.weights[i] -= bp.learningRate * currNeuron.delta * prevNeuron.out
+				currNeuron.weights[i] -= bp.learningRate * currDeltas[j] * prevNeuron.out
 			}
-			currNeuron.bias -= bp.learningRate * currNeuron.delta * 1
+			currNeuron.bias -= bp.learningRate * currDeltas[j] * 1
 		}
 	}
 }
@@ -98,7 +121,7 @@ func Learn(p *MLP, samples []Sample, learnRate float64, epochMax int,
 		return err
 	}
 
-	bp := NewBP(p)
+	bp := NewBP(p, CFMeanSquared)
 	bp.SetLearningRate(learnRate)
 	for epoch := 0; epoch < epochMax; epoch++ {
 		averageCost := bp.LearnSamples(samples)

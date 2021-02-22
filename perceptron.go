@@ -10,9 +10,8 @@ import (
 type neuron struct {
 	weights []float64 // input weights
 	bias    float64   // input bias
-	out     float64   // output value
 
-	delta float64 // for backpropagation
+	out float64 // output value
 }
 
 type layer struct {

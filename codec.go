@@ -82,8 +82,15 @@ func Decode(r io.Reader) (*MLP, error) {
 	return p, nil
 }
 
+const (
+	bytesPerUint8  = 1
+	bytesPerUint16 = 2
+	bytesPerUint32 = 4
+	bytesPerUint64 = 8
+)
+
 type baseWriter struct {
-	buf [8]byte
+	buf [bytesPerUint64]byte
 	w   io.Writer
 }
 
@@ -92,21 +99,21 @@ func newBaseWriter(w io.Writer) *baseWriter {
 }
 
 func (p *baseWriter) writeUint16(u uint16) error {
-	buf := p.buf[:2]
+	buf := p.buf[:bytesPerUint16]
 	byteOrder.PutUint16(buf, u)
 	_, err := p.w.Write(buf)
 	return err
 }
 
 func (p *baseWriter) writeUint32(u uint32) error {
-	buf := p.buf[:4]
+	buf := p.buf[:bytesPerUint32]
 	byteOrder.PutUint32(buf, u)
 	_, err := p.w.Write(buf)
 	return err
 }
 
 func (p *baseWriter) writeUint64(u uint64) error {
-	buf := p.buf[:8]
+	buf := p.buf[:bytesPerUint64]
 	byteOrder.PutUint64(buf, u)
 	_, err := p.w.Write(buf)
 	return err
@@ -123,7 +130,7 @@ func (p *baseWriter) writeFloat64(v float64) error {
 }
 
 type baseReader struct {
-	buf [8]byte
+	buf [bytesPerUint64]byte
 	r   io.Reader
 }
 
@@ -132,7 +139,7 @@ func newBaseReader(r io.Reader) *baseReader {
 }
 
 func (p *baseReader) readUint16() (uint16, error) {
-	buf := p.buf[:2]
+	buf := p.buf[:bytesPerUint16]
 	_, err := io.ReadFull(p.r, buf)
 	if err != nil {
 		return 0, err
@@ -141,7 +148,7 @@ func (p *baseReader) readUint16() (uint16, error) {
 }
 
 func (p *baseReader) readUint32() (uint32, error) {
-	buf := p.buf[:4]
+	buf := p.buf[:bytesPerUint32]
 	_, err := io.ReadFull(p.r, buf)
 	if err != nil {
 		return 0, err
@@ -150,7 +157,7 @@ func (p *baseReader) readUint32() (uint32, error) {
 }
 
 func (p *baseReader) readUint64() (uint64, error) {
-	buf := p.buf[:8]
+	buf := p.buf[:bytesPerUint64]
 	_, err := io.ReadFull(p.r, buf)
 	if err != nil {
 		return 0, err
