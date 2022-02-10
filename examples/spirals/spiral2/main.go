@@ -159,14 +159,14 @@ func makeSamples() []neural.Sample {
 
 		R := angle * angleFactor
 
-		p := center.Add(imut.PolarToDecart(R, angle))
+		p := center.Add(imut.PolarToCartesian(R, angle))
 
 		samples[i*2+0] = neural.Sample{
 			Inputs:  []float64{p.X, p.Y},
 			Outputs: []float64{0},
 		}
 
-		p = center.Add(imut.PolarToDecart(R, angle+math.Pi))
+		p = center.Add(imut.PolarToCartesian(R, angle+math.Pi))
 
 		samples[i*2+1] = neural.Sample{
 			Inputs:  []float64{p.X, p.Y},

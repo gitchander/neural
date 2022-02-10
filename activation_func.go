@@ -1,6 +1,12 @@
 package neural
 
-import "math"
+import (
+	"errors"
+	"fmt"
+	"math"
+	"strconv"
+	"strings"
+)
 
 // https://en.wikipedia.org/wiki/Activation_function
 
@@ -10,6 +16,7 @@ type ActivationFunc interface {
 	Derivative(fx float64) float64 // {\frac {\partial f(x)}{\partial x}}
 }
 
+//------------------------------------------------------------------------------
 // Linear or Identity
 type Linear struct{}
 
@@ -23,6 +30,7 @@ func (Linear) Derivative(fx float64) float64 {
 	return 1
 }
 
+//------------------------------------------------------------------------------
 // Binary Step
 type Step struct{}
 
@@ -39,6 +47,7 @@ func (Step) Derivative(fx float64) float64 {
 	return 0
 }
 
+//------------------------------------------------------------------------------
 type ReLU struct{}
 
 var _ ActivationFunc = ReLU{}
@@ -57,6 +66,7 @@ func (ReLU) Derivative(fx float64) float64 {
 	return 0
 }
 
+//------------------------------------------------------------------------------
 type Sigmoid struct{}
 
 var _ ActivationFunc = Sigmoid{}
@@ -81,6 +91,7 @@ func (Sigmoid) Derivative(fx float64) float64 {
 	return fx * (1 - fx)
 }
 
+//------------------------------------------------------------------------------
 type Logistic struct {
 	Alpha float64
 }
@@ -103,6 +114,7 @@ func (p Logistic) Derivative(fx float64) float64 {
 	return p.Alpha * fx * (1 - fx)
 }
 
+//------------------------------------------------------------------------------
 // range: (-1, 1)
 type Tanh struct{}
 
@@ -123,4 +135,74 @@ func (Tanh) Derivative(fx float64) float64 {
 	// {{\frac {\partial f(x)}{\partial x}} = 1-f(x)^2}
 
 	return (1 - fx*fx)
+}
+
+//------------------------------------------------------------------------------
+func parseActivationFunc(s string) (ActivationFunc, error) {
+
+	//--------------------------------
+	// "linear"
+	// "step"
+	// "logistic:alpha=1"
+	//--------------------------------
+
+	vs := strings.Split(s, ":")
+
+	if len(vs) < 1 {
+		return nil, errors.New("parseActivationFunc: there are no instances")
+	}
+
+	fields, err := parseFields(vs[1])
+	if err != nil {
+		return nil, err
+	}
+
+	var af ActivationFunc
+
+	switch vs[0] {
+	case "linear":
+		af = Linear{}
+	case "step":
+		af = Step{}
+	case "relu":
+		af = ReLU{}
+	case "sigmoid":
+		af = Sigmoid{}
+	case "logistic":
+		{
+			const key = "alpha"
+			text, ok := fields[key]
+			if !ok {
+				return nil, fmt.Errorf("there is no field <%s>", key)
+			}
+			alpha, err := strconv.ParseFloat(text, 64)
+			if err != nil {
+				return nil, fmt.Errorf("field <%s> parse error", key)
+			}
+			af = Logistic{Alpha: alpha}
+		}
+	case "tanh":
+		af = Tanh{}
+	default:
+		return nil, fmt.Errorf("unknown activation func <%s>", vs[0])
+	}
+
+	return af, nil
+}
+
+func parseFields(s string) (map[string]string, error) {
+
+	// example of format: "one=1,two=2,three=3"
+	// example of format: "half=0.5,quarter=0.25,pi=3.14"
+
+	m := make(map[string]string)
+	vs := strings.Split(s, ",")
+	for _, v := range vs {
+		ws := strings.Split(v, "=")
+		if len(ws) != 2 {
+			return nil, errors.New("invalid field format")
+		}
+		m[ws[0]] = ws[1]
+	}
+	return m, nil
 }

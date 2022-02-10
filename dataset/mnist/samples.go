@@ -37,7 +37,7 @@ func MakeSamples(sf SetFiles) ([]neural.Sample, error) {
 func InputsFromImage(g *image.Gray) (inputs []float64) {
 	inputs = make([]float64, len(g.Pix))
 	for i, p := range g.Pix {
-		inputs[i] = float64(p) / 255
+		inputs[i] = byteToFloat[p]
 	}
 	return inputs
 }

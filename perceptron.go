@@ -7,6 +7,12 @@ import (
 	"github.com/gitchander/neural/neutil/random"
 )
 
+// Feedforward neural network
+// https://en.wikipedia.org/wiki/Feedforward_neural_network
+
+// Multilayer perceptron
+// https://en.wikipedia.org/wiki/Multilayer_perceptron
+
 type neuron struct {
 	weights []float64 // input weights
 	bias    float64   // input bias

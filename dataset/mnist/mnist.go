@@ -112,7 +112,7 @@ func ReadInputs(r io.Reader) ([][]float64, error) {
 		}
 		sv := make([]float64, n)
 		for j, b := range buf {
-			sv[j] = float64(b) / 255
+			sv[j] = byteToFloat[b]
 		}
 		ssv[i] = sv
 	}

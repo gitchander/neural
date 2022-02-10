@@ -9,6 +9,8 @@ type Sample struct {
 	Outputs []float64
 }
 
+// https://en.wikipedia.org/wiki/Backpropagation
+
 // Backpropagation
 type BP struct {
 	p            *MLP
@@ -135,7 +137,7 @@ func Learn(p *MLP, samples []Sample, learnRate float64, epochMax int,
 
 func checkSamplesTopology(p *MLP, samples []Sample) error {
 
-	format := "invalid sample (%d): wrong %s length (%d), must be (%d)"
+	format := "sample %d invalid %s lehgth: have %d, want %d"
 
 	var (
 		inLen  = len(p.getInputLayer().neurons)
