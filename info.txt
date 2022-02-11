@@ -1,0 +1,11 @@
+Feedforward neural network
+https://en.wikipedia.org/wiki/Feedforward_neural_network
+
+Multilayer perceptron
+https://en.wikipedia.org/wiki/Multilayer_perceptron
+
+Multilayer perceptron (MLP)
+FeedForward
+Fully Connected Layers
+
+github.com/patrikeh/go-deep

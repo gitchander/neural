@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 
 	"github.com/gitchander/neural"
+	"github.com/gitchander/neural/neutil"
 )
 
 func SaveImagePNG(m image.Image, filename string) error {
@@ -65,7 +66,7 @@ func MakeSamplesGray(g *image.Gray) []neural.Sample {
 	return samples
 }
 
-func MakeGrayFromMLP_outs(p *neural.MLP, size image.Point) *image.Gray {
+func MakeGrayFromNeural_outs(p *neural.Neural, size image.Point) *image.Gray {
 	var (
 		r = image.Rectangle{Max: size}
 		g = image.NewGray(r)
@@ -89,14 +90,14 @@ func MakeGrayFromMLP_outs(p *neural.MLP, size image.Point) *image.Gray {
 			p.GetOutputs(outputs)
 
 			g.Set(x, y, color.Gray{
-				Y: uint8(neural.IndexOfMax(outputs) * 255),
+				Y: uint8(neutil.IndexOfMax(outputs) * 255),
 			})
 		}
 	}
 	return g
 }
 
-func MakeGrayFromMLP(p *neural.MLP, size image.Point) *image.Gray {
+func MakeGrayFromNeural(p *neural.Neural, size image.Point) *image.Gray {
 	var (
 		r = image.Rectangle{Max: size}
 		g = image.NewGray(r)

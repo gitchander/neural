@@ -1,4 +1,4 @@
-package neural
+package neutil
 
 import (
 	"math"
@@ -6,7 +6,7 @@ import (
 
 // https://deepnotes.io/softmax-crossentropy
 
-func softmax(xs []float64) []float64 {
+func Softmax(xs []float64) []float64 {
 	ys := make([]float64, len(xs))
 	var sum float64
 	for i, x := range xs {
@@ -19,7 +19,7 @@ func softmax(xs []float64) []float64 {
 	return ys
 }
 
-func softmaxStable(xs []float64) []float64 {
+func SoftmaxStable(xs []float64) []float64 {
 	index := IndexOfMax(xs)
 	if index == -1 {
 		return nil

@@ -57,7 +57,8 @@ func doSpiral() error {
 
 	fmt.Println("len samples:", len(samples))
 
-	p, err := neural.NewMLP(2, 50, 50, 1)
+	layers := neural.MakeLayers(neural.ActSigmoid, 2, 50, 50, 1)
+	p, err := neural.NewNeural(layers)
 	if err != nil {
 		return err
 	}
@@ -81,7 +82,7 @@ func doSpiral() error {
 
 		t1 := time.Now()
 		if t1.Sub(start) > 10*time.Second {
-			err = imut.SaveImagePNG(imut.MakeGrayFromMLP(p, size), filename)
+			err = imut.SaveImagePNG(imut.MakeGrayFromNeural(p, size), filename)
 			if err != nil {
 				return false
 			}
@@ -101,7 +102,7 @@ func doSpiral() error {
 		return err
 	}
 
-	return imut.SaveImagePNG(imut.MakeGrayFromMLP(p, size), filename)
+	return imut.SaveImagePNG(imut.MakeGrayFromNeural(p, size), filename)
 }
 
 func drawSpiral(dc *gg.Context, size image.Point) {

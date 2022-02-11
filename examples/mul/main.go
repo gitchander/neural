@@ -14,7 +14,8 @@ func main() {
 	r := random.NewRandNow()
 	samples := makeSamples(r)
 
-	p, err := neural.NewMLP(2, 3, 1)
+	layers := neural.MakeLayers(neural.ActSigmoid, 2, 3, 1)
+	p, err := neural.NewNeural(layers)
 	checkError(err)
 	p.RandomizeWeightsRand(r)
 

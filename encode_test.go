@@ -6,7 +6,23 @@ import (
 )
 
 func TestEncode(t *testing.T) {
-	p, err := NewMLP(7, 100, 10)
+
+	rs := []Layer{
+		Layer{
+			ActivationType: ActSigmoid,
+			Neurons:        7,
+		},
+		Layer{
+			ActivationType: ActSigmoid,
+			Neurons:        100,
+		},
+		Layer{
+			ActivationType: ActSigmoid,
+			Neurons:        10,
+		},
+	}
+
+	p, err := NewNeural(rs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -31,7 +47,7 @@ func TestEncode(t *testing.T) {
 	}
 }
 
-func Equal(a, b *MLP) bool {
+func Equal(a, b *Neural) bool {
 	var (
 		layersA = a.layers
 		layersB = b.layers

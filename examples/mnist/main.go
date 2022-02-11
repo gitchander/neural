@@ -12,6 +12,7 @@ import (
 
 	"github.com/gitchander/neural"
 	"github.com/gitchander/neural/dataset/mnist"
+	"github.com/gitchander/neural/neutil"
 )
 
 func main() {
@@ -20,7 +21,7 @@ func main() {
 
 	flag.StringVar(&(c.Dirname), "dir", ".", "mnist directory")
 	flag.StringVar(&(c.Mode), "mode", "test", "train or test mode")
-	flag.StringVar(&(c.NameMLP), "mlp", "mlp1ws", "filename MLP structure")
+	flag.StringVar(&(c.NeuralName), "neural", "neural", "filename neural network")
 
 	flag.Parse()
 
@@ -35,23 +36,23 @@ func checkError(err error) {
 }
 
 type Config struct {
-	Dirname string
-	Mode    string
-	NameMLP string
+	Dirname    string
+	Mode       string
+	NeuralName string
 }
 
 func run(c Config) error {
 	switch c.Mode {
 	case "train":
-		return train(c.Dirname, c.NameMLP)
+		return train(c.Dirname, c.NeuralName)
 	case "test":
-		return test(c.Dirname, c.NameMLP)
+		return test(c.Dirname, c.NeuralName)
 	default:
 		return fmt.Errorf("invalid mode: %s", c.Mode)
 	}
 }
 
-func train(dirname, nameMLP string) error {
+func train(dirname, neuralName string) error {
 
 	dbfs := mnist.MakeDBFiles(dirname)
 
@@ -60,9 +61,10 @@ func train(dirname, nameMLP string) error {
 		return err
 	}
 
-	p, err := neural.ReadFile(nameMLP)
+	p, err := neural.ReadFile(neuralName)
 	if err != nil {
-		p, err = neural.NewMLP(28*28, 14*14, 7*7, 10)
+		layers := neural.MakeLayers(neural.ActSigmoid, 28*28, 14*14, 7*7, 10)
+		p, err = neural.NewNeural(layers)
 		if err != nil {
 			return err
 		}
@@ -78,7 +80,7 @@ func train(dirname, nameMLP string) error {
 
 	f := func(epoch int, averageCost float64) bool {
 
-		err := neural.WriteFile(nameMLP, p)
+		err := neural.WriteFile(neuralName, p)
 		if err != nil {
 			writeError = err
 			return false
@@ -99,7 +101,7 @@ func train(dirname, nameMLP string) error {
 	return writeError
 }
 
-func test(dirname, nameMLP string) error {
+func test(dirname, neuralName string) error {
 
 	dbfs := mnist.MakeDBFiles(dirname)
 
@@ -113,7 +115,7 @@ func test(dirname, nameMLP string) error {
 		return err
 	}
 
-	p, err := neural.ReadFile(nameMLP)
+	p, err := neural.ReadFile(neuralName)
 	if err != nil {
 		return err
 	}
@@ -130,7 +132,7 @@ func test(dirname, nameMLP string) error {
 
 		var (
 			labelIdeal = int(labels[i])
-			label      = neural.IndexOfMax(outputs)
+			label      = neutil.IndexOfMax(outputs)
 		)
 		if labelIdeal != label {
 			//			name := filepath.Join("bad_images", fmt.Sprintf("test_%05d_%d_%d.png", i, labelIdeal, label))

@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func WriteFile(filename string, p *MLP) error {
+func WriteFile(filename string, p *Neural) error {
 	file, err := os.Create(filename)
 	if err != nil {
 		return err
@@ -16,7 +16,7 @@ func WriteFile(filename string, p *MLP) error {
 	return Encode(bw, p)
 }
 
-func ReadFile(filename string) (*MLP, error) {
+func ReadFile(filename string) (*Neural, error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err

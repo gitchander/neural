@@ -12,7 +12,8 @@ func main() {
 	checkError(err)
 	neural.NormalizeInputs(samples)
 
-	p, err := neural.NewMLP(13, 3, 3)
+	layers := neural.MakeLayers(neural.ActSigmoid, 13, 3, 3)
+	p, err := neural.NewNeural(layers)
 	checkError(err)
 	p.RandomizeWeights()
 

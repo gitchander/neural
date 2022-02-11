@@ -22,7 +22,8 @@ func testOperator(op operator) {
 
 	samples := makeSamplesByOperator(op)
 
-	p, err := neural.NewMLP(2, 3, 1)
+	layers := neural.MakeLayers(neural.ActSigmoid, 2, 3, 1)
+	p, err := neural.NewNeural(layers)
 	checkError(err)
 	p.RandomizeWeights()
 	const (
@@ -61,7 +62,8 @@ func makeOperatorImage(op operator) {
 
 	samples := makeSamplesByOperator(op)
 
-	p, err := neural.NewMLP(2, 3, 1)
+	layers := neural.MakeLayers(neural.ActSigmoid, 2, 3, 1)
+	p, err := neural.NewNeural(layers)
 	checkError(err)
 	p.RandomizeWeights()
 
@@ -193,7 +195,8 @@ func testNot() {
 			Outputs: []float64{0},
 		},
 	}
-	p, err := neural.NewMLP(1, 1)
+	layers := neural.MakeLayers(neural.ActSigmoid, 1, 1)
+	p, err := neural.NewNeural(layers)
 	checkError(err)
 	p.RandomizeWeights()
 

@@ -57,8 +57,10 @@ func doSpiral() error {
 	}
 	//-----------------------------------------------
 
-	p, err := neural.NewMLP(2, 100, 1)
-	//p, err := neural.NewMLP(2, 20, 20, 1)
+	layers := neural.MakeLayers(neural.ActSigmoid, 2, 100, 1)
+	//layers := neural.MakeLayers(neural.ActSigmoid, 2, 20, 20, 1)
+
+	p, err := neural.NewNeural(layers)
 	if err != nil {
 		return err
 	}
@@ -99,9 +101,9 @@ func doSpiral() error {
 	return makeOutImage(p, size, samples, filename)
 }
 
-func makeOutImage(p *neural.MLP, size image.Point, samples []neural.Sample, filename string) error {
+func makeOutImage(p *neural.Neural, size image.Point, samples []neural.Sample, filename string) error {
 
-	g := imut.MakeGrayFromMLP(p, size)
+	g := imut.MakeGrayFromNeural(p, size)
 
 	dc := gg.NewContext(size.X, size.Y)
 	dc.DrawImage(g, 0, 0)
