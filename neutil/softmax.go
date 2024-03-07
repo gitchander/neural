@@ -20,12 +20,13 @@ func Softmax(xs []float64) []float64 {
 }
 
 func SoftmaxStable(xs []float64) []float64 {
-	index := IndexOfMax(xs)
-	if index == -1 {
+	if len(xs) == 0 {
 		return nil
 	}
-	max := xs[index]
-	ys := make([]float64, len(xs))
+	var (
+		max = maxFloat64s(xs)
+		ys  = make([]float64, len(xs))
+	)
 	var sum float64
 	for i, x := range xs {
 		ys[i] = math.Exp(x - max)

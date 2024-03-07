@@ -1,9 +1,21 @@
 package imut
 
-import "math"
+import (
+	"image"
+)
+
+var _ image.Point = image.Pt(0, 0)
 
 type Point2f struct {
 	X, Y float64
+}
+
+// Pt2f is shorthand for [Point2f]{X, Y}.
+func Pt2f(x, y float64) Point2f {
+	return Point2f{
+		X: x,
+		Y: y,
+	}
 }
 
 func (a Point2f) Add(b Point2f) Point2f {
@@ -32,16 +44,4 @@ func (a Point2f) DivScalar(scalar float64) Point2f {
 		X: a.X / scalar,
 		Y: a.Y / scalar,
 	}
-}
-
-//------------------------------------------------------------------------------
-// https://brilliant.org/wiki/convert-polar-coordinates-to-cartesian/
-//------------------------------------------------------------------------------
-// x = r * cos(θ)
-// y = r * sin(θ)​
-//------------------------------------------------------------------------------
-func PolarToCartesian(radius, angle float64) Point2f {
-	sin, cos := math.Sincos(angle)
-	p := Point2f{X: cos, Y: sin}
-	return p.MulScalar(radius)
 }

@@ -50,7 +50,9 @@ func clampFloat64(x float64, min, max float64) float64 {
 // OneHot(4, 3): [0, 0, 0, 1]
 func OneHot(n, i int) []float64 {
 	vs := make([]float64, n)
-	vs[i] = 1
+	if n > 0 {
+		vs[i] = 1
+	}
 	return vs
 }
 

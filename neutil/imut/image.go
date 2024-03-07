@@ -13,12 +13,12 @@ import (
 )
 
 func SaveImagePNG(m image.Image, filename string) error {
-	var buf bytes.Buffer
-	err := png.Encode(&buf, m)
+	var b bytes.Buffer
+	err := png.Encode(&b, m)
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(filename, buf.Bytes(), 0666)
+	return ioutil.WriteFile(filename, b.Bytes(), 0666)
 }
 
 func MakeGray(m image.Image) *image.Gray {

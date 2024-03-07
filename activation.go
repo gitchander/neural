@@ -43,6 +43,7 @@ func MakeActivationFunc(at ActivationType) ActivationFunc {
 }
 
 //------------------------------------------------------------------------------
+
 // Linear or Identity
 type Linear struct{}
 
@@ -57,6 +58,7 @@ func (Linear) Derivative(fx float64) float64 {
 }
 
 //------------------------------------------------------------------------------
+
 // Binary Step
 type Step struct{}
 
@@ -74,6 +76,7 @@ func (Step) Derivative(fx float64) float64 {
 }
 
 //------------------------------------------------------------------------------
+
 type ReLU struct{}
 
 var _ ActivationFunc = ReLU{}
@@ -93,6 +96,7 @@ func (ReLU) Derivative(fx float64) float64 {
 }
 
 //------------------------------------------------------------------------------
+
 type Sigmoid struct{}
 
 var _ ActivationFunc = Sigmoid{}
@@ -118,6 +122,7 @@ func (Sigmoid) Derivative(fx float64) float64 {
 }
 
 //------------------------------------------------------------------------------
+
 // type Logistic struct {
 // 	Alpha float64
 // }
@@ -141,6 +146,7 @@ func (Sigmoid) Derivative(fx float64) float64 {
 // }
 
 //------------------------------------------------------------------------------
+
 // range: (-1, 1)
 type Tanh struct{}
 

@@ -1,50 +1,84 @@
 package neutil
 
+import (
+	"math"
+)
+
+func square(x float64) float64 {
+	return x * x
+}
+
+// https://en.wikipedia.org/wiki/Mean
 func Mean(xs []float64) float64 {
-	var sum float64
+	s := 0.0
 	for _, x := range xs {
-		sum += x
+		s += x
 	}
-	return sum / float64(len(xs))
+	return s / float64(len(xs))
 }
 
-// mean squared error
-// https://en.wikipedia.org/wiki/Mean_squared_error
-func MSE(a, b []float64) float64 {
-	n := len(a)
-	if n != len(b) {
-		panic("length not equal")
+func Variance(xs []float64) float64 {
+	var (
+		s    = 0.0
+		mean = Mean(xs)
+	)
+	for _, x := range xs {
+		s += square(x - mean)
 	}
-	sum := 0.0
-	for i := 0; i < n; i++ {
-		delta := a[i] - b[i]
-		sum += delta * delta
+	return s / float64(len(xs))
+}
+
+// Average RMS: Root Mean Square
+
+type Stat struct {
+	Min      float64
+	Max      float64
+	Mean     float64
+	Variance float64
+	RMS      float64 // sqrt(Variance)
+}
+
+func CalcStat(xs []float64) *Stat {
+	min, max := floatsMinMax(xs)
+	var (
+		s    = 0.0
+		mean = Mean(xs)
+	)
+	for _, x := range xs {
+		s += square(x - mean)
 	}
-	return sum / float64(n)
+	var (
+		variance = s / float64(len(xs))
+		rms      = math.Sqrt(variance)
+	)
+	return &Stat{
+		Min:      min,
+		Max:      max,
+		Mean:     mean,
+		Variance: variance,
+		RMS:      rms,
+	}
 }
 
-type Statistics struct {
-	sum    float64
-	sumSqr float64
-	n      int
+func floatsMinMax(as []float64) (min, max float64) {
+	imin, imax := indexesMinMaxFloat64(as)
+	min, max = as[imin], as[imax]
+	return
 }
 
-func (st *Statistics) Reset() {
-	st.sum = 0
-	st.sumSqr = 0
-	st.n = 0
-}
-
-func (st *Statistics) Add(x float64) {
-	st.sum += x
-	st.sumSqr += x * x
-	st.n++
-}
-
-func (st *Statistics) Mean() float64 {
-	return st.sum / float64(st.n)
-}
-
-func (st *Statistics) MSE() float64 {
-	return st.sumSqr / float64(st.n)
+func indexesMinMaxFloat64(xs []float64) (imin, imax int) {
+	n := len(xs)
+	if n == 0 {
+		return 0, 0
+	}
+	imin, imax = 0, 0
+	for i := 1; i < n; i++ {
+		if xs[imin] > xs[i] {
+			imin = i
+		}
+		if xs[imax] < xs[i] {
+			imax = i
+		}
+	}
+	return imin, imax
 }

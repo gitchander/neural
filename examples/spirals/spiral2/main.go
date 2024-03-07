@@ -67,7 +67,7 @@ func doSpiral() error {
 	p.RandomizeWeights()
 
 	const (
-		learnRate = 0.8
+		learnRate = 0.6
 		epochMax  = 1000000
 		epsilon   = 0.000001
 	)
@@ -161,14 +161,22 @@ func makeSamples() []neural.Sample {
 
 		R := angle * angleFactor
 
-		p := center.Add(imut.PolarToCartesian(R, angle))
+		plr := imut.Polar{
+			Rho: R,
+			Phi: angle,
+		}
+		p := center.Add(imut.PolarToCartesian(plr))
 
 		samples[i*2+0] = neural.Sample{
 			Inputs:  []float64{p.X, p.Y},
 			Outputs: []float64{0},
 		}
 
-		p = center.Add(imut.PolarToCartesian(R, angle+math.Pi))
+		plr = imut.Polar{
+			Rho: R,
+			Phi: angle + math.Pi,
+		}
+		p = center.Add(imut.PolarToCartesian(plr))
 
 		samples[i*2+1] = neural.Sample{
 			Inputs:  []float64{p.X, p.Y},

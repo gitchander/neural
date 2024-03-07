@@ -123,13 +123,21 @@ func drawSpiral(dc *gg.Context, size image.Point) {
 
 		R := radius * (1 + angle*angleFactor)
 
-		p := center.Add(imut.PolarToCartesian(R, angle))
+		plr := imut.Polar{
+			Rho: R,
+			Phi: angle,
+		}
+		p := center.Add(imut.PolarToCartesian(plr))
 
 		dc.DrawCircle(p.X, p.Y, radius)
 		dc.SetRGB(0, 0, 0)
 		dc.Fill()
 
-		p = center.Add(imut.PolarToCartesian(R, angle+math.Pi))
+		plr = imut.Polar{
+			Rho: R,
+			Phi: angle + math.Pi,
+		}
+		p = center.Add(imut.PolarToCartesian(plr))
 
 		dc.DrawCircle(p.X, p.Y, radius)
 		dc.SetRGB(1, 1, 1)
