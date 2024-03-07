@@ -17,12 +17,12 @@ func main() {
 	layers := neural.MakeLayers(neural.ActSigmoid, 2, 3, 1)
 	p, err := neural.NewNeural(layers)
 	checkError(err)
-	p.RandomizeWeightsRand(r)
+	p.RandomizeWeights()
 
 	const (
 		learnRate = 0.7
 		epochMax  = 1000
-		epsilon   = 0.001
+		epsilon   = 0.0001
 	)
 
 	f := func(epoch int, averageCost float64) bool {

@@ -4,6 +4,8 @@ import (
 	"math"
 )
 
+// https://en.wikipedia.org/wiki/Activation_function
+
 type ActivationType int
 
 const (
@@ -14,8 +16,6 @@ const (
 	ActTanh
 	ActSoftmax
 )
-
-// https://en.wikipedia.org/wiki/Activation_function
 
 // The activation function
 type ActivationFunc interface {
@@ -36,7 +36,7 @@ func MakeActivationFunc(at ActivationType) ActivationFunc {
 	case ActTanh:
 		return Tanh{}
 	case ActSoftmax:
-		return Linear{}
+		return afSoftmax{}
 	default:
 		return Linear{}
 	}
@@ -77,15 +77,19 @@ func (Step) Derivative(fx float64) float64 {
 
 //------------------------------------------------------------------------------
 
+// https://en.wikipedia.org/wiki/Rectifier_(neural_networks)
+
 type ReLU struct{}
 
 var _ ActivationFunc = ReLU{}
 
+// max(0, x)
+
 func (ReLU) Func(x float64) float64 {
-	if x < 0 {
-		return 0
+	if x > 0 {
+		return x
 	}
-	return x
+	return 0
 }
 
 func (ReLU) Derivative(fx float64) float64 {
@@ -93,6 +97,28 @@ func (ReLU) Derivative(fx float64) float64 {
 		return 1
 	}
 	return 0
+}
+
+//------------------------------------------------------------------------------
+
+type Logistic struct {
+	Alpha float64
+}
+
+var _ ActivationFunc = Logistic{}
+
+func (p Logistic) Func(x float64) float64 {
+
+	// latex: {f(x) = {\frac {1}{1 + e^{-\alpha x}}}}
+
+	return 1 / (1 + math.Exp(-p.Alpha*x))
+}
+
+func (p Logistic) Derivative(fx float64) float64 {
+
+	// latex: {{\frac {\partial f(x)}{\partial x}} = \alpha f(x) (1 - f(x))}
+
+	return p.Alpha * fx * (1 - fx)
 }
 
 //------------------------------------------------------------------------------
@@ -105,8 +131,7 @@ var _ ActivationFunc = Sigmoid{}
 // for use in activation functions.
 func (Sigmoid) Func(x float64) float64 {
 
-	// latex:
-	// {f(x) = {\frac {1}{1 + e^{-x}}}}
+	// latex: {f(x) = {\frac {1}{1 + e^{-x}}}}
 
 	return 1 / (1 + math.Exp(-x))
 }
@@ -115,35 +140,10 @@ func (Sigmoid) Func(x float64) float64 {
 // of the sigmoid function for backpropagation.
 func (Sigmoid) Derivative(fx float64) float64 {
 
-	// latex:
-	// {{\frac {\partial f(x)}{\partial x}} = f(x)(1 - f(x))}
+	// latex: {{\frac {\partial f(x)}{\partial x}} = f(x)(1 - f(x))}
 
 	return fx * (1 - fx)
 }
-
-//------------------------------------------------------------------------------
-
-// type Logistic struct {
-// 	Alpha float64
-// }
-
-// var _ ActivationFunc = Logistic{}
-
-// func (p Logistic) Func(x float64) float64 {
-
-// 	// latex:
-// 	// {f(x) = {\frac {1}{1 + e^{-\alpha x}}}}
-
-// 	return 1 / (1 + math.Exp(-p.Alpha*x))
-// }
-
-// func (p Logistic) Derivative(fx float64) float64 {
-
-// 	// latex:
-// 	// {{\frac {\partial f(x)}{\partial x}} = \alpha f(x) (1 - f(x))}
-
-// 	return p.Alpha * fx * (1 - fx)
-// }
 
 //------------------------------------------------------------------------------
 
@@ -154,8 +154,7 @@ var _ ActivationFunc = Tanh{}
 
 func (Tanh) Func(x float64) float64 {
 
-	// latex:
-	// {f(x)=\frac{e^{2 x}-1}{e^{2 x}+1}}
+	// latex: {f(x)=\frac{e^{2 x}-1}{e^{2 x}+1}}
 
 	a := math.Exp(2 * x)
 	return (a - 1) / (a + 1)
@@ -163,8 +162,25 @@ func (Tanh) Func(x float64) float64 {
 
 func (Tanh) Derivative(fx float64) float64 {
 
-	// latex:
-	// {{\frac {\partial f(x)}{\partial x}} = 1-f(x)^2}
+	// latex: {{\frac {\partial f(x)}{\partial x}} = 1-f(x)^2}
 
 	return (1 - fx*fx)
 }
+
+//------------------------------------------------------------------------------
+
+// https://www.parasdahal.com/softmax-crossentropy
+
+type afSoftmax struct{}
+
+var _ ActivationFunc = afSoftmax{}
+
+func (afSoftmax) Func(x float64) float64 {
+	return math.Exp(x) // this is just nominator of softmax equation
+}
+
+func (afSoftmax) Derivative(fx float64) float64 {
+	return fx * (1 - fx)
+}
+
+//------------------------------------------------------------------------------

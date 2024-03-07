@@ -48,7 +48,7 @@ func Decode(r io.Reader) (*Neural, error) {
 	if err != nil {
 		return nil, err
 	}
-	rs := make([]Layer, int(u16))
+	rs := make([]LayerInfo, int(u16))
 	for i := range rs {
 		u8, err := br.ReadUint8()
 		if err != nil {
@@ -58,7 +58,7 @@ func Decode(r io.Reader) (*Neural, error) {
 		if err != nil {
 			return nil, err
 		}
-		rs[i] = Layer{
+		rs[i] = LayerInfo{
 			ActivationType: ActivationType(u8),
 			Neurons:        int(u16),
 		}

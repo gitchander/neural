@@ -42,12 +42,17 @@ func clampFloat64(x float64, min, max float64) float64 {
 	return x
 }
 
+//------------------------------------------------------------------------------
+
 // https://en.wikipedia.org/wiki/One-hot
+
+// Examples:
 // OneHot(3, 0): [1, 0, 0]
 // OneHot(3, 1): [0, 1, 0]
 // OneHot(3, 2): [0, 0, 1]
 // OneHot(4, 0): [1, 0, 0, 0]
 // OneHot(4, 3): [0, 0, 0, 1]
+
 func OneHot(n, i int) []float64 {
 	vs := make([]float64, n)
 	if n > 0 {
@@ -55,6 +60,8 @@ func OneHot(n, i int) []float64 {
 	}
 	return vs
 }
+
+//------------------------------------------------------------------------------
 
 func NormalizeInputs(samples []Sample) {
 

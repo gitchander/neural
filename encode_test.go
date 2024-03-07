@@ -7,16 +7,16 @@ import (
 
 func TestEncode(t *testing.T) {
 
-	rs := []Layer{
-		Layer{
+	rs := []LayerInfo{
+		{
 			ActivationType: ActSigmoid,
 			Neurons:        7,
 		},
-		Layer{
+		{
 			ActivationType: ActSigmoid,
 			Neurons:        100,
 		},
-		Layer{
+		{
 			ActivationType: ActSigmoid,
 			Neurons:        10,
 		},

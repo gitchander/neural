@@ -1,6 +1,6 @@
 package neural
 
-type Layer struct {
+type LayerInfo struct {
 	ActivationType ActivationType
 	Neurons        int
 }
@@ -11,10 +11,10 @@ type layer struct {
 	neurons []*neuron
 }
 
-func MakeLayers(at ActivationType, ds ...int) []Layer {
-	layers := make([]Layer, len(ds))
+func MakeLayers(at ActivationType, ds ...int) []LayerInfo {
+	layers := make([]LayerInfo, len(ds))
 	for i, d := range ds {
-		layers[i] = Layer{
+		layers[i] = LayerInfo{
 			ActivationType: at,
 			Neurons:        d,
 		}

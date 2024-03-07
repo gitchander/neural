@@ -12,7 +12,7 @@ type Neural struct {
 	layers []*layer
 }
 
-func NewNeural(rs []Layer) (*Neural, error) {
+func NewNeural(rs []LayerInfo) (*Neural, error) {
 	if len(rs) < 2 {
 		return nil, errors.New("neural: invalid number of layers")
 	}
@@ -55,11 +55,11 @@ func (p *Neural) Topology() []int {
 }
 
 func (p *Neural) RandomizeWeights() {
-	r := random.NewRandNow()
-	p.RandomizeWeightsRand(r)
+	r := random.NewRandSeed(random.NextSeed())
+	p.randomizeWeightsRand(r)
 }
 
-func (p *Neural) RandomizeWeightsRand(r *rand.Rand) {
+func (p *Neural) randomizeWeightsRand(r *rand.Rand) {
 	for k := 1; k < len(p.layers); k++ {
 		l := p.layers[k]
 		for _, n := range l.neurons {
@@ -86,6 +86,7 @@ func (p *Neural) GetOutputs(outputs []float64) {
 	}
 }
 
+// forward
 func (p *Neural) Calculate() {
 	for k := 1; k < len(p.layers); k++ {
 		var (
@@ -99,6 +100,17 @@ func (p *Neural) Calculate() {
 			}
 			sum += currNeuron.bias * 1
 			currNeuron.out = currLayer.actFunc.Func(sum)
+		}
+
+		// If current activation function is Softmax
+		if currLayer.at == ActSoftmax {
+			var sum float64
+			for _, currNeuron := range currLayer.neurons {
+				sum += currNeuron.out
+			}
+			for _, currNeuron := range currLayer.neurons {
+				currNeuron.out /= sum
+			}
 		}
 	}
 }
