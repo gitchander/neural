@@ -14,9 +14,14 @@ func NewBaseReader(r io.Reader) *BaseReader {
 	return &BaseReader{r: r}
 }
 
+func (p *BaseReader) readFull(data []byte) error {
+	_, err := io.ReadFull(p.r, data)
+	return err
+}
+
 func (p *BaseReader) ReadUint8() (uint8, error) {
 	buf := p.buf[:bytesPerUint8]
-	_, err := io.ReadFull(p.r, buf)
+	err := p.readFull(buf)
 	if err != nil {
 		return 0, err
 	}
@@ -25,7 +30,7 @@ func (p *BaseReader) ReadUint8() (uint8, error) {
 
 func (p *BaseReader) ReadUint16() (uint16, error) {
 	buf := p.buf[:bytesPerUint16]
-	_, err := io.ReadFull(p.r, buf)
+	err := p.readFull(buf)
 	if err != nil {
 		return 0, err
 	}
@@ -34,7 +39,7 @@ func (p *BaseReader) ReadUint16() (uint16, error) {
 
 func (p *BaseReader) ReadUint32() (uint32, error) {
 	buf := p.buf[:bytesPerUint32]
-	_, err := io.ReadFull(p.r, buf)
+	err := p.readFull(buf)
 	if err != nil {
 		return 0, err
 	}
@@ -43,7 +48,7 @@ func (p *BaseReader) ReadUint32() (uint32, error) {
 
 func (p *BaseReader) ReadUint64() (uint64, error) {
 	buf := p.buf[:bytesPerUint64]
-	_, err := io.ReadFull(p.r, buf)
+	err := p.readFull(buf)
 	if err != nil {
 		return 0, err
 	}

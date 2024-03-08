@@ -5,7 +5,6 @@ import (
 )
 
 // https://deepnotes.io/softmax-crossentropy
-
 func Softmax(xs []float64) []float64 {
 	ys := make([]float64, len(xs))
 	var sum float64
