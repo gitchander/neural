@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/gitchander/neural"
+	gone "github.com/gitchander/neural/goneural"
 )
 
 func main() {
 
 	samples := makeSamples()
 
-	layers := neural.MakeLayers(neural.ActSigmoid, 4, 8, outN)
-	p, err := neural.NewNeural(layers)
+	layers := gone.MakeLayers("sigmoid", 4, 8, outN)
+	p, err := gone.NewNeural(layers)
 	checkError(err)
 	p.RandomizeWeights()
 
@@ -31,7 +31,7 @@ func main() {
 		return true
 	}
 
-	err = neural.Learn(p, samples, learnRate, epochMax, f)
+	err = gone.Learn(p, samples, learnRate, epochMax, f)
 	checkError(err)
 }
 
@@ -43,7 +43,7 @@ func checkError(err error) {
 
 const outN = 4
 
-func makeSamples() []neural.Sample {
+func makeSamples() []gone.Sample {
 
 	// https://www.youtube.com/watch?v=ILsA4nyG7I0
 
@@ -54,21 +54,21 @@ func makeSamples() []neural.Sample {
 		diagonal
 	)
 
-	samples := []neural.Sample{
+	samples := []gone.Sample{
 		// solid
 		{
 			Inputs: []float64{
 				0, 0,
 				0, 0,
 			},
-			Outputs: neural.OneHot(outN, solid),
+			Outputs: gone.OneHot(outN, solid),
 		},
 		{
 			Inputs: []float64{
 				1, 1,
 				1, 1,
 			},
-			Outputs: neural.OneHot(outN, solid),
+			Outputs: gone.OneHot(outN, solid),
 		},
 		// horizontal
 		{
@@ -76,14 +76,14 @@ func makeSamples() []neural.Sample {
 				1, 1,
 				0, 0,
 			},
-			Outputs: neural.OneHot(outN, horizontal),
+			Outputs: gone.OneHot(outN, horizontal),
 		},
 		{
 			Inputs: []float64{
 				0, 0,
 				1, 1,
 			},
-			Outputs: neural.OneHot(outN, horizontal),
+			Outputs: gone.OneHot(outN, horizontal),
 		},
 		// vertical
 		{
@@ -91,14 +91,14 @@ func makeSamples() []neural.Sample {
 				1, 0,
 				1, 0,
 			},
-			Outputs: neural.OneHot(outN, vertical),
+			Outputs: gone.OneHot(outN, vertical),
 		},
 		{
 			Inputs: []float64{
 				0, 1,
 				0, 1,
 			},
-			Outputs: neural.OneHot(outN, vertical),
+			Outputs: gone.OneHot(outN, vertical),
 		},
 		// diagonal
 		{
@@ -106,14 +106,14 @@ func makeSamples() []neural.Sample {
 				1, 0,
 				0, 1,
 			},
-			Outputs: neural.OneHot(outN, diagonal),
+			Outputs: gone.OneHot(outN, diagonal),
 		},
 		{
 			Inputs: []float64{
 				0, 1,
 				1, 0,
 			},
-			Outputs: neural.OneHot(outN, diagonal),
+			Outputs: gone.OneHot(outN, diagonal),
 		},
 	}
 	return samples

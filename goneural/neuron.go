@@ -1,4 +1,4 @@
-package neural
+package goneural
 
 type neuron struct {
 	weights []float64 // input weights

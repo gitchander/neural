@@ -4,16 +4,28 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/gitchander/neural"
+	gone "github.com/gitchander/neural/goneural"
 )
 
 func main() {
+	checkError(run())
+}
+
+func checkError(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func run() error {
 
 	samples := makeSamples()
 
-	layers := neural.MakeLayers(neural.ActSigmoid, 4, 20, 7)
-	p, err := neural.NewNeural(layers)
-	checkError(err)
+	layers := gone.MakeLayers("sigmoid", 4, 20, 7)
+	p, err := gone.NewNeural(layers)
+	if err != nil {
+		return err
+	}
 	p.RandomizeWeights()
 
 	const (
@@ -31,12 +43,5 @@ func main() {
 		return true
 	}
 
-	err = neural.Learn(p, samples, learnRate, epochMax, f)
-	checkError(err)
-}
-
-func checkError(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
+	return gone.Learn(p, samples, learnRate, epochMax, f)
 }

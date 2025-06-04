@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/gitchander/neural"
+	gone "github.com/gitchander/neural/goneural"
 )
 
 func main() {
@@ -24,10 +24,10 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	neural.NormalizeInputs(samples)
+	gone.NormalizeInputs(samples)
 
-	layers := neural.MakeLayers(neural.ActSigmoid, 4, 3, 3)
-	p, err := neural.NewNeural(layers)
+	layers := gone.MakeLayers("sigmoid", 4, 3, 3)
+	p, err := gone.NewNeural(layers)
 	if err != nil {
 		return err
 	}
@@ -48,5 +48,5 @@ func run() error {
 		return true
 	}
 
-	return neural.Learn(p, samples, learnRate, epochMax, f)
+	return gone.Learn(p, samples, learnRate, epochMax, f)
 }

@@ -1,4 +1,4 @@
-package neural
+package goneural
 
 import (
 	"bytes"
@@ -7,22 +7,28 @@ import (
 
 func TestEncode(t *testing.T) {
 
-	rs := []LayerInfo{
+	lcs := []LayerConfig{
 		{
-			ActivationType: ActSigmoid,
-			Neurons:        7,
+			Activation: ActivationConfig{
+				Name: "sigmoid",
+			},
+			Neurons: 7,
 		},
 		{
-			ActivationType: ActSigmoid,
-			Neurons:        100,
+			Activation: ActivationConfig{
+				Name: "sigmoid",
+			},
+			Neurons: 100,
 		},
 		{
-			ActivationType: ActSigmoid,
-			Neurons:        10,
+			Activation: ActivationConfig{
+				Name: "sigmoid",
+			},
+			Neurons: 10,
 		},
 	}
 
-	p, err := NewNeural(rs)
+	p, err := NewNeural(lcs)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -8,7 +8,7 @@ import (
 	"image/png"
 	"io/ioutil"
 
-	"github.com/gitchander/neural"
+	gone "github.com/gitchander/neural/goneural"
 	"github.com/gitchander/neural/neutil"
 )
 
@@ -31,7 +31,7 @@ func MakeGray(m image.Image) *image.Gray {
 	return g
 }
 
-func MakeSamplesGray(g *image.Gray) []neural.Sample {
+func MakeSamplesGray(g *image.Gray) []gone.Sample {
 
 	r := g.Bounds()
 
@@ -40,7 +40,7 @@ func MakeSamplesGray(g *image.Gray) []neural.Sample {
 		Y: r.Dy(),
 	}
 
-	samples := make([]neural.Sample, 0, size.X*size.Y)
+	samples := make([]gone.Sample, 0, size.X*size.Y)
 
 	for x := r.Min.X; x < r.Max.X; x++ {
 		for y := r.Min.Y; y < r.Max.Y; y++ {
@@ -54,7 +54,7 @@ func MakeSamplesGray(g *image.Gray) []neural.Sample {
 
 			out := float64(cg.Y) / 255
 
-			sample := neural.Sample{
+			sample := gone.Sample{
 				Inputs:  []float64{xf, yf},
 				Outputs: []float64{out},
 			}
@@ -66,7 +66,7 @@ func MakeSamplesGray(g *image.Gray) []neural.Sample {
 	return samples
 }
 
-func MakeGrayFromNeural_outs(p *neural.Neural, size image.Point) *image.Gray {
+func MakeGrayFromNeural_outs(p *gone.Neural, size image.Point) *image.Gray {
 	var (
 		r = image.Rectangle{Max: size}
 		g = image.NewGray(r)
@@ -97,7 +97,7 @@ func MakeGrayFromNeural_outs(p *neural.Neural, size image.Point) *image.Gray {
 	return g
 }
 
-func MakeGrayFromNeural(p *neural.Neural, size image.Point) *image.Gray {
+func MakeGrayFromNeural(p *gone.Neural, size image.Point) *image.Gray {
 	var (
 		r = image.Rectangle{Max: size}
 		g = image.NewGray(r)

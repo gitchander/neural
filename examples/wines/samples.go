@@ -3,16 +3,16 @@ package main
 import (
 	"os"
 
-	"github.com/gitchander/neural"
+	gone "github.com/gitchander/neural/goneural"
 	"github.com/gocarina/gocsv"
 )
 
-func makeSamplesFile(filename string) (samples []neural.Sample, err error) {
+func makeSamplesFile(filename string) (samples []gone.Sample, err error) {
 	ws, err := readWines(filename)
 	if err != nil {
 		return nil, err
 	}
-	samples = make([]neural.Sample, len(ws))
+	samples = make([]gone.Sample, len(ws))
 	for i, w := range ws {
 		samples[i] = makeSample(w)
 	}
@@ -46,8 +46,8 @@ func readWines(filename string) (ws []*WineInfo, err error) {
 	return ws, err
 }
 
-func makeSample(w *WineInfo) neural.Sample {
-	return neural.Sample{
+func makeSample(w *WineInfo) gone.Sample {
+	return gone.Sample{
 		Inputs: []float64{
 			w.Alcohol,
 			w.MalicAcid,
@@ -63,6 +63,6 @@ func makeSample(w *WineInfo) neural.Sample {
 			w.OD,
 			w.Proline,
 		},
-		Outputs: neural.OneHot(3, w.WineClass-1),
+		Outputs: gone.OneHot(3, w.WineClass-1),
 	}
 }

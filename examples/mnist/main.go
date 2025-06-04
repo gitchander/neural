@@ -10,8 +10,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/gitchander/neural"
 	"github.com/gitchander/neural/dataset/mnist"
+	gone "github.com/gitchander/neural/goneural"
 	"github.com/gitchander/neural/neutil"
 )
 
@@ -61,10 +61,10 @@ func train(dirname, neuralName string) error {
 		return err
 	}
 
-	p, err := neural.ReadFile(neuralName)
+	p, err := gone.ReadFile(neuralName)
 	if err != nil {
-		layers := neural.MakeLayers(neural.ActSigmoid, 28*28, 14*14, 7*7, 10)
-		p, err = neural.NewNeural(layers)
+		layers := gone.MakeLayers("sigmoid", 28*28, 14*14, 7*7, 10)
+		p, err = gone.NewNeural(layers)
 		if err != nil {
 			return err
 		}
@@ -80,7 +80,7 @@ func train(dirname, neuralName string) error {
 
 	f := func(epoch int, averageCost float64) bool {
 
-		err := neural.WriteFile(neuralName, p)
+		err := gone.WriteFile(neuralName, p)
 		if err != nil {
 			writeError = err
 			return false
@@ -93,7 +93,7 @@ func train(dirname, neuralName string) error {
 		return true
 	}
 
-	err = neural.Learn(p, samples, learnRate, epochMax, f)
+	err = gone.Learn(p, samples, learnRate, epochMax, f)
 	if err != nil {
 		return err
 	}
@@ -115,7 +115,7 @@ func test(dirname, neuralName string) error {
 		return err
 	}
 
-	p, err := neural.ReadFile(neuralName)
+	p, err := gone.ReadFile(neuralName)
 	if err != nil {
 		return err
 	}

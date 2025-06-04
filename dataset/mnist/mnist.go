@@ -6,7 +6,7 @@ import (
 	"image"
 	"io"
 
-	"github.com/gitchander/neural"
+	gone "github.com/gitchander/neural/goneural"
 )
 
 // http://yann.lecun.com/exdb/mnist
@@ -141,7 +141,7 @@ func ReadOutputs(r io.Reader) ([][]float64, error) {
 	var ssv = make([][]float64, len(labels))
 	for i, label := range labels {
 		if (0 <= label) && (label <= 9) {
-			ssv[i] = neural.OneHot(10, int(label))
+			ssv[i] = gone.OneHot(10, int(label))
 		} else {
 			return nil, errInvalidLabel(label)
 		}

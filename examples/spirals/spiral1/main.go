@@ -10,7 +10,7 @@ import (
 	"github.com/fogleman/gg"
 	"github.com/nfnt/resize"
 
-	"github.com/gitchander/neural"
+	gone "github.com/gitchander/neural/goneural"
 	"github.com/gitchander/neural/neutil/imut"
 )
 
@@ -57,8 +57,8 @@ func doSpiral() error {
 
 	fmt.Println("len samples:", len(samples))
 
-	layers := neural.MakeLayers(neural.ActSigmoid, 2, 50, 50, 1)
-	p, err := neural.NewNeural(layers)
+	layers := gone.MakeLayers("sigmoid", 2, 50, 50, 1)
+	p, err := gone.NewNeural(layers)
 	if err != nil {
 		return err
 	}
@@ -97,7 +97,7 @@ func doSpiral() error {
 		return true
 	}
 
-	err = neural.Learn(p, samples, learnRate, epochMax, f)
+	err = gone.Learn(p, samples, learnRate, epochMax, f)
 	if err != nil {
 		return err
 	}

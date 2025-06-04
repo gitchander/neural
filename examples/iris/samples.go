@@ -9,7 +9,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/gitchander/neural"
+	gone "github.com/gitchander/neural/goneural"
 	"github.com/gocarina/gocsv"
 )
 
@@ -81,7 +81,7 @@ func parseParams(record []string) (*Params, error) {
 	}, nil
 }
 
-func makeSamples(ps []*Params) (samples []neural.Sample) {
+func makeSamples(ps []*Params) (samples []gone.Sample) {
 	m := make(map[string]int)
 	index := 0
 	for _, p := range ps {
@@ -91,21 +91,21 @@ func makeSamples(ps []*Params) (samples []neural.Sample) {
 		}
 	}
 	for _, p := range ps {
-		sample := neural.Sample{
+		sample := gone.Sample{
 			Inputs: []float64{
 				p.SepalLength,
 				p.SepalWidth,
 				p.PetalLength,
 				p.PetalWidth,
 			},
-			Outputs: neural.OneHot(len(m), m[p.Species]),
+			Outputs: gone.OneHot(len(m), m[p.Species]),
 		}
 		samples = append(samples, sample)
 	}
 	return samples
 }
 
-func makeSamplesFile(filename string) (samples []neural.Sample, err error) {
+func makeSamplesFile(filename string) (samples []gone.Sample, err error) {
 	ps, err := readParamsGo(filename)
 	if err != nil {
 		return nil, err

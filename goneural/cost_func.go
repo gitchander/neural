@@ -1,4 +1,4 @@
-package neural
+package goneural
 
 import (
 	"math"

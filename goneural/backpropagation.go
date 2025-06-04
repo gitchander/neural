@@ -1,4 +1,4 @@
-package neural
+package goneural
 
 // https://en.wikipedia.org/wiki/Backpropagation
 

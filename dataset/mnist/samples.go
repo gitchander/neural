@@ -4,10 +4,10 @@ import (
 	"errors"
 	"image"
 
-	"github.com/gitchander/neural"
+	gone "github.com/gitchander/neural/goneural"
 )
 
-func MakeSamples(sf SetFiles) ([]neural.Sample, error) {
+func MakeSamples(sf SetFiles) ([]gone.Sample, error) {
 
 	inputs, err := ReadInputsFile(sf.Images)
 	if err != nil {
@@ -24,9 +24,9 @@ func MakeSamples(sf SetFiles) ([]neural.Sample, error) {
 		return nil, errors.New("number of inputs not equal number of outputs")
 	}
 
-	samples := make([]neural.Sample, n)
+	samples := make([]gone.Sample, n)
 	for i := 0; i < n; i++ {
-		samples[i] = neural.Sample{
+		samples[i] = gone.Sample{
 			Inputs:  inputs[i],
 			Outputs: outputs[i],
 		}

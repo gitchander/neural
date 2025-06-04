@@ -3,12 +3,12 @@ package main
 import (
 	"bytes"
 
-	"github.com/gitchander/neural"
+	gone "github.com/gitchander/neural/goneural"
 )
 
 // seven-segment display (SSD)
 
-func makeSamples() (samples []neural.Sample) {
+func makeSamples() (samples []gone.Sample) {
 	var digits = []uint{
 		0x0: 0x3F,
 		0x1: 0x06,
@@ -28,10 +28,10 @@ func makeSamples() (samples []neural.Sample) {
 		0xF: 0x71,
 	}
 
-	samples = make([]neural.Sample, len(digits))
+	samples = make([]gone.Sample, len(digits))
 
 	for i, d := range digits {
-		samples[i] = neural.Sample{
+		samples[i] = gone.Sample{
 			Inputs:  bitsToFloats(uint(i), 4),
 			Outputs: bitsToFloats(d, 7),
 		}

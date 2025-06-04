@@ -10,7 +10,7 @@ import (
 
 	"github.com/fogleman/gg"
 
-	"github.com/gitchander/neural"
+	gone "github.com/gitchander/neural/goneural"
 	"github.com/gitchander/neural/neutil/imut"
 )
 
@@ -57,10 +57,10 @@ func doSpiral() error {
 	}
 	//-----------------------------------------------
 
-	layers := neural.MakeLayers(neural.ActSigmoid, 2, 100, 1)
-	//layers := neural.MakeLayers(neural.ActSigmoid, 2, 20, 20, 1)
+	layers := gone.MakeLayers("sigmoid", 2, 100, 1)
+	//layers := gone.MakeLayers("sigmoid", 2, 20, 20, 1)
 
-	p, err := neural.NewNeural(layers)
+	p, err := gone.NewNeural(layers)
 	if err != nil {
 		return err
 	}
@@ -93,7 +93,7 @@ func doSpiral() error {
 		return true
 	}
 
-	err = neural.Learn(p, samples, learnRate, epochMax, f)
+	err = gone.Learn(p, samples, learnRate, epochMax, f)
 	if err != nil {
 		return err
 	}
@@ -101,7 +101,7 @@ func doSpiral() error {
 	return makeOutImage(p, size, samples, filename)
 }
 
-func makeOutImage(p *neural.Neural, size image.Point, samples []neural.Sample, filename string) error {
+func makeOutImage(p *gone.Neural, size image.Point, samples []gone.Sample, filename string) error {
 
 	g := imut.MakeGrayFromNeural(p, size)
 
@@ -146,7 +146,7 @@ func makeOutImage(p *neural.Neural, size image.Point, samples []neural.Sample, f
 	//err = SaveImagePNG(, filename)
 }
 
-func makeSamples() []neural.Sample {
+func makeSamples() []gone.Sample {
 
 	center := imut.Point2f{X: 1, Y: 1}.DivScalar(2)
 
@@ -155,7 +155,7 @@ func makeSamples() []neural.Sample {
 	angleDelta := 0.25
 
 	n := 140
-	samples := make([]neural.Sample, 2*n)
+	samples := make([]gone.Sample, 2*n)
 
 	for i := 0; i < n; i++ {
 
@@ -167,7 +167,7 @@ func makeSamples() []neural.Sample {
 		}
 		p := center.Add(imut.PolarToCartesian(plr))
 
-		samples[i*2+0] = neural.Sample{
+		samples[i*2+0] = gone.Sample{
 			Inputs:  []float64{p.X, p.Y},
 			Outputs: []float64{0},
 		}
@@ -178,7 +178,7 @@ func makeSamples() []neural.Sample {
 		}
 		p = center.Add(imut.PolarToCartesian(plr))
 
-		samples[i*2+1] = neural.Sample{
+		samples[i*2+1] = gone.Sample{
 			Inputs:  []float64{p.X, p.Y},
 			Outputs: []float64{1},
 		}
@@ -190,14 +190,14 @@ func makeSamples() []neural.Sample {
 	return samples
 }
 
-func makeSamplesGrayN(g *image.Gray, n int, r *rand.Rand) []neural.Sample {
+func makeSamplesGrayN(g *image.Gray, n int, r *rand.Rand) []gone.Sample {
 
 	bounds := g.Bounds()
 
 	dx := float64(bounds.Dx())
 	dy := float64(bounds.Dy())
 
-	samples := make([]neural.Sample, 0, n)
+	samples := make([]gone.Sample, 0, n)
 
 	for i := 0; i < n; i++ {
 
@@ -214,7 +214,7 @@ func makeSamplesGrayN(g *image.Gray, n int, r *rand.Rand) []neural.Sample {
 
 		out := float64(cg.Y) / 255
 
-		sample := neural.Sample{
+		sample := gone.Sample{
 			Inputs:  []float64{xf, yf},
 			Outputs: []float64{out},
 		}

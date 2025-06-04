@@ -1,7 +1,8 @@
-package neural
+package goneural
 
 import (
 	"errors"
+	"fmt"
 	"math/rand"
 
 	"github.com/gitchander/neural/neutil/random"
@@ -12,23 +13,28 @@ type Neural struct {
 	layers []*layer
 }
 
-func NewNeural(rs []LayerInfo) (*Neural, error) {
-	if len(rs) < 2 {
+func NewNeural(lcs []LayerConfig) (*Neural, error) {
+	if len(lcs) < 2 {
 		return nil, errors.New("neural: invalid number of layers")
 	}
-	layers := make([]*layer, len(rs))
-	for i, r := range rs {
-		neurons := make([]*neuron, r.Neurons)
+	layers := make([]*layer, len(lcs))
+	for i, lc := range lcs {
+		neurons := make([]*neuron, lc.Neurons)
 		for j := range neurons {
 			n := new(neuron)
 			if i > 0 {
-				n.weights = make([]float64, rs[i-1].Neurons)
+				n.weights = make([]float64, lcs[i-1].Neurons)
 			}
 			neurons[j] = n
 		}
+		af, err := MakeActivationFunc(lc.Activation)
+		if err != nil {
+			return nil, fmt.Errorf("layer[%d] invalid config: %v", i, lc)
+		}
+
 		layers[i] = &layer{
-			at:      r.ActivationType,
-			actFunc: MakeActivationFunc(r.ActivationType),
+			lc:      lc,
+			actFunc: af,
 			neurons: neurons,
 		}
 	}
@@ -103,14 +109,14 @@ func (p *Neural) Calculate() {
 		}
 
 		// If current activation function is Softmax
-		if currLayer.at == ActSoftmax {
-			var sum float64
-			for _, currNeuron := range currLayer.neurons {
-				sum += currNeuron.out
-			}
-			for _, currNeuron := range currLayer.neurons {
-				currNeuron.out /= sum
-			}
-		}
+		// if currLayer.at == ActSoftmax {
+		// 	var sum float64
+		// 	for _, currNeuron := range currLayer.neurons {
+		// 		sum += currNeuron.out
+		// 	}
+		// 	for _, currNeuron := range currLayer.neurons {
+		// 		currNeuron.out /= sum
+		// 	}
+		// }
 	}
 }

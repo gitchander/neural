@@ -1,7 +1,8 @@
-package neural
+package goneural
 
 import (
 	"math/rand"
+	"sync"
 
 	"github.com/gitchander/neural/neutil/random"
 )
@@ -94,4 +95,34 @@ func NormalizeInputs(samples []Sample) {
 			vs[i] = rs[i].normalize(v)
 		}
 	}
+}
+
+//------------------------------------------------------------------------------
+
+type syncMap struct {
+	guard sync.Mutex
+	m     map[string]any
+}
+
+func newSyncMap() *syncMap {
+	return &syncMap{
+		m: make(map[string]any),
+	}
+}
+
+func (p *syncMap) Set(key string, value any) {
+
+	p.guard.Lock()
+	defer p.guard.Unlock()
+
+	p.m[key] = value
+}
+
+func (p *syncMap) Get(key string) (value any, ok bool) {
+
+	p.guard.Lock()
+	defer p.guard.Unlock()
+
+	v, ok := p.m[key]
+	return v, ok
 }

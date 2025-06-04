@@ -9,22 +9,30 @@ import (
 	"io/ioutil"
 	"log"
 
-	"github.com/gitchander/neural"
+	gone "github.com/gitchander/neural/goneural"
 )
 
 func main() {
-	//testOperator(XOR)
-	makeOperatorImage(XOR)
-	//testNot()
+	checkError(testOperator(XOR))
+	checkError(makeOperatorImage(XOR))
+	checkError(testNot())
 }
 
-func testOperator(op operator) {
+func checkError(err error) {
+	if err != nil {
+		log.Panic(err)
+	}
+}
+
+func testOperator(op operator) error {
 
 	samples := makeSamplesByOperator(op)
 
-	layers := neural.MakeLayers(neural.ActSigmoid, 2, 3, 1)
-	p, err := neural.NewNeural(layers)
-	checkError(err)
+	layers := gone.MakeLayers("sigmoid", 2, 3, 1)
+	p, err := gone.NewNeural(layers)
+	if err != nil {
+		return nil
+	}
 	p.RandomizeWeights()
 	const (
 		learnRate = 0.7
@@ -41,8 +49,10 @@ func testOperator(op operator) {
 		return true
 	}
 
-	err = neural.Learn(p, samples, learnRate, epochMax, f)
-	checkError(err)
+	err = gone.Learn(p, samples, learnRate, epochMax, f)
+	if err != nil {
+		return nil
+	}
 
 	outputs := make([]float64, 1)
 	for _, sample := range samples {
@@ -56,15 +66,19 @@ func testOperator(op operator) {
 			sample.Inputs[1],
 			outputs[0])
 	}
+	return nil
 }
 
-func makeOperatorImage(op operator) {
+func makeOperatorImage(op operator) error {
 
 	samples := makeSamplesByOperator(op)
 
-	layers := neural.MakeLayers(neural.ActSigmoid, 2, 3, 1)
-	p, err := neural.NewNeural(layers)
-	checkError(err)
+	layers := gone.MakeLayers("sigmoid", 2, 3, 1)
+	p, err := gone.NewNeural(layers)
+	if err != nil {
+		return nil
+	}
+
 	p.RandomizeWeights()
 
 	const (
@@ -82,8 +96,10 @@ func makeOperatorImage(op operator) {
 		return true
 	}
 
-	err = neural.Learn(p, samples, learnRate, epochMax, f)
-	checkError(err)
+	err = gone.Learn(p, samples, learnRate, epochMax, f)
+	if err != nil {
+		return nil
+	}
 
 	var (
 		inputs  = make([]float64, 2)
@@ -124,16 +140,12 @@ func makeOperatorImage(op operator) {
 
 	var buf bytes.Buffer
 	err = png.Encode(&buf, m)
-	checkError(err)
-	filename := fmt.Sprintf("op_%s.png", op.name)
-	err = ioutil.WriteFile(filename, buf.Bytes(), 0666)
-	checkError(err)
-}
-
-func checkError(err error) {
 	if err != nil {
-		log.Panic(err)
+		return nil
 	}
+
+	filename := fmt.Sprintf("op_%s.png", op.name)
+	return ioutil.WriteFile(filename, buf.Bytes(), 0666)
 }
 
 type operator struct {
@@ -158,11 +170,11 @@ var (
 	}
 )
 
-func makeSamplesByOperator(op operator) (samples []neural.Sample) {
+func makeSamplesByOperator(op operator) (samples []gone.Sample) {
 	var bs = []bool{false, true}
 	for _, b1 := range bs {
 		for _, b2 := range bs {
-			sample := neural.Sample{
+			sample := gone.Sample{
 				Inputs: []float64{
 					boolToFloat(b1),
 					boolToFloat(b2),
@@ -184,8 +196,8 @@ func boolToFloat(b bool) float64 {
 	return 0
 }
 
-func testNot() {
-	samples := []neural.Sample{
+func testNot() error {
+	samples := []gone.Sample{
 		{
 			Inputs:  []float64{0},
 			Outputs: []float64{1},
@@ -195,9 +207,12 @@ func testNot() {
 			Outputs: []float64{0},
 		},
 	}
-	layers := neural.MakeLayers(neural.ActSigmoid, 1, 1)
-	p, err := neural.NewNeural(layers)
-	checkError(err)
+	layers := gone.MakeLayers("sigmoid", 1, 1)
+	p, err := gone.NewNeural(layers)
+	if err != nil {
+		return nil
+	}
+
 	p.RandomizeWeights()
 
 	const (
@@ -215,6 +230,5 @@ func testNot() {
 		return true
 	}
 
-	err = neural.Learn(p, samples, learnRate, epochMax, f)
-	checkError(err)
+	return gone.Learn(p, samples, learnRate, epochMax, f)
 }

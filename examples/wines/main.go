@@ -4,16 +4,16 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/gitchander/neural"
+	gone "github.com/gitchander/neural/goneural"
 )
 
 func main() {
 	samples, err := makeSamplesFile("wine.csv")
 	checkError(err)
-	neural.NormalizeInputs(samples)
+	gone.NormalizeInputs(samples)
 
-	layers := neural.MakeLayers(neural.ActSigmoid, 13, 3, 3)
-	p, err := neural.NewNeural(layers)
+	layers := gone.MakeLayers("sigmoid", 13, 3, 3)
+	p, err := gone.NewNeural(layers)
 	checkError(err)
 	p.RandomizeWeights()
 
@@ -32,7 +32,7 @@ func main() {
 		return true
 	}
 
-	err = neural.Learn(p, samples, learnRate, epochMax, f)
+	err = gone.Learn(p, samples, learnRate, epochMax, f)
 	checkError(err)
 }
 

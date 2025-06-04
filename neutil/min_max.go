@@ -19,7 +19,7 @@ func IndexOfMax(vs []float64) (imax int) {
 
 func maxFloat64s(as []float64) float64 {
 	if len(as) == 0 {
-		return 0
+		panic("There are no elements")
 	}
 	index := IndexOfMax(as)
 	return as[index]
