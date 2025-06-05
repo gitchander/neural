@@ -1,8 +1,11 @@
 package neutil
 
 import (
+	"errors"
 	"math"
 )
+
+var errNoElements = errors.New("There are no elements")
 
 func square(x float64) float64 {
 	return x * x
@@ -10,22 +13,29 @@ func square(x float64) float64 {
 
 // https://en.wikipedia.org/wiki/Mean
 func Mean(xs []float64) float64 {
+	n := len(xs)
+	if n == 0 {
+		panic(errNoElements)
+	}
 	s := 0.0
 	for _, x := range xs {
 		s += x
 	}
-	return s / float64(len(xs))
+	return s / float64(n)
+}
+
+func calcVariance(xs []float64, mean float64) float64 {
+	n := len(xs)
+	sum := 0.0
+	for _, x := range xs {
+		sum += square(x - mean)
+	}
+	return sum / float64(n)
 }
 
 func Variance(xs []float64) float64 {
-	var (
-		s    = 0.0
-		mean = Mean(xs)
-	)
-	for _, x := range xs {
-		s += square(x - mean)
-	}
-	return s / float64(len(xs))
+	mean := Mean(xs)
+	return calcVariance(xs, mean)
 }
 
 // Average RMS: Root Mean Square
@@ -41,14 +51,8 @@ type Stat struct {
 func CalcStat(xs []float64) *Stat {
 	min, max := floatsMinMax(xs)
 	var (
-		s    = 0.0
-		mean = Mean(xs)
-	)
-	for _, x := range xs {
-		s += square(x - mean)
-	}
-	var (
-		variance = s / float64(len(xs))
+		mean     = Mean(xs)
+		variance = calcVariance(xs, mean)
 		rms      = math.Sqrt(variance)
 	)
 	return &Stat{
@@ -69,7 +73,7 @@ func floatsMinMax(as []float64) (min, max float64) {
 func indexesMinMaxFloat64(xs []float64) (imin, imax int) {
 	n := len(xs)
 	if n == 0 {
-		return 0, 0
+		panic(errNoElements)
 	}
 	imin, imax = 0, 0
 	for i := 1; i < n; i++ {

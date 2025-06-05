@@ -10,9 +10,7 @@ func Encode(w io.Writer, p *Neural) error {
 
 	bw := baserw.NewBaseWriter(w)
 
-	var err error
-
-	err = bw.WriteCompactInt(len(p.layers))
+	err := bw.WriteCompactInt(len(p.layers))
 	if err != nil {
 		return err
 	}

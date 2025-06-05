@@ -14,37 +14,7 @@ type ActivationConfig struct {
 
 type LayerConfig struct {
 	Activation ActivationConfig
-	Neurons    int
-}
-
-func writeFloat64s(bw *baserw.BaseWriter, vs []float64) error {
-	err := bw.WriteCompactInt(len(vs))
-	if err != nil {
-		return err
-	}
-	for _, v := range vs {
-		err = bw.WriteFloat64(v)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func readFloat64s(br *baserw.BaseReader) ([]float64, error) {
-	n, err := br.ReadCompactInt()
-	if err != nil {
-		return nil, err
-	}
-	vs := make([]float64, n)
-	for i := range vs {
-		v, err := br.ReadFloat64()
-		if err != nil {
-			return nil, err
-		}
-		vs[i] = v
-	}
-	return vs, nil
+	Neurons    int // Number of neurons per layer
 }
 
 func writeLayerConfig(bw *baserw.BaseWriter, lc LayerConfig) error {
@@ -56,7 +26,7 @@ func writeLayerConfig(bw *baserw.BaseWriter, lc LayerConfig) error {
 		return err
 	}
 
-	err = writeFloat64s(bw, lc.Activation.Params)
+	err = bw.WriteFloat64s(lc.Activation.Params)
 	if err != nil {
 		return err
 	}
@@ -76,7 +46,7 @@ func readLayerConfig(br *baserw.BaseReader) (*LayerConfig, error) {
 		return nil, err
 	}
 
-	params, err := readFloat64s(br)
+	params, err := br.ReadFloat64s()
 	if err != nil {
 		return nil, err
 	}

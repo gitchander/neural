@@ -56,6 +56,20 @@ func (p *BaseWriter) WriteFloat64(v float64) error {
 	return p.WriteUint64(u)
 }
 
+func (p *BaseWriter) WriteFloat64s(vs []float64) error {
+	err := p.WriteCompactInt(len(vs))
+	if err != nil {
+		return err
+	}
+	for _, v := range vs {
+		err = p.WriteFloat64(v)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 //------------------------------------------------------------------------------
 
 func (p *BaseWriter) WriteCompactUint64(u uint64) error {

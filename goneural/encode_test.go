@@ -2,6 +2,8 @@ package goneural
 
 import (
 	"bytes"
+	"encoding/hex"
+	"fmt"
 	"testing"
 )
 
@@ -40,8 +42,11 @@ func TestEncode(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	//bs := buf.Bytes()
-	//t.Logf("len bytes %d", len(bs))
+	if false {
+		bs := buf.Bytes()
+		fmt.Println(hex.Dump(bs))
+		// t.Logf("len bytes %d", len(bs))
+	}
 
 	q, err := Decode(&buf)
 	if err != nil {

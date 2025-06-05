@@ -27,9 +27,9 @@ func NewNeural(lcs []LayerConfig) (*Neural, error) {
 			}
 			neurons[j] = n
 		}
-		af, err := MakeActivationFunc(lc.Activation)
+		af, err := makeActivationFunc(lc.Activation)
 		if err != nil {
-			return nil, fmt.Errorf("layer[%d] invalid config: %v", i, lc)
+			return nil, fmt.Errorf("layer[%d] invalid activation function: %v", i, lc.Activation)
 		}
 
 		layers[i] = &layer{
@@ -109,14 +109,29 @@ func (p *Neural) Calculate() {
 		}
 
 		// If current activation function is Softmax
-		// if currLayer.at == ActSoftmax {
-		// 	var sum float64
-		// 	for _, currNeuron := range currLayer.neurons {
-		// 		sum += currNeuron.out
-		// 	}
-		// 	for _, currNeuron := range currLayer.neurons {
-		// 		currNeuron.out /= sum
-		// 	}
-		// }
+		if _, ok := currLayer.actFunc.(af_Softmax); ok {
+			var sum float64
+			for _, currNeuron := range currLayer.neurons {
+				sum += currNeuron.out
+			}
+			for _, currNeuron := range currLayer.neurons {
+				currNeuron.out /= sum
+			}
+		}
+	}
+}
+
+func neuronForward(prevLayer *layer, currNeuron *neuron, actFunc ActivationFunc) {
+	var sum float64
+	for i, prevNeuron := range prevLayer.neurons {
+		sum += currNeuron.weights[i] * prevNeuron.out
+	}
+	sum += currNeuron.bias * 1
+	currNeuron.out = actFunc.Func(sum)
+}
+
+func layerForward(prevLayer *layer, currLayer *layer) {
+	for _, currNeuron := range currLayer.neurons {
+		neuronForward(prevLayer, currNeuron, currLayer.actFunc)
 	}
 }

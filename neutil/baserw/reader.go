@@ -76,6 +76,22 @@ func (p *BaseReader) ReadFloat64() (float64, error) {
 	return math.Float64frombits(v), nil
 }
 
+func (p *BaseReader) ReadFloat64s() ([]float64, error) {
+	n, err := p.ReadCompactInt()
+	if err != nil {
+		return nil, err
+	}
+	vs := make([]float64, n)
+	for i := range vs {
+		v, err := p.ReadFloat64()
+		if err != nil {
+			return nil, err
+		}
+		vs[i] = v
+	}
+	return vs, nil
+}
+
 //------------------------------------------------------------------------------
 
 func (p *BaseReader) ReadCompactUint64() (uint64, error) {

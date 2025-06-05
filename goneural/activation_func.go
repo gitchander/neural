@@ -23,7 +23,7 @@ func init() {
 	afMap.Set("softmax", makerAF_Softmax{})
 }
 
-func MakeActivationFunc(ac ActivationConfig) (ActivationFunc, error) {
+func makeActivationFunc(ac ActivationConfig) (ActivationFunc, error) {
 
 	v, ok := afMap.Get(ac.Name)
 	if !ok {
