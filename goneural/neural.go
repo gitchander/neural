@@ -3,6 +3,7 @@ package goneural
 import (
 	"errors"
 	"fmt"
+	"math"
 	"math/rand"
 
 	"github.com/gitchander/neural/neutil/random"
@@ -19,24 +20,18 @@ func NewNeural(lcs []LayerConfig) (*Neural, error) {
 	}
 	layers := make([]*layer, len(lcs))
 	for i, lc := range lcs {
-		neurons := make([]*neuron, lc.Neurons)
-		for j := range neurons {
-			n := new(neuron)
-			if i > 0 {
-				n.weights = make([]float64, lcs[i-1].Neurons)
-			}
-			neurons[j] = n
-		}
-		af, err := makeActivationFunc(lc.Activation)
-		if err != nil {
-			return nil, fmt.Errorf("layer[%d] invalid activation function: %v", i, lc.Activation)
+
+		var weightsPerNeuron int = 0 // for first layer
+		if i > 0 {
+			weightsPerNeuron = lcs[i-1].Neurons
 		}
 
-		layers[i] = &layer{
-			lc:      lc,
-			actFunc: af,
-			neurons: neurons,
+		l, err := newLayer(lc, weightsPerNeuron)
+		if err != nil {
+			return nil, fmt.Errorf("make layer[%d]: %w", i, err)
 		}
+
+		layers[i] = l
 	}
 	p := &Neural{
 		layers: layers,
@@ -105,21 +100,32 @@ func (p *Neural) Calculate() {
 				sum += currNeuron.weights[i] * prevNeuron.out
 			}
 			sum += currNeuron.bias * 1
-			currNeuron.out = currLayer.actFunc.Func(sum)
+			currNeuron.out = currLayer.afe.af.Func(sum)
 		}
 
 		// If current activation function is Softmax
-		if _, ok := currLayer.actFunc.(af_Softmax); ok {
+		if currLayer.afe.isSoftmax {
+
+			// The Softmax Function
+
 			var sum float64
 			for _, currNeuron := range currLayer.neurons {
+				currNeuron.out = math.Exp(currNeuron.out)
 				sum += currNeuron.out
 			}
+
+			// if math.IsInf(sum, +1) {
+			// 	fmt.Println("sum:", sum)
+			// }
+
 			for _, currNeuron := range currLayer.neurons {
 				currNeuron.out /= sum
 			}
 		}
 	}
 }
+
+//------------------------------------------------------------------------------
 
 func neuronForward(prevLayer *layer, currNeuron *neuron, actFunc ActivationFunc) {
 	var sum float64
@@ -132,6 +138,6 @@ func neuronForward(prevLayer *layer, currNeuron *neuron, actFunc ActivationFunc)
 
 func layerForward(prevLayer *layer, currLayer *layer) {
 	for _, currNeuron := range currLayer.neurons {
-		neuronForward(prevLayer, currNeuron, currLayer.actFunc)
+		neuronForward(prevLayer, currNeuron, currLayer.afe.af)
 	}
 }

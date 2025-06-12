@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gitchander/neural/dataset/mnist"
+	"github.com/gitchander/neural/dataset/mnist_png"
 	gone "github.com/gitchander/neural/goneural"
 	"github.com/gitchander/neural/neutil"
 )
@@ -54,16 +55,23 @@ func run(c Config) error {
 
 func train(dirname, neuralName string) error {
 
-	dbfs := mnist.MakeDBFiles(dirname)
-
-	samples, err := mnist.MakeSamples(dbfs.TrainingSet)
+	samples, err := dsr.ReadTraining(dirname)
 	if err != nil {
 		return err
 	}
 
 	p, err := gone.ReadFile(neuralName)
 	if err != nil {
-		layers := gone.MakeLayers("sigmoid", 28*28, 14*14, 7*7, 10)
+		var (
+			// layers = gone.MakeLayers("sigmoid", 28*28, 14*14, 7*7, 10)
+
+			layers = []gone.LayerConfig{
+				gone.MakeLayerConfig("sigmoid", 28*28),
+				gone.MakeLayerConfig("sigmoid", 14*14),
+				gone.MakeLayerConfig("sigmoid", 7*7),
+				gone.MakeLayerConfig("softmax", 10),
+			}
+		)
 		p, err = gone.NewNeural(layers)
 		if err != nil {
 			return err
@@ -103,14 +111,7 @@ func train(dirname, neuralName string) error {
 
 func test(dirname, neuralName string) error {
 
-	dbfs := mnist.MakeDBFiles(dirname)
-
-	inputs, err := mnist.ReadInputsFile(dbfs.TestSet.Images)
-	if err != nil {
-		return err
-	}
-
-	labels, err := mnist.ReadLabelsFile(dbfs.TestSet.Labels)
+	samples, err := dsr.ReadTesting(dirname)
 	if err != nil {
 		return err
 	}
@@ -125,26 +126,20 @@ func test(dirname, neuralName string) error {
 	outputs := make([]float64, 10)
 
 	var wrongCount int
-	for i := range inputs {
-		p.SetInputs(inputs[i])
+	for _, sample := range samples {
+		p.SetInputs(sample.Inputs)
 		p.Calculate()
 		p.GetOutputs(outputs)
 
 		var (
-			labelIdeal = int(labels[i])
+			labelIdeal = neutil.IndexOfMax(sample.Outputs)
 			label      = neutil.IndexOfMax(outputs)
 		)
 		if labelIdeal != label {
-			//			name := filepath.Join("bad_images", fmt.Sprintf("test_%05d_%d_%d.png", i, labelIdeal, label))
-			//			err = saveImagePNG(g, name)
-			//			checkError(err)
-
-			//fmt.Printf("%d: (%d != %d)\n", i, labelIdeal, label)
-
 			wrongCount++
 		}
 	}
-	fmt.Printf("average cost: %.3f %%\n", 100*float64(wrongCount)/float64(len(inputs)))
+	fmt.Printf("average cost: %.3f %%\n", 100*float64(wrongCount)/float64(len(samples)))
 
 	return nil
 }
@@ -157,3 +152,35 @@ func saveImagePNG(im image.Image, filename string) error {
 	}
 	return ioutil.WriteFile(filename, buf.Bytes(), 0664)
 }
+
+//------------------------------------------------------------------------------
+
+type DataSetReader interface {
+	ReadTraining(dirname string) ([]gone.Sample, error)
+	ReadTesting(dirname string) ([]gone.Sample, error)
+}
+
+type mnistDSR struct{}
+
+func (mnistDSR) ReadTraining(dirname string) ([]gone.Sample, error) {
+	return mnist.ReadTraining(dirname)
+}
+
+func (mnistDSR) ReadTesting(dirname string) ([]gone.Sample, error) {
+	return mnist.ReadTesting(dirname)
+}
+
+type mnistPNG_DSR struct{}
+
+func (mnistPNG_DSR) ReadTraining(dirname string) ([]gone.Sample, error) {
+	return mnist_png.ReadTraining(dirname)
+}
+
+func (mnistPNG_DSR) ReadTesting(dirname string) ([]gone.Sample, error) {
+	return mnist_png.ReadTesting(dirname)
+}
+
+var (
+	// dsr DataSetReader = mnistDSR{}
+	dsr DataSetReader = mnistPNG_DSR{}
+)

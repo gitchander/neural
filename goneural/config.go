@@ -17,6 +17,15 @@ type LayerConfig struct {
 	Neurons    int // Number of neurons per layer
 }
 
+func MakeLayerConfig(afName string, neurons int) LayerConfig {
+	return LayerConfig{
+		Activation: ActivationConfig{
+			Name: afName,
+		},
+		Neurons: neurons,
+	}
+}
+
 func writeLayerConfig(bw *baserw.BaseWriter, lc LayerConfig) error {
 
 	var err error

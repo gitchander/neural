@@ -7,19 +7,42 @@ import (
 	gone "github.com/gitchander/neural/goneural"
 )
 
+const outN = 4
+
 func main() {
+	checkError(run())
+}
+
+func checkError(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func run() error {
 
 	samples := makeSamples()
 
-	layers := gone.MakeLayers("sigmoid", 4, 8, outN)
+	var (
+		//layers = gone.MakeLayers("sigmoid", 4, 8, outN)
+
+		layers = []gone.LayerConfig{
+			gone.MakeLayerConfig("sigmoid", 4),
+			gone.MakeLayerConfig("sigmoid", 8),
+			gone.MakeLayerConfig("softmax", outN),
+		}
+	)
+
 	p, err := gone.NewNeural(layers)
-	checkError(err)
+	if err != nil {
+		return err
+	}
 	p.RandomizeWeights()
 
 	const (
 		learnRate = 0.6
-		epochMax  = 10000
-		epsilon   = 0.001
+		epochMax  = 100000
+		epsilon   = 0.0001
 	)
 
 	f := func(epoch int, averageCost float64) bool {
@@ -31,17 +54,8 @@ func main() {
 		return true
 	}
 
-	err = gone.Learn(p, samples, learnRate, epochMax, f)
-	checkError(err)
+	return gone.Learn(p, samples, learnRate, epochMax, f)
 }
-
-func checkError(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-const outN = 4
 
 func makeSamples() []gone.Sample {
 

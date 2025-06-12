@@ -47,11 +47,18 @@ func (bp *BP) LearnSample(sample Sample) {
 		lastDeltas = bp.ldeltas[lastIndex]
 	)
 	for j, n := range lastLayer.neurons {
-		var (
-			afD = lastLayer.actFunc.Derivative(n.out)
-			cfD = bp.costFunc.Derivative(sample.Outputs[j], n.out)
-		)
-		lastDeltas[j] = afD * cfD
+		if lastLayer.afe.isSoftmax {
+
+			// Derivative of Cross Entropy Loss with Softmax
+			lastDeltas[j] = derivativeCESoftmax(sample.Outputs[j], n.out)
+
+		} else {
+			var (
+				afD = lastLayer.afe.af.Derivative(n.out)
+				cfD = bp.costFunc.Derivative(sample.Outputs[j], n.out)
+			)
+			lastDeltas[j] = afD * cfD
+		}
 	}
 
 	for k := lastIndex - 1; k > 0; k-- {
@@ -67,7 +74,7 @@ func (bp *BP) LearnSample(sample Sample) {
 			for i, nextNeuron := range nextLayer.neurons {
 				sum += nextDeltas[i] * nextNeuron.weights[j]
 			}
-			afD := currLayer.actFunc.Derivative(currNeuron.out)
+			afD := currLayer.afe.af.Derivative(currNeuron.out)
 			currDeltas[j] = afD * sum
 		}
 	}
@@ -93,6 +100,12 @@ func (bp *BP) SampleCost(sample Sample) (cost float64) {
 	p.SetInputs(sample.Inputs)
 	p.Calculate()
 	p.GetOutputs(bp.outputs)
+
+	if p.getOutputLayer().afe.isSoftmax {
+		cf := CrossEntropy{}
+		return cf.Func(sample.Outputs, bp.outputs)
+	}
+
 	return bp.costFunc.Func(sample.Outputs, bp.outputs)
 }
 

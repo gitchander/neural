@@ -47,3 +47,15 @@ func OutputsFromLabel(label byte) (outputs []float64) {
 	outputs[label] = 1
 	return outputs
 }
+
+//------------------------------------------------------------------------------
+
+func ReadTraining(dirname string) ([]gone.Sample, error) {
+	dbfs := MakeDBFiles(dirname)
+	return MakeSamples(dbfs.TrainingSet)
+}
+
+func ReadTesting(dirname string) ([]gone.Sample, error) {
+	dbfs := MakeDBFiles(dirname)
+	return MakeSamples(dbfs.TestSet)
+}

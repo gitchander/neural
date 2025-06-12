@@ -126,3 +126,13 @@ func (p *syncMap) Get(key string) (value any, ok bool) {
 	v, ok := p.m[key]
 	return v, ok
 }
+
+//------------------------------------------------------------------------------
+
+func sumFloat64s(as []float64) float64 {
+	var sum float64
+	for _, a := range as {
+		sum += a
+	}
+	return sum
+}

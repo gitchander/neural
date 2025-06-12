@@ -7,40 +7,45 @@ import (
 
 // https://en.wikipedia.org/wiki/Activation_function
 
-type MakerAF interface {
-	MakeAF(params []float64) (ActivationFunc, error)
+// https://www.parasdahal.com/softmax-crossentropy
+
+type actFuncExt struct {
+	af        ActivationFunc
+	isSoftmax bool // ActivationFunc is Softmax
 }
 
-var afMap = newSyncMap()
+func makeActivationFunc(ac ActivationConfig) (*actFuncExt, error) {
 
-func init() {
-	afMap.Set("linear", makerAF_Linear{})
-	afMap.Set("step", makerAF_Step{})
-	afMap.Set("relu", makerAF_ReLU{})
-	afMap.Set("logistic", makerAF_Logistic{})
-	afMap.Set("sigmoid", makerAF_Sigmoid{})
-	afMap.Set("tanh", makerAF_Tanh{})
-	afMap.Set("softmax", makerAF_Softmax{})
-}
+	var afe actFuncExt
 
-func makeActivationFunc(ac ActivationConfig) (ActivationFunc, error) {
-
-	v, ok := afMap.Get(ac.Name)
-	if !ok {
-		return nil, fmt.Errorf("There is no activation func %q", ac.Name)
+	switch ac.Name {
+	case "linear":
+		afe.af = Linear{}
+	case "step":
+		afe.af = Step{}
+	case "relu":
+		afe.af = ReLU{}
+	case "logistic":
+		if ps := ac.Params; len(ps) > 0 {
+			afe.af = Logistic{
+				Alpha: ps[0],
+			}
+		} else {
+			// Alpha = 1
+			afe.af = Sigmoid{}
+		}
+	case "sigmoid":
+		afe.af = Sigmoid{}
+	case "tanh":
+		afe.af = Tanh{}
+	case "softmax":
+		afe.af = Linear{}
+		afe.isSoftmax = true
+	default:
+		return nil, fmt.Errorf("Invalid activation function %q", ac.Name)
 	}
 
-	maf, ok := v.(MakerAF)
-	if !ok {
-		return nil, fmt.Errorf("bad convert type: (%T) -> (%T)", v, maf)
-	}
-
-	af, err := maf.MakeAF(ac.Params)
-	if err != nil {
-		return nil, err
-	}
-
-	return af, nil
+	return &afe, nil
 }
 
 //------------------------------------------------------------------------------
@@ -49,132 +54,95 @@ func makeActivationFunc(ac ActivationConfig) (ActivationFunc, error) {
 type ActivationFunc interface {
 	Func(x float64) float64        // f(x)
 	Derivative(fx float64) float64 // {\frac {\partial f(x)}{\partial x}}
-
-	// IsSoftmax() bool
 }
 
 //------------------------------------------------------------------------------
 
 // Linear or Identity
-type af_Linear struct{}
+type Linear struct{}
 
-var _ ActivationFunc = af_Linear{}
+var _ ActivationFunc = Linear{}
 
-func (af_Linear) Func(x float64) float64 {
+func (Linear) Func(x float64) float64 {
 	return x
 }
 
-func (af_Linear) Derivative(fx float64) float64 {
+func (Linear) Derivative(fx float64) float64 {
 	return 1
-}
-
-type makerAF_Linear struct{}
-
-func (makerAF_Linear) MakeAF(params []float64) (ActivationFunc, error) {
-	return af_Linear{}, nil
 }
 
 //------------------------------------------------------------------------------
 
 // Binary Step
-type af_Step struct{}
+type Step struct{}
 
-var _ ActivationFunc = af_Step{}
+var _ ActivationFunc = Step{}
 
-func (af_Step) Func(x float64) float64 {
+func (Step) Func(x float64) float64 {
 	if x < 0 {
 		return 0
 	}
 	return 1
 }
 
-func (af_Step) Derivative(fx float64) float64 {
+func (Step) Derivative(fx float64) float64 {
 	return 0
-}
-
-type makerAF_Step struct{}
-
-func (v makerAF_Step) MakeAF(params []float64) (ActivationFunc, error) {
-	return af_Step{}, nil
 }
 
 //------------------------------------------------------------------------------
 
 // https://en.wikipedia.org/wiki/Rectifier_(neural_networks)
 
-type af_ReLU struct{}
+type ReLU struct{}
 
-var _ ActivationFunc = af_ReLU{}
+var _ ActivationFunc = ReLU{}
 
 // max(0, x)
-
-func (af_ReLU) Func(x float64) float64 {
+func (ReLU) Func(x float64) float64 {
 	if x > 0 {
 		return x
 	}
 	return 0
 }
 
-func (af_ReLU) Derivative(fx float64) float64 {
+func (ReLU) Derivative(fx float64) float64 {
 	if fx > 0 {
 		return 1
 	}
 	return 0
 }
 
-type makerAF_ReLU struct{}
-
-func (v makerAF_ReLU) MakeAF(params []float64) (ActivationFunc, error) {
-	return af_ReLU{}, nil
-}
-
 //------------------------------------------------------------------------------
 
-type af_Logistic struct {
+type Logistic struct {
 	Alpha float64
 }
 
-var _ ActivationFunc = af_Logistic{}
+var _ ActivationFunc = Logistic{}
 
-func (p af_Logistic) Func(x float64) float64 {
+func (p Logistic) Func(x float64) float64 {
 
 	// latex: {f(x) = {\frac {1}{1 + e^{-\alpha x}}}}
 
 	return 1 / (1 + math.Exp(-p.Alpha*x))
 }
 
-func (p af_Logistic) Derivative(fx float64) float64 {
+func (p Logistic) Derivative(fx float64) float64 {
 
 	// latex: {{\frac {\partial f(x)}{\partial x}} = \alpha f(x) (1 - f(x))}
 
 	return p.Alpha * fx * (1 - fx)
 }
 
-type makerAF_Logistic struct{}
-
-func (v makerAF_Logistic) MakeAF(params []float64) (ActivationFunc, error) {
-
-	if len(params) < 1 {
-		return nil, fmt.Errorf("There is no param")
-	}
-	alpha := params[0]
-
-	af := af_Logistic{
-		Alpha: alpha,
-	}
-
-	return af, nil
-}
-
 //------------------------------------------------------------------------------
 
-type af_Sigmoid struct{}
+type Sigmoid struct{}
 
-var _ ActivationFunc = af_Sigmoid{}
+var _ ActivationFunc = Sigmoid{}
 
 // Sigmoid implements the sigmoid function
 // for use in activation functions.
-func (af_Sigmoid) Func(x float64) float64 {
+func (Sigmoid) Func(x float64) float64 {
 
 	// latex: {f(x) = {\frac {1}{1 + e^{-x}}}}
 
@@ -183,27 +151,21 @@ func (af_Sigmoid) Func(x float64) float64 {
 
 // sigmoidPrime implements the derivative
 // of the sigmoid function for backpropagation.
-func (af_Sigmoid) Derivative(fx float64) float64 {
+func (Sigmoid) Derivative(fx float64) float64 {
 
 	// latex: {{\frac {\partial f(x)}{\partial x}} = f(x)(1 - f(x))}
 
 	return fx * (1 - fx)
 }
 
-type makerAF_Sigmoid struct{}
-
-func (makerAF_Sigmoid) MakeAF(params []float64) (ActivationFunc, error) {
-	return af_Sigmoid{}, nil
-}
-
 //------------------------------------------------------------------------------
 
 // range: (-1, 1)
-type af_Tanh struct{}
+type Tanh struct{}
 
-var _ ActivationFunc = af_Tanh{}
+var _ ActivationFunc = Tanh{}
 
-func (af_Tanh) Func(x float64) float64 {
+func (Tanh) Func(x float64) float64 {
 
 	// latex: {f(x)=\frac{e^{2 x}-1}{e^{2 x}+1}}
 
@@ -211,39 +173,11 @@ func (af_Tanh) Func(x float64) float64 {
 	return (a - 1) / (a + 1)
 }
 
-func (af_Tanh) Derivative(fx float64) float64 {
+func (Tanh) Derivative(fx float64) float64 {
 
 	// latex: {{\frac {\partial f(x)}{\partial x}} = 1-f(x)^2}
 
 	return (1 - fx*fx)
-}
-
-type makerAF_Tanh struct{}
-
-func (makerAF_Tanh) MakeAF(params []float64) (ActivationFunc, error) {
-	return af_Tanh{}, nil
-}
-
-//------------------------------------------------------------------------------
-
-// https://www.parasdahal.com/softmax-crossentropy
-
-type af_Softmax struct{}
-
-var _ ActivationFunc = af_Softmax{}
-
-func (af_Softmax) Func(x float64) float64 {
-	return math.Exp(x) // this is just nominator of softmax equation
-}
-
-func (af_Softmax) Derivative(fx float64) float64 {
-	return fx * (1 - fx)
-}
-
-type makerAF_Softmax struct{}
-
-func (makerAF_Softmax) MakeAF(params []float64) (ActivationFunc, error) {
-	return af_Softmax{}, nil
 }
 
 //------------------------------------------------------------------------------

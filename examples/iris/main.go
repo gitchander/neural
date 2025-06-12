@@ -26,7 +26,16 @@ func run() error {
 	}
 	gone.NormalizeInputs(samples)
 
-	layers := gone.MakeLayers("sigmoid", 4, 3, 3)
+	var (
+		// layers = gone.MakeLayers("sigmoid", 4, 3, 3)
+
+		layers = []gone.LayerConfig{
+			gone.MakeLayerConfig("sigmoid", 4),
+			gone.MakeLayerConfig("sigmoid", 3),
+			gone.MakeLayerConfig("softmax", 3),
+		}
+	)
+
 	p, err := gone.NewNeural(layers)
 	if err != nil {
 		return err

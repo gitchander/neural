@@ -44,7 +44,7 @@ var CFMeanSquared CostFunc = costMeanSquared{}
 //	return delta
 //}
 
-// https://habr.com/post/340792/
+//------------------------------------------------------------------------------
 
 type CrossEntropy struct{}
 
@@ -53,14 +53,30 @@ type CrossEntropy struct{}
 func (CrossEntropy) Func(t, x []float64) float64 {
 	var sum float64
 	for i := range t {
-		sum -= t[i] * math.Log(x[i])
+		//---------------------------------------------------
+		// v := math.Log(x[i])
+		// if math.IsNaN(v) {
+		// 	panic(fmt.Sprintf("%v -> %v", x[i], v))
+		// }
+		// sum += t[i] * v
+		//---------------------------------------------------
+		sum += t[i] * math.Log(x[i])
+		//---------------------------------------------------
 	}
+	sum = -sum
 	return sum
 }
 
-func (CrossEntropy) Derivative(ti, xi float64) float64 {
+// func (CrossEntropy) Derivative(ti, xi float64) float64 {
+// 	return xi - ti
+// }
+
+// Derivative of Cross Entropy Loss with Softmax
+func derivativeCESoftmax(ti, xi float64) float64 {
 	return xi - ti
 }
+
+//------------------------------------------------------------------------------
 
 type BinaryCrossEntropy struct{}
 

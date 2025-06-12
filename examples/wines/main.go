@@ -8,13 +8,37 @@ import (
 )
 
 func main() {
+	checkError(run())
+}
+
+func checkError(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func run() error {
 	samples, err := makeSamplesFile("wine.csv")
-	checkError(err)
+	if err != nil {
+		return err
+	}
 	gone.NormalizeInputs(samples)
 
-	layers := gone.MakeLayers("sigmoid", 13, 3, 3)
+	var (
+		// layers = gone.MakeLayers("sigmoid", 13, 3, 3)
+
+		layers = []gone.LayerConfig{
+			gone.MakeLayerConfig("sigmoid", 13),
+			gone.MakeLayerConfig("sigmoid", 3),
+			gone.MakeLayerConfig("softmax", 3),
+		}
+	)
+
 	p, err := gone.NewNeural(layers)
-	checkError(err)
+	if err != nil {
+		return err
+	}
+
 	p.RandomizeWeights()
 
 	const (
@@ -32,12 +56,5 @@ func main() {
 		return true
 	}
 
-	err = gone.Learn(p, samples, learnRate, epochMax, f)
-	checkError(err)
-}
-
-func checkError(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
+	return gone.Learn(p, samples, learnRate, epochMax, f)
 }

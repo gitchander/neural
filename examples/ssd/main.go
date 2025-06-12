@@ -21,7 +21,14 @@ func run() error {
 
 	samples := makeSamples()
 
-	layers := gone.MakeLayers("sigmoid", 4, 20, 7)
+	// for _, sample := range samples {
+	// 	fmt.Println(sample)
+	// }
+
+	var (
+		layers = gone.MakeLayers("sigmoid", 4, 20, 7)
+	)
+
 	p, err := gone.NewNeural(layers)
 	if err != nil {
 		return err
