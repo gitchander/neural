@@ -28,7 +28,7 @@ func run() error {
 
 		layers = []gone.LayerConfig{
 			gone.MakeLayerConfig("sigmoid", 4),
-			gone.MakeLayerConfig("sigmoid", 8),
+			gone.MakeLayerConfig("sigmoid", 7),
 			gone.MakeLayerConfig("softmax", outN),
 		}
 	)

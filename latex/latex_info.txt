@@ -2,6 +2,11 @@ LaTex online editor:
 http://www.codecogs.com/latex/eqneditor.php
 http://www.sciweavers.org/free-online-latex-equation-editor
 
+LaTeX to image:
+https://latex2image.joeraut.com/
+
+//-----------------------------------------------------------
+
 \Delta w_{i,j} = -\eta \frac {\partial E}{\partial w_{i,j}}
 
 E=\frac{1}{2}\sum_{k}(t_{k}-o_{k})^{2}

@@ -3,7 +3,6 @@ package goneural
 import (
 	"errors"
 	"fmt"
-	"math"
 	"math/rand"
 
 	"github.com/gitchander/neural/neutil/random"
@@ -99,27 +98,16 @@ func (p *Neural) Calculate() {
 			for i, prevNeuron := range prevLayer.neurons {
 				sum += currNeuron.weights[i] * prevNeuron.out
 			}
-			sum += currNeuron.bias * 1
-			currNeuron.out = currLayer.afe.af.Func(sum)
+			sum += currNeuron.bias
+			currNeuron.out = sum // Only logits
 		}
 
 		// If current activation function is Softmax
 		if currLayer.afe.isSoftmax {
-
-			// The Softmax Function
-
-			var sum float64
+			layerSoftmax(currLayer)
+		} else {
 			for _, currNeuron := range currLayer.neurons {
-				currNeuron.out = math.Exp(currNeuron.out)
-				sum += currNeuron.out
-			}
-
-			// if math.IsInf(sum, +1) {
-			// 	fmt.Println("sum:", sum)
-			// }
-
-			for _, currNeuron := range currLayer.neurons {
-				currNeuron.out /= sum
+				currNeuron.out = currLayer.afe.af.Func(currNeuron.out)
 			}
 		}
 	}
@@ -132,7 +120,7 @@ func neuronForward(prevLayer *layer, currNeuron *neuron, actFunc ActivationFunc)
 	for i, prevNeuron := range prevLayer.neurons {
 		sum += currNeuron.weights[i] * prevNeuron.out
 	}
-	sum += currNeuron.bias * 1
+	sum += currNeuron.bias
 	currNeuron.out = actFunc.Func(sum)
 }
 

@@ -1,6 +1,6 @@
 module github.com/gitchander/neural
 
-go 1.24
+go 1.26
 
 toolchain go1.24.3
 

@@ -1,0 +1,7 @@
+https://github.com/myleott/mnist_png
+
+$ ./mnist -dir ../mnist_png/ --mode train
+$ ./mnist -dir ../mnist_png/ --mode test
+
+$ ./mnist -dir ../../../../../path/src/mnist_png/ -mode train
+$ ./mnist -dir ../../../../../path/src/mnist_png/ -mode test

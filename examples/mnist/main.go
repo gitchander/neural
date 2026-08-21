@@ -47,7 +47,7 @@ func run(c Config) error {
 	case "train":
 		return train(c.Dirname, c.NeuralName)
 	case "test":
-		return test(c.Dirname, c.NeuralName)
+		return test2(c.Dirname, c.NeuralName)
 	default:
 		return fmt.Errorf("invalid mode: %s", c.Mode)
 	}
@@ -59,16 +59,33 @@ func train(dirname, neuralName string) error {
 	if err != nil {
 		return err
 	}
+	// for _, s := range samples {
+	// 	fmt.Println(s.Outputs)
+	// 	time.Sleep(time.Millisecond)
+	// }
+	// return nil
 
 	p, err := gone.ReadFile(neuralName)
 	if err != nil {
 		var (
 			// layers = gone.MakeLayers("sigmoid", 28*28, 14*14, 7*7, 10)
 
+			// layers = []gone.LayerConfig{
+			// 	gone.MakeLayerConfig("sigmoid", 28*28),
+			// 	gone.MakeLayerConfig("sigmoid", 14*14),
+			// 	gone.MakeLayerConfig("sigmoid", 7*7),
+			// 	gone.MakeLayerConfig("softmax", 10),
+			// }
+
+			// layers = []gone.LayerConfig{
+			// 	gone.MakeLayerConfig("sigmoid", 28*28),
+			// 	gone.MakeLayerConfig("sigmoid", 800),
+			// 	gone.MakeLayerConfig("sigmoid", 10),
+			// }
+
 			layers = []gone.LayerConfig{
-				gone.MakeLayerConfig("sigmoid", 28*28),
-				gone.MakeLayerConfig("sigmoid", 14*14),
-				gone.MakeLayerConfig("sigmoid", 7*7),
+				gone.MakeLayerConfig("sigmoid", (28 * 28)),
+				gone.MakeLayerConfig("sigmoid", 800),
 				gone.MakeLayerConfig("softmax", 10),
 			}
 		)
@@ -109,8 +126,9 @@ func train(dirname, neuralName string) error {
 	return writeError
 }
 
-func test(dirname, neuralName string) error {
+func test1(dirname, neuralName string) error {
 
+	//samples, err := dsr.ReadTraining(dirname)
 	samples, err := dsr.ReadTesting(dirname)
 	if err != nil {
 		return err
@@ -127,14 +145,21 @@ func test(dirname, neuralName string) error {
 
 	var wrongCount int
 	for _, sample := range samples {
+
 		p.SetInputs(sample.Inputs)
 		p.Calculate()
 		p.GetOutputs(outputs)
+
+		//fmt.Println("sum Outputs:", sample.Outputs)
+		//fmt.Println(outputs, sample.Outputs)
 
 		var (
 			labelIdeal = neutil.IndexOfMax(sample.Outputs)
 			label      = neutil.IndexOfMax(outputs)
 		)
+
+		//fmt.Println(labelIdeal, label)
+
 		if labelIdeal != label {
 			wrongCount++
 		}
@@ -142,6 +167,51 @@ func test(dirname, neuralName string) error {
 	fmt.Printf("average cost: %.3f %%\n", 100*float64(wrongCount)/float64(len(samples)))
 
 	return nil
+}
+
+func test2(dirname, neuralName string) error {
+
+	//samples, err := dsr.ReadTraining(dirname)
+	samples, err := dsr.ReadTesting(dirname)
+	if err != nil {
+		return err
+	}
+
+	p, err := gone.ReadFile(neuralName)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("topology:", p.Topology())
+
+	outputs := make([]float64, 10)
+
+	cf := gone.CrossEntropy{}
+	var sum float64
+	for _, sample := range samples {
+
+		p.SetInputs(sample.Inputs)
+		p.Calculate()
+		p.GetOutputs(outputs)
+
+		//fmt.Println("sum Outputs:", sample.Outputs)
+		//fmt.Println(outputs, sample.Outputs)
+
+		sum += cf.Func(sample.Outputs, outputs)
+	}
+	averageCost := sum / float64(len(samples))
+
+	fmt.Printf("average cost = %.10f\n", averageCost)
+
+	return nil
+}
+
+func sumFloat64s(as []float64) float64 {
+	sum := 0.0
+	for _, a := range as {
+		sum += a
+	}
+	return sum
 }
 
 func saveImagePNG(im image.Image, filename string) error {
