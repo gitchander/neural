@@ -1,4 +1,4 @@
-package mnist
+package mnist_gz
 
 import (
 	"path/filepath"

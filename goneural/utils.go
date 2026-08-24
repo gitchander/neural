@@ -1,6 +1,7 @@
 package goneural
 
 import (
+	"math"
 	"math/rand"
 	"sync"
 
@@ -60,6 +61,36 @@ func OneHot(n, i int) []float64 {
 		vs[i] = 1
 	}
 	return vs
+}
+
+//------------------------------------------------------------------------------
+
+func IndexOfMin(as []float64) int {
+	n := len(as)
+	if n == 0 {
+		panic("IndexOfMin: slice is empty")
+	}
+	imin := 0
+	for i := 1; i < n; i++ {
+		if as[imin] > as[i] {
+			imin = i
+		}
+	}
+	return imin
+}
+
+func IndexOfMax(as []float64) int {
+	n := len(as)
+	if n == 0 {
+		panic("IndexOfMax: slice is empty")
+	}
+	imax := 0
+	for i := 1; i < n; i++ {
+		if as[imax] < as[i] {
+			imax = i
+		}
+	}
+	return imax
 }
 
 //------------------------------------------------------------------------------
@@ -135,4 +166,9 @@ func sumFloat64s(as []float64) float64 {
 		sum += a
 	}
 	return sum
+}
+
+// almostEqual
+func float64Equal(a, b float64, epsilon float64) bool {
+	return math.Abs(a-b) < epsilon
 }

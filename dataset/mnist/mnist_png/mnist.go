@@ -187,5 +187,6 @@ func readSamples(dirname string) ([]gone.Sample, error) {
 			return nil, err
 		}
 	}
+
 	return samples, nil
 }

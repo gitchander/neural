@@ -1,32 +1,20 @@
 package main
 
 import (
-	"bytes"
 	"flag"
 	"fmt"
-	"image"
-	"image/png"
-	"io/ioutil"
 	"log"
 	"time"
 
-	"github.com/gitchander/neural/dataset/mnist"
-	"github.com/gitchander/neural/dataset/mnist_png"
+	"github.com/gitchander/neural/dataset/mnist/mnist_gz"
+	"github.com/gitchander/neural/dataset/mnist/mnist_png"
 	gone "github.com/gitchander/neural/goneural"
 	"github.com/gitchander/neural/neutil"
+	"github.com/gitchander/neural/neutil/random"
 )
 
 func main() {
-
-	var c Config
-
-	flag.StringVar(&(c.Dirname), "dir", ".", "mnist directory")
-	flag.StringVar(&(c.Mode), "mode", "test", "train or test mode")
-	flag.StringVar(&(c.NeuralName), "neural", "neural", "filename neural network")
-
-	flag.Parse()
-
-	err := run(c)
+	err := run()
 	checkError(err)
 }
 
@@ -36,34 +24,75 @@ func checkError(err error) {
 	}
 }
 
+func run() error {
+
+	var c Config
+
+	flag.StringVar(&(c.Dirname), "dir", ".", "mnist directory")
+	flag.StringVar(&(c.Mode), "mode", "test", "train or test mode")
+	flag.StringVar(&(c.NeuralName), "neural", "neural", "filename neural network")
+
+	flag.Parse()
+
+	return runConfig(c)
+}
+
 type Config struct {
 	Dirname    string
 	Mode       string
 	NeuralName string
 }
 
-func run(c Config) error {
+func runConfig(c Config) error {
 	switch c.Mode {
 	case "train":
-		return train(c.Dirname, c.NeuralName)
+		return runTrain(c.Dirname, c.NeuralName)
 	case "test":
-		return test2(c.Dirname, c.NeuralName)
+		return runTest(c.Dirname, c.NeuralName)
 	default:
 		return fmt.Errorf("invalid mode: %s", c.Mode)
 	}
 }
 
-func train(dirname, neuralName string) error {
+func checkSamples(samples []gone.Sample) error {
+	for _, sample := range samples {
+		for _, v := range sample.Inputs {
+			if v < 0 {
+				return fmt.Errorf("value (%g) < 0", v)
+			}
+			if v > 1 {
+				return fmt.Errorf("value (%g) > 1", v)
+			}
+			//fmt.Println(v)
+		}
+		//fmt.Println(sample.Outputs)
+
+		// for _, v := range sample.Outputs {
+
+		// }
+	}
+	return nil
+}
+
+func runTrain(dirname, neuralName string) error {
 
 	samples, err := dsr.ReadTraining(dirname)
 	if err != nil {
 		return err
 	}
-	// for _, s := range samples {
-	// 	fmt.Println(s.Outputs)
-	// 	time.Sleep(time.Millisecond)
-	// }
-	// return nil
+
+	err = checkSamples(samples)
+	if err != nil {
+		return err
+	}
+
+	r := random.NewRandNow()
+	shuffleSamples := func() {
+		r.Shuffle(len(samples), func(i, j int) {
+			samples[i], samples[j] = samples[j], samples[i]
+		})
+	}
+	shuffleSamples()
 
 	p, err := gone.ReadFile(neuralName)
 	if err != nil {
@@ -97,10 +126,12 @@ func train(dirname, neuralName string) error {
 	}
 
 	const (
-		learnRate = 0.6
+		//learnRate = 0.6
+		learnRate = 0.2
 		epochMax  = 100000
 	)
 
+	t0 := time.Now()
 	var writeError error
 
 	f := func(epoch int, averageCost float64) bool {
@@ -111,9 +142,16 @@ func train(dirname, neuralName string) error {
 			return false
 		}
 
-		fmt.Printf("%s: epoch: %d; average cost = %.10f\n",
+		t1 := time.Now()
+		dur := t1.Sub(t0)
+		t0 = t1
+
+		fmt.Printf("%s: dur = %v; epoch = %d; average cost = %.10f\n",
 			time.Now().Format("15:04:05"),
+			dur,
 			epoch, averageCost)
+
+		shuffleSamples()
 
 		return true
 	}
@@ -126,13 +164,21 @@ func train(dirname, neuralName string) error {
 	return writeError
 }
 
-func test1(dirname, neuralName string) error {
+func runTest(dirname, neuralName string) error {
 
 	//samples, err := dsr.ReadTraining(dirname)
 	samples, err := dsr.ReadTesting(dirname)
 	if err != nil {
 		return err
 	}
+
+	r := random.NewRandNow()
+	shuffleSamples := func() {
+		r.Shuffle(len(samples), func(i, j int) {
+			samples[i], samples[j] = samples[j], samples[i]
+		})
+	}
+	shuffleSamples()
 
 	p, err := gone.ReadFile(neuralName)
 	if err != nil {
@@ -169,42 +215,42 @@ func test1(dirname, neuralName string) error {
 	return nil
 }
 
-func test2(dirname, neuralName string) error {
+// func runTest2(dirname, neuralName string) error {
 
-	//samples, err := dsr.ReadTraining(dirname)
-	samples, err := dsr.ReadTesting(dirname)
-	if err != nil {
-		return err
-	}
+// 	//samples, err := dsr.ReadTraining(dirname)
+// 	samples, err := dsr.ReadTesting(dirname)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	p, err := gone.ReadFile(neuralName)
-	if err != nil {
-		return err
-	}
+// 	p, err := gone.ReadFile(neuralName)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	fmt.Println("topology:", p.Topology())
+// 	fmt.Println("topology:", p.Topology())
 
-	outputs := make([]float64, 10)
+// 	outputs := make([]float64, 10)
 
-	cf := gone.CrossEntropy{}
-	var sum float64
-	for _, sample := range samples {
+// 	cf := gone.CrossEntropy{}
+// 	var sum float64
+// 	for _, sample := range samples {
 
-		p.SetInputs(sample.Inputs)
-		p.Calculate()
-		p.GetOutputs(outputs)
+// 		p.SetInputs(sample.Inputs)
+// 		p.Calculate()
+// 		p.GetOutputs(outputs)
 
-		//fmt.Println("sum Outputs:", sample.Outputs)
-		//fmt.Println(outputs, sample.Outputs)
+// 		//fmt.Println("sum Outputs:", sample.Outputs)
+// 		//fmt.Println(outputs, sample.Outputs)
 
-		sum += cf.Func(sample.Outputs, outputs)
-	}
-	averageCost := sum / float64(len(samples))
+// 		sum += cf.Func(sample.Outputs, outputs)
+// 	}
+// 	averageCost := sum / float64(len(samples))
 
-	fmt.Printf("average cost = %.10f\n", averageCost)
+// 	fmt.Printf("average cost = %.10f\n", averageCost)
 
-	return nil
-}
+// 	return nil
+// }
 
 func sumFloat64s(as []float64) float64 {
 	sum := 0.0
@@ -214,15 +260,6 @@ func sumFloat64s(as []float64) float64 {
 	return sum
 }
 
-func saveImagePNG(im image.Image, filename string) error {
-	var buf bytes.Buffer
-	err := png.Encode(&buf, im)
-	if err != nil {
-		return err
-	}
-	return ioutil.WriteFile(filename, buf.Bytes(), 0664)
-}
-
 //------------------------------------------------------------------------------
 
 type DataSetReader interface {
@@ -230,14 +267,14 @@ type DataSetReader interface {
 	ReadTesting(dirname string) ([]gone.Sample, error)
 }
 
-type mnistDSR struct{}
+type mnistGZ_DSR struct{}
 
-func (mnistDSR) ReadTraining(dirname string) ([]gone.Sample, error) {
-	return mnist.ReadTraining(dirname)
+func (mnistGZ_DSR) ReadTraining(dirname string) ([]gone.Sample, error) {
+	return mnist_gz.ReadTraining(dirname)
 }
 
-func (mnistDSR) ReadTesting(dirname string) ([]gone.Sample, error) {
-	return mnist.ReadTesting(dirname)
+func (mnistGZ_DSR) ReadTesting(dirname string) ([]gone.Sample, error) {
+	return mnist_gz.ReadTesting(dirname)
 }
 
 type mnistPNG_DSR struct{}
@@ -251,6 +288,6 @@ func (mnistPNG_DSR) ReadTesting(dirname string) ([]gone.Sample, error) {
 }
 
 var (
-	// dsr DataSetReader = mnistDSR{}
+	//dsr DataSetReader = mnistGZ_DSR{}
 	dsr DataSetReader = mnistPNG_DSR{}
 )

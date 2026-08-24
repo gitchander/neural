@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/gitchander/neural/dataset/mnist_png"
+	"github.com/gitchander/neural/dataset/mnist/mnist_png"
 )
 
 func main() {

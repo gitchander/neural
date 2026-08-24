@@ -42,7 +42,7 @@ func run() error {
 	const (
 		learnRate = 0.6
 		epochMax  = 100000
-		epsilon   = 0.0001
+		epsilon   = 0.001
 	)
 
 	f := func(epoch int, averageCost float64) bool {

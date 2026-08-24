@@ -102,7 +102,15 @@ func (bp *BP) SampleCost(sample Sample) (cost float64) {
 	p.GetOutputs(bp.outputs)
 
 	if p.getOutputLayer().afe.isSoftmax {
+
 		cf := CrossEntropy{}
+
+		// sum := sumFloat64s(bp.outputs)
+		// if !float64Equal(sum, 1, 0.00001) {
+		// 	fmt.Println(sum)
+		// 	panic("sum not equal 1")
+		// }
+
 		return cf.Func(sample.Outputs, bp.outputs)
 	}
 

@@ -1,7 +1,7 @@
-package mnist
+package mnist_gz
 
 import (
-	"errors"
+	"fmt"
 	"image"
 
 	gone "github.com/gitchander/neural/goneural"
@@ -21,7 +21,7 @@ func MakeSamples(sf SetFiles) ([]gone.Sample, error) {
 
 	n := len(inputs)
 	if n != len(outputs) {
-		return nil, errors.New("number of inputs not equal number of outputs")
+		return nil, fmt.Errorf("number of inputs (%d) not equal number of outputs (%d)", len(inputs), len(outputs))
 	}
 
 	samples := make([]gone.Sample, n)

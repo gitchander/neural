@@ -1,6 +1,7 @@
 package goneural
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -53,6 +54,21 @@ type CrossEntropy struct{}
 func (CrossEntropy) Func(t, x []float64) float64 {
 	var sum float64
 	for i := range t {
+
+		v := math.Log(x[i])
+		if math.IsNaN(v) {
+			err := fmt.Errorf("log(%g) is NaN\n", x[i])
+			panic(err)
+		}
+		if math.IsInf(v, -1) {
+			err := fmt.Errorf("log(%g) is -Inf\n", x[i])
+			panic(err)
+		}
+		if math.IsInf(v, +1) {
+			err := fmt.Errorf("log(%g) is +Inf\n", x[i])
+			panic(err)
+		}
+
 		sum += t[i] * math.Log(x[i])
 	}
 	sum = -sum
