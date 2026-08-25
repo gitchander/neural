@@ -1,7 +1,9 @@
 package main
 
 import (
+	"errors"
 	"log"
+	"os"
 
 	"github.com/gitchander/neural/dataset/mnist/mnist_png"
 )
@@ -18,7 +20,11 @@ func checkError(err error) {
 
 func drawDataset() error {
 
-	dirname := "../../../../../../../path/src/mnist/mnist_png"
+	if len(os.Args) < 2 {
+		return errors.New("There is no argument")
+	}
+
+	dirname := os.Args[1]
 
 	{
 		samples, err := mnist_png.ReadTraining(dirname)

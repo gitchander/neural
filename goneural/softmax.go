@@ -45,33 +45,11 @@ func layerSoftmax(lr *layer) {
 
 	var sum float64
 	for _, n := range neurons {
-
-		//xxx := n.out
-
 		n.out = math.Exp(n.out - maxLogit)
-
-		// if minValue := 1e-15; n.out < minValue {
-		// 	n.out = minValue
-		// }
-
-		// if n.out == 0 {
-		// 	fmt.Println(">>", xxx, maxLogit, xxx-maxLogit)
-		// }
-
 		sum += n.out
 	}
 
 	for _, n := range neurons {
 		n.out /= sum
 	}
-
-	// for _, n := range neurons {
-	// 	if n.out == 0 {
-	// 		for _, nn := range neurons {
-	// 			fmt.Println(nn.out)
-	// 		}
-	// 		fmt.Println("sum", sum)
-	// 		panic("out = 0")
-	// 	}
-	// }
 }

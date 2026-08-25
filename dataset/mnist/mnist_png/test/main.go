@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -14,14 +15,14 @@ func main() {
 
 func checkError(err error) {
 	if err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
 }
 
 func run() error {
 
 	if len(os.Args) < 2 {
-		return fmt.Errorf("there are no arguments")
+		return errors.New("There is no argument")
 	}
 
 	dirname := os.Args[1]

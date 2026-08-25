@@ -127,7 +127,7 @@ func runTrain(dirname, neuralName string) error {
 
 	const (
 		//learnRate = 0.6
-		learnRate = 0.2
+		learnRate = 0.1
 		epochMax  = 100000
 	)
 

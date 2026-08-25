@@ -1,6 +1,7 @@
 package goneural
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 	"sync"
@@ -171,4 +172,17 @@ func sumFloat64s(as []float64) float64 {
 // almostEqual
 func float64Equal(a, b float64, epsilon float64) bool {
 	return math.Abs(a-b) < epsilon
+}
+
+func checkFloat64IsReal(v float64) error {
+	if math.IsNaN(v) {
+		return fmt.Errorf("value is NaN\n")
+	}
+	if math.IsInf(v, -1) {
+		return fmt.Errorf("value is -Inf\n")
+	}
+	if math.IsInf(v, +1) {
+		return fmt.Errorf("value is +Inf\n")
+	}
+	return nil
 }
