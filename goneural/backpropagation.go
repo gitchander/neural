@@ -11,10 +11,11 @@ type BP struct {
 	costFunc     CostFunc
 }
 
-func NewBP(p *Neural, cf CostFunc) *BP {
+func NewBP(p *Neural) *BP {
 
-	if cf == nil {
-		cf = costMeanSquared{}
+	var cf CostFunc = costMeanSquared{}
+	if p.getOutputLayer().afe.isSoftmax {
+		cf = CrossEntropy{}
 	}
 
 	ldeltas := make([][]float64, len(p.layers))
@@ -35,11 +36,20 @@ func (bp *BP) SetLearningRate(learningRate float64) {
 	bp.learningRate = clampFloat64(learningRate, 0, 1)
 }
 
-func (bp *BP) LearnSample(sample Sample) {
+func (bp *BP) LearnSample(sample Sample) float64 {
 
 	p := bp.p
 	p.SetInputs(sample.Inputs)
 	p.Calculate()
+	p.GetOutputs(bp.outputs)
+
+	var sampleCost float64
+	if p.getOutputLayer().afe.isSoftmax {
+		cf := CrossEntropy{}
+		sampleCost = cf.Func(sample.Outputs, bp.outputs)
+	} else {
+		sampleCost = bp.costFunc.Func(sample.Outputs, bp.outputs)
+	}
 
 	var (
 		lastIndex  = len(p.layers) - 1
@@ -50,7 +60,7 @@ func (bp *BP) LearnSample(sample Sample) {
 		if lastLayer.afe.isSoftmax {
 
 			// Derivative of Cross Entropy Loss with Softmax
-			lastDeltas[j] = derivativeCESoftmax(sample.Outputs[j], n.out)
+			lastDeltas[j] = softmaxCrossEntropyDerivative(sample.Outputs[j], n.out)
 
 		} else {
 			var (
@@ -93,17 +103,19 @@ func (bp *BP) LearnSample(sample Sample) {
 			currNeuron.bias -= bp.learningRate * currDeltas[j] * 1
 		}
 	}
+
+	return sampleCost
 }
 
 func (bp *BP) SampleCost(sample Sample) (cost float64) {
+
 	p := bp.p
 	p.SetInputs(sample.Inputs)
 	p.Calculate()
 	p.GetOutputs(bp.outputs)
 
+	var sampleCost float64
 	if p.getOutputLayer().afe.isSoftmax {
-
-		cf := CrossEntropy{}
 
 		// sum := sumFloat64s(bp.outputs)
 		// if !float64Equal(sum, 1, 0.00001) {
@@ -111,17 +123,18 @@ func (bp *BP) SampleCost(sample Sample) (cost float64) {
 		// 	panic("sum not equal 1")
 		// }
 
-		return cf.Func(sample.Outputs, bp.outputs)
+		cf := CrossEntropy{}
+		sampleCost = cf.Func(sample.Outputs, bp.outputs)
+	} else {
+		sampleCost = bp.costFunc.Func(sample.Outputs, bp.outputs)
 	}
-
-	return bp.costFunc.Func(sample.Outputs, bp.outputs)
+	return sampleCost
 }
 
 func (bp *BP) LearnSamples(samples []Sample) (averageCost float64) {
 	var sum float64
 	for _, sample := range samples {
-		bp.LearnSample(sample)
-		sum += bp.SampleCost(sample)
+		sum += bp.LearnSample(sample)
 	}
 	averageCost = sum / float64(len(samples))
 	return averageCost

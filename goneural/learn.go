@@ -17,7 +17,7 @@ func Learn(p *Neural, samples []Sample, learnRate float64, epochMax int,
 		return err
 	}
 
-	bp := NewBP(p, CFMeanSquared)
+	bp := NewBP(p)
 	bp.SetLearningRate(learnRate)
 	for epoch := 0; epoch < epochMax; epoch++ {
 		averageCost := bp.LearnSamples(samples)

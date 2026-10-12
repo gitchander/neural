@@ -64,14 +64,12 @@ func (CrossEntropy) Func(t, x []float64) float64 {
 	return sum
 }
 
-//------------------------------------------------------------------------------
-
-// func (CrossEntropy) Derivative(ti, xi float64) float64 {
-// 	return xi - ti
-// }
+func (CrossEntropy) Derivative(ti, xi float64) float64 {
+	panic("CrossEntropy derivative is handled jointly with Softmax via softmaxCrossEntropyDerivative and should not be called standalone")
+}
 
 // Derivative of Cross Entropy Loss with Softmax
-func derivativeCESoftmax(ti, xi float64) float64 {
+func softmaxCrossEntropyDerivative(ti, xi float64) float64 {
 	return xi - ti
 }
 
