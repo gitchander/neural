@@ -6,6 +6,7 @@ type layer struct {
 	afe *actFuncExt
 
 	neurons []*neuron
+	outputs []float64
 }
 
 func newLayer(lc LayerConfig, weightsPerNeuron int) (*layer, error) {
@@ -24,10 +25,39 @@ func newLayer(lc LayerConfig, weightsPerNeuron int) (*layer, error) {
 		lc:      lc,
 		afe:     afe,
 		neurons: neurons,
+		outputs: make([]float64, lc.Neurons),
 	}
 
 	return p, nil
 }
+
+func (lr *layer) forward(inputs []float64) {
+
+	// Calculate only logits
+	for j, currNeuron := range lr.neurons {
+		lr.outputs[j] = currNeuron.calcLogit(inputs) // logit
+	}
+
+	// If current activation function is Softmax
+	if lr.afe.isSoftmax {
+		softmax(lr.outputs, lr.outputs)
+	} else {
+		for i := range lr.outputs {
+			lr.outputs[i] = lr.afe.af.Func(lr.outputs[i])
+		}
+	}
+}
+
+func (lr *layer) updateWeights(inputs []float64, currDeltas []float64, learningRate float64) {
+	for j, currNeuron := range lr.neurons {
+		for i := range inputs {
+			currNeuron.weights[i] -= learningRate * currDeltas[j] * inputs[i]
+		}
+		currNeuron.bias -= learningRate * currDeltas[j] * 1
+	}
+}
+
+//------------------------------------------------------------------------------
 
 func MakeLayers(activationName string, ds ...int) []LayerConfig {
 	ac := ActivationConfig{

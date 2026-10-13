@@ -9,6 +9,7 @@ import (
 )
 
 // Feedforward neural network
+// MLP - Multi-Layer Perceptron
 type Neural struct {
 	layers []*layer
 }
@@ -73,59 +74,22 @@ func (p *Neural) randomizeWeightsRand(r *rand.Rand) {
 }
 
 func (p *Neural) SetInputs(inputs []float64) {
-	ns := p.getInputLayer().neurons
-	for i, n := range ns {
-		n.out = inputs[i]
-	}
+	inputLayer := p.getInputLayer()
+	copy(inputLayer.outputs, inputs)
 }
 
 func (p *Neural) GetOutputs(outputs []float64) {
-	ns := p.getOutputLayer().neurons
-	for i, n := range ns {
-		outputs[i] = n.out
-	}
+	outputLayer := p.getOutputLayer()
+	copy(outputs, outputLayer.outputs)
 }
 
 // forward
 func (p *Neural) Calculate() {
-	for k := 1; k < len(p.layers); k++ {
+	for i := 1; i < len(p.layers); i++ {
 		var (
-			prevLayer = p.layers[k-1]
-			currLayer = p.layers[k]
+			prevLayer = p.layers[i-1]
+			currLayer = p.layers[i]
 		)
-		for _, currNeuron := range currLayer.neurons {
-			var sum float64
-			for i, prevNeuron := range prevLayer.neurons {
-				sum += currNeuron.weights[i] * prevNeuron.out
-			}
-			sum += currNeuron.bias
-			currNeuron.out = sum // Only logits
-		}
-
-		// If current activation function is Softmax
-		if currLayer.afe.isSoftmax {
-			layerSoftmax(currLayer)
-		} else {
-			for _, currNeuron := range currLayer.neurons {
-				currNeuron.out = currLayer.afe.af.Func(currNeuron.out)
-			}
-		}
+		currLayer.forward(prevLayer.outputs)
 	}
 }
-
-//------------------------------------------------------------------------------
-
-// func neuronForward(prevLayer *layer, currNeuron *neuron, actFunc ActivationFunc) {
-// 	var sum float64
-// 	for i, prevNeuron := range prevLayer.neurons {
-// 		sum += currNeuron.weights[i] * prevNeuron.out
-// 	}
-// 	sum += currNeuron.bias
-// 	currNeuron.out = actFunc.Func(sum)
-// }
-
-// func layerForward(prevLayer *layer, currLayer *layer) {
-// 	for _, currNeuron := range currLayer.neurons {
-// 		neuronForward(prevLayer, currNeuron, currLayer.afe.af)
-// 	}
-// }

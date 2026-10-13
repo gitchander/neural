@@ -95,14 +95,15 @@ func (p *costCore) calcSampleCost(t, x []float64) float64 {
 }
 
 func (p *costCore) calcLastDeltas(sample Sample, lastLayer *layer, lastDeltas []float64) {
-	for j, n := range lastLayer.neurons {
+	for j := range lastLayer.outputs {
 		if p.isCrossEntropy {
 			// Derivative of Cross Entropy Loss with Softmax
-			lastDeltas[j] = p.crossEntropy.SoftmaxDerivative(sample.Outputs[j], n.out)
+			lastDeltas[j] = p.crossEntropy.SoftmaxDerivative(sample.Outputs[j], lastLayer.outputs[j])
 		} else {
 			var (
-				afD = lastLayer.afe.af.Derivative(n.out)
-				cfD = p.costFunc.Derivative(sample.Outputs[j], n.out)
+				out = lastLayer.outputs[j]
+				afD = lastLayer.afe.af.Derivative(out)
+				cfD = p.costFunc.Derivative(sample.Outputs[j], out)
 			)
 			lastDeltas[j] = afD * cfD
 		}
