@@ -115,17 +115,17 @@ func (p *Neural) Calculate() {
 
 //------------------------------------------------------------------------------
 
-func neuronForward(prevLayer *layer, currNeuron *neuron, actFunc ActivationFunc) {
-	var sum float64
-	for i, prevNeuron := range prevLayer.neurons {
-		sum += currNeuron.weights[i] * prevNeuron.out
-	}
-	sum += currNeuron.bias
-	currNeuron.out = actFunc.Func(sum)
-}
+// func neuronForward(prevLayer *layer, currNeuron *neuron, actFunc ActivationFunc) {
+// 	var sum float64
+// 	for i, prevNeuron := range prevLayer.neurons {
+// 		sum += currNeuron.weights[i] * prevNeuron.out
+// 	}
+// 	sum += currNeuron.bias
+// 	currNeuron.out = actFunc.Func(sum)
+// }
 
-func layerForward(prevLayer *layer, currLayer *layer) {
-	for _, currNeuron := range currLayer.neurons {
-		neuronForward(prevLayer, currNeuron, currLayer.afe.af)
-	}
-}
+// func layerForward(prevLayer *layer, currLayer *layer) {
+// 	for _, currNeuron := range currLayer.neurons {
+// 		neuronForward(prevLayer, currNeuron, currLayer.afe.af)
+// 	}
+// }

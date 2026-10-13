@@ -49,7 +49,7 @@ func testOperator(op operator) error {
 		return true
 	}
 
-	err = gone.Learn(p, samples, learnRate, epochMax, f)
+	err = gone.Train(p, samples, learnRate, epochMax, f)
 	if err != nil {
 		return nil
 	}
@@ -96,7 +96,7 @@ func makeOperatorImage(op operator) error {
 		return true
 	}
 
-	err = gone.Learn(p, samples, learnRate, epochMax, f)
+	err = gone.Train(p, samples, learnRate, epochMax, f)
 	if err != nil {
 		return nil
 	}
@@ -230,5 +230,5 @@ func testNot() error {
 		return true
 	}
 
-	return gone.Learn(p, samples, learnRate, epochMax, f)
+	return gone.Train(p, samples, learnRate, epochMax, f)
 }

@@ -1,16 +1,20 @@
 package goneural
 
-import (
-	"math"
-)
-
 // loss function
 // cost function
 
 type CostFunc interface {
-	Func(t, x []float64) float64 // t - ideal value
+
+	// t - ideal outputs
+	// x - real outputs
+	Func(t, x []float64) float64
+
+	// t[i] - ideal output [0 or 1]
+	// x[i] - real output [0..1]
 	Derivative(ti, xi float64) float64
 }
+
+//------------------------------------------------------------------------------
 
 type costMeanSquared struct{}
 
@@ -24,52 +28,25 @@ func (costMeanSquared) Func(t, x []float64) float64 {
 }
 
 func (costMeanSquared) Derivative(ti, xi float64) float64 {
-	delta := ti - xi
-	return -delta
+	return xi - ti
 }
 
-var CFMeanSquared CostFunc = costMeanSquared{}
-
-//func (costMeanSquared) Func(t, x []float64) float64 {
-//	var sum float64
-//	for i := range t {
-//		delta := x[i] - t[i]
-//		sum += delta * delta
-//	}
-//	return sum / 2
-//}
-
-//func (costMeanSquared) Derivative(ti, xi float64) float64 {
-//	delta := xi - ti
-//	return delta
-//}
+var MeanSquared CostFunc = costMeanSquared{}
 
 //------------------------------------------------------------------------------
 
 type CrossEntropy struct{}
 
-// t[i] - ideal output = [0 or 1]
-// x[i] - real output = [0..1]
 func (CrossEntropy) Func(t, x []float64) float64 {
 	var sum float64
 	for i := range t {
-		v := math.Log(x[i])
-		err := checkFloat64IsReal(v)
-		if err != nil {
-			panic(err)
-		}
-		sum += t[i] * math.Log(x[i])
+		sum += t[i] * safeLog(x[i])
 	}
-	sum = -sum
-	return sum
-}
-
-func (CrossEntropy) Derivative(ti, xi float64) float64 {
-	panic("CrossEntropy derivative is handled jointly with Softmax via softmaxCrossEntropyDerivative and should not be called standalone")
+	return -sum
 }
 
 // Derivative of Cross Entropy Loss with Softmax
-func softmaxCrossEntropyDerivative(ti, xi float64) float64 {
+func (CrossEntropy) SoftmaxDerivative(ti, xi float64) float64 {
 	return xi - ti
 }
 
@@ -77,8 +54,6 @@ func softmaxCrossEntropyDerivative(ti, xi float64) float64 {
 
 type BinaryCrossEntropy struct{}
 
-// t[i] - ideal output = [0 or 1]
-// x[i] - real output = [0..1]
 func (BinaryCrossEntropy) Func(t, x []float64) float64 {
 	var sum float64
 	for i := range t {
@@ -86,7 +61,50 @@ func (BinaryCrossEntropy) Func(t, x []float64) float64 {
 		// if (t[i] == 1) -> -log(x[i])
 		// if (t[i] == 0) -> -log(1-x[i])
 
-		sum -= t[i]*math.Log(x[i]) + (1-t[i])*math.Log(1-x[i])
+		sum -= (t[i] * safeLog(x[i])) + ((1 - t[i]) * safeLog(1-x[i]))
 	}
 	return sum
+}
+
+//------------------------------------------------------------------------------
+
+type costCore struct {
+	isCrossEntropy bool
+	crossEntropy   CrossEntropy
+	costFunc       CostFunc
+}
+
+func newCostCore(isCrossEntropy bool, costFunc CostFunc) *costCore {
+	if !(isCrossEntropy) && (costFunc == nil) {
+		costFunc = MeanSquared
+	}
+	return &costCore{
+		isCrossEntropy: isCrossEntropy,
+		costFunc:       costFunc,
+	}
+}
+
+func (p *costCore) calcSampleCost(t, x []float64) float64 {
+	var sampleCost float64
+	if p.isCrossEntropy {
+		sampleCost = p.crossEntropy.Func(t, x)
+	} else {
+		sampleCost = p.costFunc.Func(t, x)
+	}
+	return sampleCost
+}
+
+func (p *costCore) calcLastDeltas(sample Sample, lastLayer *layer, lastDeltas []float64) {
+	for j, n := range lastLayer.neurons {
+		if p.isCrossEntropy {
+			// Derivative of Cross Entropy Loss with Softmax
+			lastDeltas[j] = p.crossEntropy.SoftmaxDerivative(sample.Outputs[j], n.out)
+		} else {
+			var (
+				afD = lastLayer.afe.af.Derivative(n.out)
+				cfD = p.costFunc.Derivative(sample.Outputs[j], n.out)
+			)
+			lastDeltas[j] = afD * cfD
+		}
+	}
 }

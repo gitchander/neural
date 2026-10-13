@@ -34,7 +34,7 @@ func main() {
 		return true
 	}
 
-	err = gone.Learn(p, samples, learnRate, epochMax, f)
+	err = gone.Train(p, samples, learnRate, epochMax, f)
 	checkError(err)
 }
 

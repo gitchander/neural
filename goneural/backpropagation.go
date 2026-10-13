@@ -1,5 +1,9 @@
 package goneural
 
+import (
+	"github.com/gitchander/neural/neutil"
+)
+
 // https://en.wikipedia.org/wiki/Backpropagation
 
 // Backpropagation
@@ -8,15 +12,14 @@ type BP struct {
 	ldeltas      [][]float64
 	learningRate float64 // (0 <= learningRate <= 1)
 	outputs      []float64
-	costFunc     CostFunc
+
+	cc *costCore
 }
 
-func NewBP(p *Neural) *BP {
+func NewBP(p *Neural, costFunc CostFunc) *BP {
 
-	var cf CostFunc = costMeanSquared{}
-	if p.getOutputLayer().afe.isSoftmax {
-		cf = CrossEntropy{}
-	}
+	isCrossEntropy := p.getOutputLayer().afe.isSoftmax
+	cc := newCostCore(isCrossEntropy, costFunc)
 
 	ldeltas := make([][]float64, len(p.layers))
 	for i, layer := range p.layers {
@@ -28,7 +31,7 @@ func NewBP(p *Neural) *BP {
 		ldeltas:      ldeltas,
 		learningRate: 1,
 		outputs:      make([]float64, len(p.getOutputLayer().neurons)),
-		costFunc:     cf,
+		cc:           cc,
 	}
 }
 
@@ -36,40 +39,21 @@ func (bp *BP) SetLearningRate(learningRate float64) {
 	bp.learningRate = clampFloat64(learningRate, 0, 1)
 }
 
-func (bp *BP) LearnSample(sample Sample) float64 {
+func (bp *BP) TrainSample(sample Sample) float64 {
 
 	p := bp.p
 	p.SetInputs(sample.Inputs)
 	p.Calculate()
 	p.GetOutputs(bp.outputs)
 
-	var sampleCost float64
-	if p.getOutputLayer().afe.isSoftmax {
-		cf := CrossEntropy{}
-		sampleCost = cf.Func(sample.Outputs, bp.outputs)
-	} else {
-		sampleCost = bp.costFunc.Func(sample.Outputs, bp.outputs)
-	}
+	sampleCost := bp.cc.calcSampleCost(sample.Outputs, bp.outputs)
 
 	var (
 		lastIndex  = len(p.layers) - 1
 		lastLayer  = p.layers[lastIndex]
 		lastDeltas = bp.ldeltas[lastIndex]
 	)
-	for j, n := range lastLayer.neurons {
-		if lastLayer.afe.isSoftmax {
-
-			// Derivative of Cross Entropy Loss with Softmax
-			lastDeltas[j] = softmaxCrossEntropyDerivative(sample.Outputs[j], n.out)
-
-		} else {
-			var (
-				afD = lastLayer.afe.af.Derivative(n.out)
-				cfD = bp.costFunc.Derivative(sample.Outputs[j], n.out)
-			)
-			lastDeltas[j] = afD * cfD
-		}
-	}
+	bp.cc.calcLastDeltas(sample, lastLayer, lastDeltas)
 
 	for k := lastIndex - 1; k > 0; k-- {
 		var (
@@ -107,35 +91,61 @@ func (bp *BP) LearnSample(sample Sample) float64 {
 	return sampleCost
 }
 
-func (bp *BP) SampleCost(sample Sample) (cost float64) {
+func (bp *BP) TrainSamples(samples []Sample) (averageCost float64) {
+	var sum float64
+	for _, sample := range samples {
+		sum += bp.TrainSample(sample)
+	}
+	averageCost = sum / float64(len(samples))
+	return averageCost
+}
+
+//------------------------------------------------------------------------------
+
+func (bp *BP) TestSample(sample Sample) (sampleCost float64, predictionIsCorrect bool) {
 
 	p := bp.p
 	p.SetInputs(sample.Inputs)
 	p.Calculate()
 	p.GetOutputs(bp.outputs)
 
-	var sampleCost float64
-	if p.getOutputLayer().afe.isSoftmax {
+	sampleCost = bp.cc.calcSampleCost(sample.Outputs, bp.outputs)
 
-		// sum := sumFloat64s(bp.outputs)
-		// if !float64Equal(sum, 1, 0.00001) {
-		// 	fmt.Println(sum)
-		// 	panic("sum not equal 1")
-		// }
+	var (
+		indexIdeal = neutil.IndexOfMax(sample.Outputs)
+		indexReal  = neutil.IndexOfMax(bp.outputs)
+	)
 
-		cf := CrossEntropy{}
-		sampleCost = cf.Func(sample.Outputs, bp.outputs)
-	} else {
-		sampleCost = bp.costFunc.Func(sample.Outputs, bp.outputs)
-	}
-	return sampleCost
+	predictionIsCorrect = indexIdeal == indexReal
+
+	return sampleCost, predictionIsCorrect
 }
 
-func (bp *BP) LearnSamples(samples []Sample) (averageCost float64) {
-	var sum float64
+type TestResult struct {
+	AverageCost float64
+	ErrorRate   float64
+	Accuracy    float64
+}
+
+func (bp *BP) TestSamples(samples []Sample) TestResult {
+	var (
+		sum        float64
+		wrongCount int
+	)
 	for _, sample := range samples {
-		sum += bp.LearnSample(sample)
+		sampleCost, predictionIsCorrect := bp.TestSample(sample)
+		if !predictionIsCorrect {
+			wrongCount++
+		}
+		sum += sampleCost
 	}
-	averageCost = sum / float64(len(samples))
-	return averageCost
+	var (
+		averageCost = sum / float64(len(samples))
+		errorRate   = 100.0 * float64(wrongCount) / float64(len(samples))
+	)
+	return TestResult{
+		AverageCost: averageCost,
+		ErrorRate:   errorRate,
+		Accuracy:    100.0 - errorRate,
+	}
 }

@@ -42,8 +42,8 @@ func run() error {
 	p.RandomizeWeights()
 
 	const (
-		learnRate = 0.6
-		epochMax  = 1000
+		learnRate = 0.1
+		epochMax  = 10000
 		epsilon   = 0.0001
 	)
 
@@ -56,5 +56,5 @@ func run() error {
 		return true
 	}
 
-	return gone.Learn(p, samples, learnRate, epochMax, f)
+	return gone.Train(p, samples, learnRate, epochMax, f)
 }

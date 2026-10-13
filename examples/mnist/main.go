@@ -9,8 +9,6 @@ import (
 	"github.com/gitchander/neural/dataset/mnist/mnist_gz"
 	"github.com/gitchander/neural/dataset/mnist/mnist_png"
 	gone "github.com/gitchander/neural/goneural"
-	"github.com/gitchander/neural/neutil"
-	"github.com/gitchander/neural/neutil/random"
 )
 
 func main() {
@@ -86,14 +84,6 @@ func runTrain(dirname, neuralName string) error {
 		return err
 	}
 
-	r := random.NewRandNow()
-	shuffleSamples := func() {
-		r.Shuffle(len(samples), func(i, j int) {
-			samples[i], samples[j] = samples[j], samples[i]
-		})
-	}
-	shuffleSamples()
-
 	p, err := gone.ReadFile(neuralName)
 	if err != nil {
 		var (
@@ -124,6 +114,9 @@ func runTrain(dirname, neuralName string) error {
 		}
 		p.RandomizeWeights()
 	}
+
+	shuffleSamples := gone.ShuffleSamplesFunc(samples)
+	shuffleSamples()
 
 	const (
 		//learnRate = 0.6
@@ -156,7 +149,7 @@ func runTrain(dirname, neuralName string) error {
 		return true
 	}
 
-	err = gone.Learn(p, samples, learnRate, epochMax, f)
+	err = gone.Train(p, samples, learnRate, epochMax, f)
 	if err != nil {
 		return err
 	}
@@ -172,14 +165,6 @@ func runTest(dirname, neuralName string) error {
 		return err
 	}
 
-	r := random.NewRandNow()
-	shuffleSamples := func() {
-		r.Shuffle(len(samples), func(i, j int) {
-			samples[i], samples[j] = samples[j], samples[i]
-		})
-	}
-	shuffleSamples()
-
 	p, err := gone.ReadFile(neuralName)
 	if err != nil {
 		return err
@@ -187,77 +172,16 @@ func runTest(dirname, neuralName string) error {
 
 	fmt.Println("topology:", p.Topology())
 
-	outputs := make([]float64, 10)
-
-	var wrongCount int
-	for _, sample := range samples {
-
-		p.SetInputs(sample.Inputs)
-		p.Calculate()
-		p.GetOutputs(outputs)
-
-		//fmt.Println("sum Outputs:", sample.Outputs)
-		//fmt.Println(outputs, sample.Outputs)
-
-		var (
-			labelIdeal = neutil.IndexOfMax(sample.Outputs)
-			label      = neutil.IndexOfMax(outputs)
-		)
-
-		//fmt.Println(labelIdeal, label)
-
-		if labelIdeal != label {
-			wrongCount++
-		}
+	res, err := gone.TestSamples(p, samples)
+	if err != nil {
+		return err
 	}
-	fmt.Printf("average cost: %.3f %%\n", 100*float64(wrongCount)/float64(len(samples)))
+
+	fmt.Printf("Average Cost: %.5f\n", res.AverageCost)
+	fmt.Printf("Error Rate:   %.3f%%\n", res.ErrorRate)
+	fmt.Printf("Accuracy:     %.3f%%\n", res.Accuracy)
 
 	return nil
-}
-
-// func runTest2(dirname, neuralName string) error {
-
-// 	//samples, err := dsr.ReadTraining(dirname)
-// 	samples, err := dsr.ReadTesting(dirname)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	p, err := gone.ReadFile(neuralName)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	fmt.Println("topology:", p.Topology())
-
-// 	outputs := make([]float64, 10)
-
-// 	cf := gone.CrossEntropy{}
-// 	var sum float64
-// 	for _, sample := range samples {
-
-// 		p.SetInputs(sample.Inputs)
-// 		p.Calculate()
-// 		p.GetOutputs(outputs)
-
-// 		//fmt.Println("sum Outputs:", sample.Outputs)
-// 		//fmt.Println(outputs, sample.Outputs)
-
-// 		sum += cf.Func(sample.Outputs, outputs)
-// 	}
-// 	averageCost := sum / float64(len(samples))
-
-// 	fmt.Printf("average cost = %.10f\n", averageCost)
-
-// 	return nil
-// }
-
-func sumFloat64s(as []float64) float64 {
-	sum := 0.0
-	for _, a := range as {
-		sum += a
-	}
-	return sum
 }
 
 //------------------------------------------------------------------------------

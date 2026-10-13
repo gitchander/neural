@@ -97,7 +97,7 @@ func doSpiral() error {
 		return true
 	}
 
-	err = gone.Learn(p, samples, learnRate, epochMax, f)
+	err = gone.Train(p, samples, learnRate, epochMax, f)
 	if err != nil {
 		return err
 	}

@@ -5,7 +5,6 @@ import (
 	"log"
 
 	gone "github.com/gitchander/neural/goneural"
-	"github.com/gitchander/neural/neutil/random"
 )
 
 func main() {
@@ -44,17 +43,16 @@ func run() error {
 	p.RandomizeWeights()
 
 	const (
+		// learnRate = 0.01
+		// epochMax  = 1000
+		// epsilon   = 0.1
+
 		learnRate = 0.1
 		epochMax  = 100_000
 		epsilon   = 0.01
 	)
 
-	r := random.NewRandNow()
-	shuffleSamples := func() {
-		r.Shuffle(len(samples), func(i, j int) {
-			samples[i], samples[j] = samples[j], samples[i]
-		})
-	}
+	shuffleSamples := gone.ShuffleSamplesFunc(samples)
 	shuffleSamples()
 
 	f := func(epoch int, averageCost float64) bool {
@@ -67,5 +65,5 @@ func run() error {
 		return true
 	}
 
-	return gone.Learn(p, samples, learnRate, epochMax, f)
+	return gone.Train(p, samples, learnRate, epochMax, f)
 }

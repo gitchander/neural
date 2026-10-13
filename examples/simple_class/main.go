@@ -54,7 +54,7 @@ func run() error {
 		return true
 	}
 
-	return gone.Learn(p, samples, learnRate, epochMax, f)
+	return gone.Train(p, samples, learnRate, epochMax, f)
 }
 
 func makeSamples() []gone.Sample {
