@@ -3,7 +3,7 @@ package goneural
 type layer struct {
 	lc LayerConfig
 
-	afe *actFuncExt
+	act *actFuncExt
 
 	neurons []*neuron
 	outputs []float64
@@ -16,14 +16,14 @@ func newLayer(lc LayerConfig, weightsPerNeuron int) (*layer, error) {
 		n.weights = make([]float64, weightsPerNeuron)
 		neurons[j] = n
 	}
-	afe, err := makeActivationFunc(lc.Activation)
+	act, err := makeActFuncExt(lc.Activation)
 	if err != nil {
 		return nil, err
 	}
 
 	p := &layer{
 		lc:      lc,
-		afe:     afe,
+		act:     act,
 		neurons: neurons,
 		outputs: make([]float64, lc.Neurons),
 	}
@@ -38,14 +38,16 @@ func (lr *layer) forward(inputs []float64) {
 		lr.outputs[j] = currNeuron.calcLogit(inputs) // logit
 	}
 
-	// If current activation function is Softmax
-	if lr.afe.isSoftmax {
-		softmax(lr.outputs, lr.outputs)
-	} else {
-		for i := range lr.outputs {
-			lr.outputs[i] = lr.afe.af.Func(lr.outputs[i])
-		}
-	}
+	// // If current activation function is Softmax
+	// if lr.act.isSoftmax {
+	// 	neutil.SoftmaxInPlace(lr.outputs)
+	// } else {
+	// 	for i := range lr.outputs {
+	// 		lr.outputs[i] = lr.act.af.Func(lr.outputs[i])
+	// 	}
+	// }
+
+	lr.act.Activate(lr.outputs)
 }
 
 func (lr *layer) updateWeights(inputs []float64, currDeltas []float64, learningRate float64) {

@@ -3,6 +3,8 @@ package goneural
 import (
 	"fmt"
 	"math"
+
+	"github.com/gitchander/neural/neutil"
 )
 
 // https://en.wikipedia.org/wiki/Activation_function
@@ -14,7 +16,7 @@ type actFuncExt struct {
 	isSoftmax bool // ActivationFunc is Softmax
 }
 
-func makeActivationFunc(ac ActivationConfig) (*actFuncExt, error) {
+func makeActFuncExt(ac ActivationConfig) (*actFuncExt, error) {
 
 	var afe actFuncExt
 
@@ -46,6 +48,18 @@ func makeActivationFunc(ac ActivationConfig) (*actFuncExt, error) {
 	}
 
 	return &afe, nil
+}
+
+func (act *actFuncExt) Activate(logits []float64) {
+
+	// If current activation function is Softmax
+	if act.isSoftmax {
+		neutil.SoftmaxInPlace(logits)
+	} else {
+		for i := range logits {
+			logits[i] = act.af.Func(logits[i])
+		}
+	}
 }
 
 //------------------------------------------------------------------------------

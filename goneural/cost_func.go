@@ -1,5 +1,9 @@
 package goneural
 
+import (
+	"github.com/gitchander/neural/neutil"
+)
+
 // loss function
 // cost function
 
@@ -35,42 +39,8 @@ var MeanSquared CostFunc = costMeanSquared{}
 
 //------------------------------------------------------------------------------
 
-type CrossEntropy struct{}
-
-func (CrossEntropy) Func(t, x []float64) float64 {
-	var sum float64
-	for i := range t {
-		sum += t[i] * safeLog(x[i])
-	}
-	return -sum
-}
-
-// Derivative of Cross Entropy Loss with Softmax
-func (CrossEntropy) SoftmaxDerivative(ti, xi float64) float64 {
-	return xi - ti
-}
-
-//------------------------------------------------------------------------------
-
-type BinaryCrossEntropy struct{}
-
-func (BinaryCrossEntropy) Func(t, x []float64) float64 {
-	var sum float64
-	for i := range t {
-
-		// if (t[i] == 1) -> -log(x[i])
-		// if (t[i] == 0) -> -log(1-x[i])
-
-		sum -= (t[i] * safeLog(x[i])) + ((1 - t[i]) * safeLog(1-x[i]))
-	}
-	return sum
-}
-
-//------------------------------------------------------------------------------
-
 type costCore struct {
 	isCrossEntropy bool
-	crossEntropy   CrossEntropy
 	costFunc       CostFunc
 }
 
@@ -87,7 +57,7 @@ func newCostCore(isCrossEntropy bool, costFunc CostFunc) *costCore {
 func (p *costCore) calcSampleCost(t, x []float64) float64 {
 	var sampleCost float64
 	if p.isCrossEntropy {
-		sampleCost = p.crossEntropy.Func(t, x)
+		sampleCost, _ = neutil.CrossEntropy(t, x)
 	} else {
 		sampleCost = p.costFunc.Func(t, x)
 	}
@@ -98,11 +68,11 @@ func (p *costCore) calcLastDeltas(sample Sample, lastLayer *layer, lastDeltas []
 	for j := range lastLayer.outputs {
 		if p.isCrossEntropy {
 			// Derivative of Cross Entropy Loss with Softmax
-			lastDeltas[j] = p.crossEntropy.SoftmaxDerivative(sample.Outputs[j], lastLayer.outputs[j])
+			lastDeltas[j] = neutil.CrossEntropySoftmaxDerivative(sample.Outputs[j], lastLayer.outputs[j])
 		} else {
 			var (
 				out = lastLayer.outputs[j]
-				afD = lastLayer.afe.af.Derivative(out)
+				afD = lastLayer.act.af.Derivative(out)
 				cfD = p.costFunc.Derivative(sample.Outputs[j], out)
 			)
 			lastDeltas[j] = afD * cfD
