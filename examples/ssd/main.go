@@ -21,13 +21,11 @@ func run() error {
 
 	samples := makeSamples()
 
-	// for _, sample := range samples {
-	// 	fmt.Println(sample)
-	// }
-
-	var (
-		layers = gone.MakeLayers("sigmoid", 4, 20, 7)
-	)
+	layers := []gone.LayerConfig{
+		gone.MakeLayerConfigAF(4, gone.Sigmoid),
+		gone.MakeLayerConfigAF(20, gone.Sigmoid),
+		gone.MakeLayerConfigAF(7, gone.Sigmoid),
+	}
 
 	p, err := gone.NewNeural(layers)
 	if err != nil {

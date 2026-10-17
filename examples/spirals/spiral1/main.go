@@ -57,7 +57,13 @@ func doSpiral() error {
 
 	fmt.Println("len samples:", len(samples))
 
-	layers := gone.MakeLayers("sigmoid", 2, 50, 50, 1)
+	layers := []gone.LayerConfig{
+		gone.MakeLayerConfigAF(2, gone.Sigmoid),
+		gone.MakeLayerConfigAF(50, gone.Sigmoid),
+		gone.MakeLayerConfigAF(50, gone.Sigmoid),
+		gone.MakeLayerConfigAF(1, gone.Sigmoid),
+	}
+
 	p, err := gone.NewNeural(layers)
 	if err != nil {
 		return err

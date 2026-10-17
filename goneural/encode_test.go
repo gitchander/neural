@@ -10,24 +10,9 @@ import (
 func TestEncode(t *testing.T) {
 
 	lcs := []LayerConfig{
-		{
-			Activation: ActivationConfig{
-				Name: "sigmoid",
-			},
-			Neurons: 7,
-		},
-		{
-			Activation: ActivationConfig{
-				Name: "sigmoid",
-			},
-			Neurons: 100,
-		},
-		{
-			Activation: ActivationConfig{
-				Name: "sigmoid",
-			},
-			Neurons: 10,
-		},
+		MakeLayerConfigAF(7, Sigmoid),
+		MakeLayerConfigAF(100, Tanh),
+		MakeLayerConfigAF(10, Step),
 	}
 
 	p, err := NewNeural(lcs)

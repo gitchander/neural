@@ -24,12 +24,16 @@ func run() error {
 	samples := makeSamples()
 
 	var (
-		//layers = gone.MakeLayers("sigmoid", 4, 8, outN)
+		// layers = []gone.LayerConfig{
+		// 	gone.MakeLayerConfigAF(4, gone.Sigmoid),
+		// 	gone.MakeLayerConfigAF(8, gone.Sigmoid),
+		// 	gone.MakeLayerConfigAF(outN, gone.Sigmoid),
+		// }
 
 		layers = []gone.LayerConfig{
-			gone.MakeLayerConfig("sigmoid", 4),
-			gone.MakeLayerConfig("sigmoid", 7),
-			gone.MakeLayerConfig("softmax", outN),
+			gone.MakeLayerConfigAF(4, gone.Sigmoid),
+			gone.MakeLayerConfigAF(7, gone.Sigmoid),
+			gone.MakeLayerConfigSoftmax(outN),
 		}
 	)
 

@@ -87,25 +87,17 @@ func runTrain(dirname, neuralName string) error {
 	p, err := gone.ReadFile(neuralName)
 	if err != nil {
 		var (
-			// layers = gone.MakeLayers("sigmoid", 28*28, 14*14, 7*7, 10)
-
 			// layers = []gone.LayerConfig{
-			// 	gone.MakeLayerConfig("sigmoid", 28*28),
-			// 	gone.MakeLayerConfig("sigmoid", 14*14),
-			// 	gone.MakeLayerConfig("sigmoid", 7*7),
-			// 	gone.MakeLayerConfig("softmax", 10),
-			// }
-
-			// layers = []gone.LayerConfig{
-			// 	gone.MakeLayerConfig("sigmoid", 28*28),
-			// 	gone.MakeLayerConfig("sigmoid", 800),
-			// 	gone.MakeLayerConfig("sigmoid", 10),
+			// 	gone.MakeLayerConfigAF((28 * 28), gone.Sigmoid),
+			// 	gone.MakeLayerConfigAF((14 * 14), gone.Sigmoid),
+			// 	gone.MakeLayerConfigAF(7*7, gone.Sigmoid),
+			// 	gone.MakeLayerConfigSoftmax(10),
 			// }
 
 			layers = []gone.LayerConfig{
-				gone.MakeLayerConfig("sigmoid", (28 * 28)),
-				gone.MakeLayerConfig("sigmoid", 800),
-				gone.MakeLayerConfig("softmax", 10),
+				gone.MakeLayerConfigAF((28 * 28), gone.Sigmoid),
+				gone.MakeLayerConfigAF(800, gone.Sigmoid),
+				gone.MakeLayerConfigSoftmax(10),
 			}
 		)
 		p, err = gone.NewNeural(layers)

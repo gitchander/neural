@@ -25,12 +25,16 @@ func run() error {
 	gone.NormalizeInputs(samples)
 
 	var (
-		// layers = gone.MakeLayers("sigmoid", 13, 3, 3)
+		// layers = []gone.LayerConfig{
+		// 	gone.MakeLayerConfigAF(13, gone.Sigmoid),
+		// 	gone.MakeLayerConfigAF(3, gone.Sigmoid),
+		// 	gone.MakeLayerConfigAF(3, gone.Sigmoid),
+		// }
 
 		layers = []gone.LayerConfig{
-			gone.MakeLayerConfig("sigmoid", 13),
-			gone.MakeLayerConfig("sigmoid", 3),
-			gone.MakeLayerConfig("softmax", 3),
+			gone.MakeLayerConfigAF(13, gone.Sigmoid),
+			gone.MakeLayerConfigAF(3, gone.Sigmoid),
+			gone.MakeLayerConfigSoftmax(3),
 		}
 	)
 

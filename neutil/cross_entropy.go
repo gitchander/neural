@@ -2,8 +2,12 @@ package neutil
 
 //------------------------------------------------------------------------------
 
+// https://www.parasdahal.com/softmax-crossentropy
+
 // Bounds check elimination (BCE) hint.
 // $ go build -gcflags="-d=ssa/check_bce/debug=1" cross_entropy.go utils.go
+
+//------------------------------------------------------------------------------
 
 type crossEntropy struct{}
 

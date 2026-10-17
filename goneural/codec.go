@@ -15,7 +15,7 @@ func Encode(w io.Writer, p *Neural) error {
 		return err
 	}
 	for _, l := range p.layers {
-		err = writeLayerConfig(bw, l.lc)
+		err = writeLayerConfig(bw, l.getLayerConfig())
 		if err != nil {
 			return err
 		}
@@ -48,11 +48,11 @@ func Decode(r io.Reader) (*Neural, error) {
 	}
 	lcs := make([]LayerConfig, n)
 	for i := range lcs {
-		lc, err := readLayerConfig(br)
+		plc, err := readLayerConfig(br)
 		if err != nil {
 			return nil, err
 		}
-		lcs[i] = *lc
+		lcs[i] = *plc
 	}
 
 	p, err := NewNeural(lcs)

@@ -16,7 +16,7 @@ type BP struct {
 
 func NewBP(p *Neural, costFunc CostFunc) *BP {
 
-	isCrossEntropy := p.getOutputLayer().act.isSoftmax
+	isCrossEntropy := p.getOutputLayer().ac.IsSoftmax
 	cc := newCostCore(isCrossEntropy, costFunc)
 
 	ldeltas := make([][]float64, len(p.layers))
@@ -44,7 +44,7 @@ func (bp *BP) calcDeltas(sample Sample) {
 		lastLayer  = p.layers[lastIndex]
 		lastDeltas = bp.ldeltas[lastIndex]
 	)
-	bp.cc.calcLastDeltas(sample, lastLayer, lastDeltas)
+	bp.cc.calcLastDeltas(sample.Outputs, lastLayer, lastDeltas)
 
 	for k := lastIndex - 1; k > 0; k-- {
 		var (
@@ -59,7 +59,7 @@ func (bp *BP) calcDeltas(sample Sample) {
 			for i, nextNeuron := range nextLayer.neurons {
 				sum += nextDeltas[i] * nextNeuron.weights[j]
 			}
-			afD := currLayer.act.af.Derivative(currLayer.outputs[j])
+			afD := currLayer.ac.AF.Derivative(currLayer.outputs[j])
 			currDeltas[j] = afD * sum
 		}
 	}

@@ -28,7 +28,12 @@ func testOperator(op operator) error {
 
 	samples := makeSamplesByOperator(op)
 
-	layers := gone.MakeLayers("sigmoid", 2, 3, 1)
+	layers := []gone.LayerConfig{
+		gone.MakeLayerConfigAF(2, gone.Sigmoid),
+		gone.MakeLayerConfigAF(3, gone.Sigmoid),
+		gone.MakeLayerConfigAF(1, gone.Sigmoid),
+	}
+
 	p, err := gone.NewNeural(layers)
 	if err != nil {
 		return nil
@@ -73,7 +78,12 @@ func makeOperatorImage(op operator) error {
 
 	samples := makeSamplesByOperator(op)
 
-	layers := gone.MakeLayers("sigmoid", 2, 3, 1)
+	layers := []gone.LayerConfig{
+		gone.MakeLayerConfigAF(2, gone.Sigmoid),
+		gone.MakeLayerConfigAF(3, gone.Sigmoid),
+		gone.MakeLayerConfigAF(1, gone.Sigmoid),
+	}
+
 	p, err := gone.NewNeural(layers)
 	if err != nil {
 		return nil
@@ -207,7 +217,12 @@ func testNot() error {
 			Outputs: []float64{0},
 		},
 	}
-	layers := gone.MakeLayers("sigmoid", 1, 1)
+
+	layers := []gone.LayerConfig{
+		gone.MakeLayerConfigAF(1, gone.Sigmoid),
+		gone.MakeLayerConfigAF(1, gone.Sigmoid),
+	}
+
 	p, err := gone.NewNeural(layers)
 	if err != nil {
 		return nil

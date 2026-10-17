@@ -14,7 +14,12 @@ func main() {
 	r := random.NewRandNow()
 	samples := makeSamples(r)
 
-	layers := gone.MakeLayers("sigmoid", 2, 3, 1)
+	layers := []gone.LayerConfig{
+		gone.MakeLayerConfigAF(2, gone.Sigmoid),
+		gone.MakeLayerConfigAF(3, gone.Sigmoid),
+		gone.MakeLayerConfigAF(1, gone.Sigmoid),
+	}
+
 	p, err := gone.NewNeural(layers)
 	checkError(err)
 	p.RandomizeWeights()

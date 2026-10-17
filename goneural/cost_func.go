@@ -64,16 +64,16 @@ func (p *costCore) calcSampleCost(t, x []float64) float64 {
 	return sampleCost
 }
 
-func (p *costCore) calcLastDeltas(sample Sample, lastLayer *layer, lastDeltas []float64) {
+func (p *costCore) calcLastDeltas(sampleOutputs []float64, lastLayer *layer, lastDeltas []float64) {
 	for j := range lastLayer.outputs {
 		if p.isCrossEntropy {
 			// Derivative of Cross Entropy Loss with Softmax
-			lastDeltas[j] = neutil.CrossEntropy.SoftmaxDerivative(sample.Outputs[j], lastLayer.outputs[j])
+			lastDeltas[j] = neutil.CrossEntropy.SoftmaxDerivative(sampleOutputs[j], lastLayer.outputs[j])
 		} else {
 			var (
 				out = lastLayer.outputs[j]
-				afD = lastLayer.act.af.Derivative(out)
-				cfD = p.costFunc.Derivative(sample.Outputs[j], out)
+				afD = lastLayer.ac.AF.Derivative(out)
+				cfD = p.costFunc.Derivative(sampleOutputs[j], out)
 			)
 			lastDeltas[j] = afD * cfD
 		}

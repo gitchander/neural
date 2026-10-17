@@ -27,12 +27,16 @@ func run() error {
 	gone.NormalizeInputs(samples)
 
 	var (
-		// layers = gone.MakeLayers("sigmoid", 4, 3, 3)
+		// layers = []gone.LayerConfig{
+		// 	gone.MakeLayerConfigAF(4, gone.Sigmoid),
+		// 	gone.MakeLayerConfigAF(3, gone.Sigmoid),
+		// 	gone.MakeLayerConfigAF(3, gone.Sigmoid),
+		// }
 
 		layers = []gone.LayerConfig{
-			gone.MakeLayerConfig("sigmoid", 4),
-			gone.MakeLayerConfig("sigmoid", 3),
-			gone.MakeLayerConfig("softmax", 3),
+			gone.MakeLayerConfigAF(4, gone.Sigmoid),
+			gone.MakeLayerConfigAF(3, gone.Sigmoid),
+			gone.MakeLayerConfigSoftmax(3),
 		}
 	)
 
@@ -43,13 +47,9 @@ func run() error {
 	p.RandomizeWeights()
 
 	const (
-		// learnRate = 0.01
-		// epochMax  = 1000
-		// epsilon   = 0.1
-
 		learnRate = 0.1
-		epochMax  = 100_000
-		epsilon   = 0.01
+		epochMax  = 1000
+		epsilon   = 0.1
 	)
 
 	shuffleSamples := gone.ShuffleSamplesFunc(samples)
