@@ -1,6 +1,7 @@
 package neutil
 
 import (
+	"fmt"
 	"math"
 	"slices"
 )
@@ -67,6 +68,14 @@ func softmax_v1(logits, probs []float64) {
 	if n == 0 {
 		return
 	}
+
+	// For BCE:
+	// $ go build -gcflags="-d=ssa/check_bce/debug=1" softmax.go
+
+	// Bounds check elimination (BCE) hint.
+	// Compiler should report "Found IsInBounds" here, removing checks in loops.
+	_ = probs[n-1] // "Found IsInBounds"
+
 	maxLogit := slices.Max(logits)
 	var sum float64
 	for i := range n {
@@ -78,26 +87,45 @@ func softmax_v1(logits, probs []float64) {
 	}
 }
 
-func softmax_v2(logits, probs []float64) {
+func softmax_v2(logits, probabilities []float64) {
 	n := len(logits)
 	if n == 0 {
 		return
 	}
-	if len(probs) != n {
-		panic("softmax: length mismatch between logits and probabilities")
+	if len(probabilities) < n {
+		panic(fmt.Sprintf("softmax_v2: probabilities length (%d) is shorter than logits length (%d)", len(probabilities), n))
 	}
 	maxLogit := slices.Max(logits)
 	var sum float64
 	for i := range n {
-		probs[i] = math.Exp(logits[i] - maxLogit)
-		sum += probs[i]
+		probabilities[i] = math.Exp(logits[i] - maxLogit)
+		sum += probabilities[i]
 	}
 	for i := range n {
-		probs[i] /= sum
+		probabilities[i] /= sum
 	}
 }
 
-func softmax_v3(logits, probabilities []float64) int {
+func softmax_v3(logits, probabilities []float64) {
+	n := len(logits)
+	if n == 0 {
+		return
+	}
+	if len(probabilities) != n {
+		panic(fmt.Sprintf("softmax_v3: probabilities length (%d) is not equal than logits length (%d)", len(probabilities), n))
+	}
+	maxLogit := slices.Max(logits)
+	var sum float64
+	for i := range n {
+		probabilities[i] = math.Exp(logits[i] - maxLogit)
+		sum += probabilities[i]
+	}
+	for i := range n {
+		probabilities[i] /= sum
+	}
+}
+
+func softmax_v4(logits, probabilities []float64) int {
 	n := min(len(logits), len(probabilities))
 	if n == 0 {
 		return 0
@@ -113,3 +141,24 @@ func softmax_v3(logits, probabilities []float64) int {
 	}
 	return n
 }
+
+//------------------------------------------------------------------------------
+
+func softmaxKernel(logits, probabilities []float64, n int) {
+
+	// BCE hint: eliminates bounds checks in the loops below.
+	_ = logits[n-1]
+	_ = probabilities[n-1]
+
+	maxLogit := slices.Max(logits[:n])
+	var sum float64
+	for i := range n {
+		probabilities[i] = math.Exp(logits[i] - maxLogit)
+		sum += probabilities[i]
+	}
+	for i := range n {
+		probabilities[i] /= sum
+	}
+}
+
+//------------------------------------------------------------------------------

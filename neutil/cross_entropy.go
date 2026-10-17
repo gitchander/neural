@@ -1,48 +1,56 @@
 package neutil
 
-//------------------------------------------------------------------------------
-
-// type CrossEntropy struct{}
-
-// func (CrossEntropy) Func(t, x []float64) float64 {
-// 	var sum float64
-// 	for i := range t {
-// 		sum += t[i] * safeLog(x[i])
-// 	}
-// 	return -sum
-// }
-
-// // Derivative of Cross Entropy Loss with Softmax
-// func (CrossEntropy) SoftmaxDerivative(ti, xi float64) float64 {
-// 	return xi - ti
-// }
+import (
+	"fmt"
+)
 
 //------------------------------------------------------------------------------
 
-func CrossEntropy(t, x []float64) (float64, int) {
-	n := min(len(t), len(x))
-	if n == 0 {
-		return 0.0, 0
+// Bounds check elimination (BCE) hint.
+// $ go build -gcflags="-d=ssa/check_bce/debug=1" cross_entropy.go utils.go
+
+type crossEntropy struct{}
+
+func (crossEntropy) Func(t, x []float64) float64 {
+
+	n := len(t)
+	if len(x) != n {
+		panic(fmt.Sprintf("crossEntropy.Func: 'x' length (%d) is not equal than 't' length (%d)", len(x), n))
 	}
+
+	// BCE hint: eliminates bounds checks in the loops below.
+	_ = x[n-1]
+
 	var sum float64
 	for i := range n {
 		sum += t[i] * safeLog(x[i])
 	}
-	return -sum, n
+	return -sum
 }
 
 // Derivative of Cross Entropy Loss with Softmax
-func CrossEntropySoftmaxDerivative(ti, xi float64) float64 {
+func (crossEntropy) SoftmaxDerivative(ti, xi float64) float64 {
 	return xi - ti
 }
 
+var CrossEntropy = crossEntropy{}
+
 //------------------------------------------------------------------------------
 
-type BinaryCrossEntropy struct{}
+type binaryCrossEntropy struct{}
 
-func (BinaryCrossEntropy) Func(t, x []float64) float64 {
+func (binaryCrossEntropy) Func(t, x []float64) float64 {
+
+	n := len(t)
+	if len(x) != n {
+		panic(fmt.Sprintf("crossEntropy.Func: 'x' length (%d) is not equal than 't' length (%d)", len(x), n))
+	}
+
+	// BCE hint: eliminates bounds checks in the loops below.
+	_ = x[n-1]
+
 	var sum float64
-	for i := range t {
+	for i := range n {
 
 		// if (t[i] == 1) -> -log(x[i])
 		// if (t[i] == 0) -> -log(1-x[i])
@@ -51,3 +59,7 @@ func (BinaryCrossEntropy) Func(t, x []float64) float64 {
 	}
 	return sum
 }
+
+var BinaryCrossEntropy = binaryCrossEntropy{}
+
+//------------------------------------------------------------------------------

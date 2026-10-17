@@ -71,10 +71,15 @@ func floatsMinMax(as []float64) (min, max float64) {
 }
 
 func indexesMinMaxFloat64(xs []float64) (imin, imax int) {
+
 	n := len(xs)
 	if n == 0 {
 		panic(errNoElements)
 	}
+
+	// BCE hint: eliminates bounds checks in the loops below.
+	_ = xs[n-1]
+
 	imin, imax = 0, 0
 	for i := 1; i < n; i++ {
 		if xs[imin] > xs[i] {

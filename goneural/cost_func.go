@@ -57,7 +57,7 @@ func newCostCore(isCrossEntropy bool, costFunc CostFunc) *costCore {
 func (p *costCore) calcSampleCost(t, x []float64) float64 {
 	var sampleCost float64
 	if p.isCrossEntropy {
-		sampleCost, _ = neutil.CrossEntropy(t, x)
+		sampleCost = neutil.CrossEntropy.Func(t, x)
 	} else {
 		sampleCost = p.costFunc.Func(t, x)
 	}
@@ -68,7 +68,7 @@ func (p *costCore) calcLastDeltas(sample Sample, lastLayer *layer, lastDeltas []
 	for j := range lastLayer.outputs {
 		if p.isCrossEntropy {
 			// Derivative of Cross Entropy Loss with Softmax
-			lastDeltas[j] = neutil.CrossEntropySoftmaxDerivative(sample.Outputs[j], lastLayer.outputs[j])
+			lastDeltas[j] = neutil.CrossEntropy.SoftmaxDerivative(sample.Outputs[j], lastLayer.outputs[j])
 		} else {
 			var (
 				out = lastLayer.outputs[j]
