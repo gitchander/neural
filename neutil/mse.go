@@ -7,13 +7,18 @@ package neutil
 // The function operates on the intersection of both lengths (safe slice boundaries).
 // Formula: MSE = (1/n) * Sum((a[i] - b[i])^2)
 func MSE(a, b []float64) float64 {
+
 	n := len(a)
-	if n != len(b) {
-		panic("length not equal")
+	mustHaveMin("MSE", "length", n, 1)
+
+	if len(b) != n {
+		panic(errorHaveWant("MSE", "b length", len(b), n))
 	}
+
+	// BCE hints: eliminates bounds checks for both slices in the loop below.
+	_ = b[n-1]
+
 	sum := 0.0
-	// Utilizing range n leverages the Go compiler's BCE optimization,
-	// completely avoiding implicit array boundary checks inside the loop.
 	for i := range n {
 		delta := a[i] - b[i]
 		sum += delta * delta
