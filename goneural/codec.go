@@ -55,7 +55,10 @@ func Decode(r io.Reader) (*Neural, error) {
 		lcs[i] = *plc
 	}
 
-	p, err := NewNeural(lcs)
+	config := NetworkConfig{
+		Layers: lcs,
+	}
+	p, err := NewNeural(config)
 	if err != nil {
 		return nil, err
 	}

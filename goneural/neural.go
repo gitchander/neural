@@ -8,13 +8,18 @@ import (
 	"github.com/gitchander/neural/neutil/random"
 )
 
+type NetworkConfig struct {
+	Layers []LayerConfig
+}
+
 // Feedforward neural network
 // MLP - Multi-Layer Perceptron
 type Neural struct {
 	layers []*layer
 }
 
-func NewNeural(lcs []LayerConfig) (*Neural, error) {
+func NewNeural(config NetworkConfig) (*Neural, error) {
+	lcs := config.Layers
 	if len(lcs) < 2 {
 		return nil, errors.New("neural: invalid number of layers")
 	}

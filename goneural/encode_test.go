@@ -9,13 +9,14 @@ import (
 
 func TestEncode(t *testing.T) {
 
-	lcs := []LayerConfig{
-		MakeLayerConfigAF(7, Sigmoid),
-		MakeLayerConfigAF(100, Tanh),
-		MakeLayerConfigAF(10, Step),
+	config := NetworkConfig{
+		Layers: []LayerConfig{
+			Dense(7, Sigmoid),
+			Dense(100, Tanh),
+			Dense(10, Step),
+		},
 	}
-
-	p, err := NewNeural(lcs)
+	p, err := NewNeural(config)
 	if err != nil {
 		t.Fatal(err)
 	}

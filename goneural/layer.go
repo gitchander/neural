@@ -11,14 +11,7 @@ type LayerConfig struct {
 	AC      ActivationConfig
 }
 
-func MakeLayerConfig(neurons int, ac ActivationConfig) LayerConfig {
-	return LayerConfig{
-		Neurons: neurons,
-		AC:      ac,
-	}
-}
-
-func MakeLayerConfigAF(neurons int, af ActivationFunc) LayerConfig {
+func Dense(neurons int, af ActivationFunc) LayerConfig {
 	return LayerConfig{
 		Neurons: neurons,
 		AC: ActivationConfig{
@@ -27,7 +20,8 @@ func MakeLayerConfigAF(neurons int, af ActivationFunc) LayerConfig {
 	}
 }
 
-func MakeLayerConfigSoftmax(neurons int) LayerConfig {
+// DenseSoftmax
+func Softmax(neurons int) LayerConfig {
 	return LayerConfig{
 		Neurons: neurons,
 		AC: ActivationConfig{

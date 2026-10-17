@@ -23,21 +23,23 @@ func run() error {
 
 	samples := makeSamples()
 
-	var (
-		// layers = []gone.LayerConfig{
-		// 	gone.MakeLayerConfigAF(4, gone.Sigmoid),
-		// 	gone.MakeLayerConfigAF(8, gone.Sigmoid),
-		// 	gone.MakeLayerConfigAF(outN, gone.Sigmoid),
-		// }
+	// nnConfig := gone.NetworkConfig{
+	// 	Layers: []gone.LayerConfig{
+	// 		gone.Dense(4, gone.Sigmoid),
+	// 		gone.Dense(8, gone.Sigmoid),
+	// 		gone.Dense(outN, gone.Sigmoid),
+	// 	},
+	// }
 
-		layers = []gone.LayerConfig{
-			gone.MakeLayerConfigAF(4, gone.Sigmoid),
-			gone.MakeLayerConfigAF(7, gone.Sigmoid),
-			gone.MakeLayerConfigSoftmax(outN),
-		}
-	)
+	nnConfig := gone.NetworkConfig{
+		Layers: []gone.LayerConfig{
+			gone.Dense(4, gone.Sigmoid),
+			gone.Dense(7, gone.Sigmoid),
+			gone.Softmax(outN),
+		},
+	}
 
-	p, err := gone.NewNeural(layers)
+	p, err := gone.NewNeural(nnConfig)
 	if err != nil {
 		return err
 	}

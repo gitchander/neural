@@ -57,22 +57,24 @@ func doSpiral() error {
 	}
 	//-----------------------------------------------
 
-	var (
-		// layers = []gone.LayerConfig{
-		// 	gone.MakeLayerConfigAF(2, gone.Sigmoid),
-		// 	gone.MakeLayerConfigAF(20, gone.Sigmoid),
-		// 	gone.MakeLayerConfigAF(20, gone.Sigmoid),
-		// 	gone.MakeLayerConfigAF(1, gone.Sigmoid),
-		// }
+	// nnConfig := gone.NetworkConfig{
+	// 	Layers: []gone.LayerConfig{
+	// 		gone.Dense(2, gone.Sigmoid),
+	// 		gone.Dense(20, gone.Sigmoid),
+	// 		gone.Dense(20, gone.Sigmoid),
+	// 		gone.Dense(1, gone.Sigmoid),
+	// 	},
+	// }
 
-		layers = []gone.LayerConfig{
-			gone.MakeLayerConfigAF(2, gone.Sigmoid),
-			gone.MakeLayerConfigAF(100, gone.Sigmoid),
-			gone.MakeLayerConfigAF(1, gone.Sigmoid),
-		}
-	)
+	nnConfig := gone.NetworkConfig{
+		Layers: []gone.LayerConfig{
+			gone.Dense(2, gone.Sigmoid),
+			gone.Dense(100, gone.Sigmoid),
+			gone.Dense(1, gone.Sigmoid),
+		},
+	}
 
-	p, err := gone.NewNeural(layers)
+	p, err := gone.NewNeural(nnConfig)
 	if err != nil {
 		return err
 	}

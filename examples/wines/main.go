@@ -24,21 +24,23 @@ func run() error {
 	}
 	gone.NormalizeInputs(samples)
 
-	var (
-		// layers = []gone.LayerConfig{
-		// 	gone.MakeLayerConfigAF(13, gone.Sigmoid),
-		// 	gone.MakeLayerConfigAF(3, gone.Sigmoid),
-		// 	gone.MakeLayerConfigAF(3, gone.Sigmoid),
-		// }
+	// nnConfig := gone.NetworkConfig{
+	// 	Layers: []gone.LayerConfig{
+	// 		gone.Dense(13, gone.Sigmoid),
+	// 		gone.Dense(3, gone.Sigmoid),
+	// 		gone.Dense(3, gone.Sigmoid),
+	// 	},
+	// }
 
-		layers = []gone.LayerConfig{
-			gone.MakeLayerConfigAF(13, gone.Sigmoid),
-			gone.MakeLayerConfigAF(3, gone.Sigmoid),
-			gone.MakeLayerConfigSoftmax(3),
-		}
-	)
+	nnConfig := gone.NetworkConfig{
+		Layers: []gone.LayerConfig{
+			gone.Dense(13, gone.Sigmoid),
+			gone.Dense(3, gone.Sigmoid),
+			gone.Softmax(3),
+		},
+	}
 
-	p, err := gone.NewNeural(layers)
+	p, err := gone.NewNeural(nnConfig)
 	if err != nil {
 		return err
 	}

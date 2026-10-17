@@ -21,13 +21,14 @@ func run() error {
 
 	samples := makeSamples()
 
-	layers := []gone.LayerConfig{
-		gone.MakeLayerConfigAF(4, gone.Sigmoid),
-		gone.MakeLayerConfigAF(20, gone.Sigmoid),
-		gone.MakeLayerConfigAF(7, gone.Sigmoid),
+	nnConfig := gone.NetworkConfig{
+		Layers: []gone.LayerConfig{
+			gone.Dense(4, gone.Sigmoid),
+			gone.Dense(20, gone.Sigmoid),
+			gone.Dense(7, gone.Sigmoid),
+		},
 	}
-
-	p, err := gone.NewNeural(layers)
+	p, err := gone.NewNeural(nnConfig)
 	if err != nil {
 		return err
 	}

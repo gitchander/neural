@@ -28,13 +28,14 @@ func testOperator(op operator) error {
 
 	samples := makeSamplesByOperator(op)
 
-	layers := []gone.LayerConfig{
-		gone.MakeLayerConfigAF(2, gone.Sigmoid),
-		gone.MakeLayerConfigAF(3, gone.Sigmoid),
-		gone.MakeLayerConfigAF(1, gone.Sigmoid),
+	nnConfig := gone.NetworkConfig{
+		Layers: []gone.LayerConfig{
+			gone.Dense(2, gone.Sigmoid),
+			gone.Dense(3, gone.Sigmoid),
+			gone.Dense(1, gone.Sigmoid),
+		},
 	}
-
-	p, err := gone.NewNeural(layers)
+	p, err := gone.NewNeural(nnConfig)
 	if err != nil {
 		return nil
 	}
@@ -78,13 +79,14 @@ func makeOperatorImage(op operator) error {
 
 	samples := makeSamplesByOperator(op)
 
-	layers := []gone.LayerConfig{
-		gone.MakeLayerConfigAF(2, gone.Sigmoid),
-		gone.MakeLayerConfigAF(3, gone.Sigmoid),
-		gone.MakeLayerConfigAF(1, gone.Sigmoid),
+	nnConfig := gone.NetworkConfig{
+		Layers: []gone.LayerConfig{
+			gone.Dense(2, gone.Sigmoid),
+			gone.Dense(3, gone.Sigmoid),
+			gone.Dense(1, gone.Sigmoid),
+		},
 	}
-
-	p, err := gone.NewNeural(layers)
+	p, err := gone.NewNeural(nnConfig)
 	if err != nil {
 		return nil
 	}
@@ -218,12 +220,13 @@ func testNot() error {
 		},
 	}
 
-	layers := []gone.LayerConfig{
-		gone.MakeLayerConfigAF(1, gone.Sigmoid),
-		gone.MakeLayerConfigAF(1, gone.Sigmoid),
+	nnConfig := gone.NetworkConfig{
+		Layers: []gone.LayerConfig{
+			gone.Dense(1, gone.Sigmoid),
+			gone.Dense(1, gone.Sigmoid),
+		},
 	}
-
-	p, err := gone.NewNeural(layers)
+	p, err := gone.NewNeural(nnConfig)
 	if err != nil {
 		return nil
 	}
